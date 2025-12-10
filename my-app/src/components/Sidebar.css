@@ -1,0 +1,57 @@
+.sidebar {
+    height: 100vh;
+    background-color: #1f2937;
+    color: white; /* Text standardmäßig weiß */
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: width 0.3s;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Breite offen oder geschlossen */
+.sidebar.open {
+    width: 200px;
+}
+
+.sidebar.closed {
+    width: 60px;
+}
+
+/* Toggle Button */
+.toggle-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    margin-bottom: 20px;
+    align-self: flex-end;
+}
+
+/* Menü */
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.menu li {
+    margin: 15px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    color: white; /* immer weiß */
+}
+
+/* Hover-Farbe ebenfalls weiß, damit es sich nicht ändert */
+.menu li:hover {
+    color: white;
+}
+
