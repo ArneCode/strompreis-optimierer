@@ -1,5 +1,11 @@
 import React from 'react';
+import './Header.css';
 
 export default function Devices() {
-    return <h1>Meine Geräte</h1>;
+    return (
+        <div className="devices-header">
+            <h1 className="header-box">Meine Geräte</h1>
+            <button className="add-device-btn">Gerät hinzufügen</button>
+        </div>
+    );
 }

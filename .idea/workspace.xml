@@ -4,17 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e879795c-00d8-4a2b-8fbc-188ff87bb29a" name="Changes" comment="Initital">
-      <change afterPath="$PROJECT_DIR$/my-app/src/components/Sidebar.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/src/components/Sidebar.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/src/pages/Devices.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/src/pages/Home.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/src/pages/Household.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/src/pages/Settings.jsx" afterDir="false" />
+    <list default="true" id="e879795c-00d8-4a2b-8fbc-188ff87bb29a" name="Changes" comment="Sidebar">
+      <change afterPath="$PROJECT_DIR$/my-app/src/pages/Header.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my-app/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my-app/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my-app/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/src/components/Sidebar.css" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/src/components/Sidebar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/src/pages/Devices.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/src/pages/Devices.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/src/pages/Home.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/src/pages/Home.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/src/pages/Household.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/src/pages/Household.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/src/pages/Settings.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/src/pages/Settings.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,25 +31,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Node.js.App.jsx.executor&quot;: &quot;Run&quot;,
-    &quot;Node.js.eslint.config.js.executor&quot;: &quot;Run&quot;,
-    &quot;Node.js.main.js.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
-    &quot;npm.start.executor&quot;: &quot;Run&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Node.js.App.jsx.executor": "Run",
+    "Node.js.eslint.config.js.executor": "Run",
+    "Node.js.main.js.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.dev.executor": "Run",
+    "npm.start.executor": "Run",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\julia\WebstormProjects\pse-react-app" />
@@ -82,7 +82,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1765387681333</updated>
-      <workItem from="1765387684274" duration="3475000" />
+      <workItem from="1765387684274" duration="3952000" />
+      <workItem from="1765402111920" duration="2105000" />
     </task>
     <task id="LOCAL-00001" summary="Initital">
       <option name="closed" value="true" />
@@ -116,7 +117,23 @@
       <option name="project" value="LOCAL" />
       <updated>1765388558379</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Sidebar">
+      <option name="closed" value="true" />
+      <created>1765391283197</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1765391283197</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Sidebar">
+      <option name="closed" value="true" />
+      <created>1765391292928</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1765391292928</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -124,6 +141,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initital" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initital" />
+    <MESSAGE value="Sidebar" />
+    <option name="LAST_COMMIT_MESSAGE" value="Sidebar" />
   </component>
 </project>
