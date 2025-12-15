@@ -1,6 +1,6 @@
-import Sidebar from './components/Sidebar';
-import Devices from './components/Devices';
-import Plan from './components/Plan';
+import Sidebar from './components/Sidebar.jsx';
+import Devices from './components/Devices.jsx';
+import Plan from './components/Plan.jsx';
 import './App.css'
 
 function App() {
