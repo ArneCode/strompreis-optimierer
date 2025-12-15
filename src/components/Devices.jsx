@@ -13,6 +13,7 @@ function Devices() {
     neigungswinkel: 30
   }]);*/
     const [devices, setDevices] = useState([]);
+    const [editIndex, setEditIndex] = useState(null);
 
     const[errorMessage, setErrorMessage] = useState("");
 
@@ -30,6 +31,15 @@ function Devices() {
     const [kapazität, setKapazität] = useState("");
 
     const [typ, setTyp] = useState("Erzeuger");
+
+
+  function deleteDevice() {
+      if (editIndex === null) return;
+      const newDevices = devices.filter((_, idx) => idx !== editIndex);
+      setDevices(newDevices);
+      toggleEditDevicePopUp();
+
+  }
 
   function addDevice() {
     /*setDevices([
@@ -114,7 +124,8 @@ function Devices() {
               <input placeholder="Min-Leistung" />
             </div>
             <div className="device-popup-buttons">
-              <button className="devices-edit-delete-button">
+              <button className="devices-edit-delete-button"
+              onClick={() => {deleteDevice(editIndex)}}>
                 Löschen
               </button>
               <button
@@ -211,7 +222,7 @@ function Devices() {
       <div className="devices-grid">
         {devices.map((val, key) => {
           return (
-            <div onClick={toggleEditDevicePopUp}>
+            <div onClick={()=> {setEditIndex(key); toggleEditDevicePopUp()}}>
               <Device
                 typ={val.typ}
                 name={val.name}
