@@ -60,11 +60,18 @@ const scales = [
 ];
 
 function Plan() {
+
+    function handleUpdate() {
+        console.log("Update");
+    }
   return (
     <>
       <div className="plan-header">
         <p>Ablaufplan</p>
-        <button className="plan-refresh-button">
+        <button
+            className="plan-refresh-button"
+            onClick={handleUpdate}
+        >
           Aktualisieren
           <img src="./src/assets/refresh.png" />
         </button>

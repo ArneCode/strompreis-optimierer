@@ -66,7 +66,8 @@
 }
 
 .device-popup-window {
-  height: 400px;
+  height: 500px;
+  position: relative;
   width: 400px;
   background-color: white;
   border-radius: 10px;
@@ -131,3 +132,32 @@
   margin-bottom: 20px;
   margin-top: 15px;
 }
+
+.device-popup-inputs select {
+    all: unset;
+    display: block;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 200px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+    font-size: 16px;
+    text-align: center;
+}
+
+.error-message {
+    position: absolute;
+    top: -40px; /* über dem Pop-up Header */
+    left: 50%;
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 15px;
+    font-weight: bold;
+    z-index: 10;
+}
+
+
