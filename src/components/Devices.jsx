@@ -32,6 +32,19 @@ function Devices() {
 
     const [typ, setTyp] = useState("Erzeuger");
 
+    //Action States
+    const [actions, setActions] = useState([]);
+    const [actionType, setActionType] = useState("Konstant");
+
+    const [startZeit, setStartZeit] = useState("");
+    const [endZeit, setEndZeit] = useState("");
+    const [actionDauer, setActionDauer] = useState("");
+    const [verbrauchProZeit, setVerbrauchProZeit] = useState("");
+    const [gesamtVerbrauch, setGesamtVerbrauch] = useState("");
+    const [maxVerbrauchProZeit, setMaxVerbrauchProZeit] = useState("");
+
+    const [openCreateAction, setOpenCreateAction] = useState(false);
+
 
   function deleteDevice() {
       if (editIndex === null) return;
@@ -82,6 +95,8 @@ function Devices() {
           newDevice.leistung = leistung;
           newDevice.dauer = dauer;
           newDevice.flexibilität = flexibilität;
+          setOpenCreateAction(true);
+          return;
 
       } else if (typ === "Speicher") {
           newDevice.kapazität = kapazität;
@@ -93,6 +108,58 @@ function Devices() {
       setName(""); setNennleistung(""); setNeigungswinkel(""); setAusrichtung(""); setStandort("");
       setLeistung(""); setDauer(""); setFlexibilität("durchlauf"); setKapazität("");
 
+  }
+
+  function addAction() {
+    let newAction = {type: actionType, startZeit, endZeit};
+
+    if (actionType === "Konstant") {
+      if (!actionDauer || !verbrauchProZeit) {
+        setErrorMessage("Alle Felder ausfüllen");
+        return;
+      }
+      newAction.dauer = actionDauer;
+      newAction.verbrauchProZeit = verbrauchProZeit;
+    }
+
+    if (actionType === "Flexibel") {
+      if (!gesamtVerbrauch || !maxVerbrauchProZeit) {
+        setErrorMessage("Alle Felder ausfüllen");
+        return;
+        }
+        newAction.gesamtVerbrauch = gesamtVerbrauch;
+        newAction.maxVerbrauchProZeit = maxVerbrauchProZeit;
+    }
+
+    const consumerDevice = {
+      typ: "Verbraucher",
+      name,
+      leistung,
+      dauer,
+      actions: [...actions, newAction]
+    };
+
+    setDevices([...devices, consumerDevice]);
+
+    resetAll();
+  }
+
+  function resetDeviceForm() {
+    setName("");
+    setTyp("Erzeuger");
+    setOpenCreateDevice(false);
+  }
+
+  function resetAll() {
+    resetDeviceForm();
+    setActions([]);
+    setOpenCreateAction(false);
+    setStartZeit("");
+    setEndZeit("");
+    setActionDauer("");
+    setVerbrauchProZeit("");
+    setGesamtVerbrauch("");
+    setMaxVerbrauchProZeit("");
   }
 
   function toggleCreateDevicePopUp() {
@@ -109,6 +176,7 @@ function Devices() {
 
   return (
     <>
+
       {openEditDevice &&
         <div className="edit-device-popup">
           <div className="device-popup-window">
@@ -202,12 +270,51 @@ function Devices() {
                 className="devices-create-button"
                 onClick={addDevice}
               >
-                Erstellen
+                Weiter
               </button>
             </div>
           </div>
         </div>
       }
+
+      {openCreateAction && (
+        <div className="create-device-popup">
+          <div className="device-popup-window">
+          <h3>Aktion erstellen</h3>
+
+
+          <select value={actionType} onChange={(e) => setActionType(e.target.value)}>
+          <option value="Konstant">Konstant</option>
+          <option value="Flexibel">Flexibel</option>
+          </select>
+
+
+          <input placeholder="Start-Zeitpunkt" value={startZeit} onChange={(e) => setStartZeit(e.target.value)} />
+          <input placeholder="End-Zeitpunkt" value={endZeit} onChange={(e) => setEndZeit(e.target.value)} />
+
+
+          {actionType === "Konstant" && (
+          <>
+          <input placeholder="Dauer" value={actionDauer} onChange={(e) => setActionDauer(e.target.value)} />
+          <input placeholder="Verbrauch / Zeit" value={verbrauchProZeit} onChange={(e) => setVerbrauchProZeit(e.target.value)} />
+          </>
+          )}
+
+
+          {actionType === "Flexibel" && (
+          <>
+          <input placeholder="Gesamtverbrauch" value={gesamtVerbrauch} onChange={(e) => setGesamtVerbrauch(e.target.value)} />
+          <input placeholder="Max. Verbrauch / Zeit" value={maxVerbrauchProZeit} onChange={(e) => setMaxVerbrauchProZeit(e.target.value)} />
+          </>
+          )}
+
+          <button onClick={addAction}>Speichern</button>
+          <button onClick={resetAll}>Abbrechen</button>
+          </div>
+        </div>
+      )}
+
+      
 
       <div className="devices-head">
         <p>Geräte</p>
