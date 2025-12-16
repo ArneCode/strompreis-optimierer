@@ -95,6 +95,7 @@ function Devices() {
           newDevice.leistung = leistung;
           newDevice.dauer = dauer;
           newDevice.flexibilität = flexibilität;
+          setOpenCreateDevice(false);
           setOpenCreateAction(true);
           return;
 
