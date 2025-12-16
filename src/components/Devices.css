@@ -160,4 +160,41 @@
     z-index: 10;
 }
 
+.create-action-inputs {
+  display: flex;
+  flex-direction: column;
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-bottom: 50px;
+  flex-grow: 1;
+}
+
+.create-action-inputs input, select{
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  border-radius: 10px;
+  border-width: 1px;
+}
+
+.create-action-buttons button {
+  margin-right: 15px;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+.create-action-buttons {
+  display: flex;
+  justify-content: end;
+}
+
+.create-action-header {
+  margin-left: 50px;
+  font-size: 25px;
+}
+
 

@@ -280,10 +280,10 @@ function Devices() {
       {openCreateAction && (
         <div className="create-device-popup">
           <div className="device-popup-window">
-          <h3>Aktion erstellen</h3>
+          <h3 className="create-action-header">Gerät erstellen: Aktion</h3>
 
-
-          <select value={actionType} onChange={(e) => setActionType(e.target.value)}>
+          <div className="create-action-inputs">
+            <select value={actionType} onChange={(e) => setActionType(e.target.value)}>
           <option value="Konstant">Konstant</option>
           <option value="Flexibel">Flexibel</option>
           </select>
@@ -307,9 +307,14 @@ function Devices() {
           <input placeholder="Max. Verbrauch / Zeit" value={maxVerbrauchProZeit} onChange={(e) => setMaxVerbrauchProZeit(e.target.value)} />
           </>
           )}
+          </div>
+          
+          
 
-          <button onClick={addAction}>Speichern</button>
-          <button onClick={resetAll}>Abbrechen</button>
+          <div className="create-action-buttons">
+            <button onClick={resetAll}>Abbrechen</button>
+            <button onClick={addAction} className="devices-create-button">Gerät erstellen</button>
+          </div>
           </div>
         </div>
       )}
