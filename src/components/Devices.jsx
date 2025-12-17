@@ -45,13 +45,15 @@ function Devices() {
 
     const [openCreateAction, setOpenCreateAction] = useState(false);
 
+    //const [currentEditDeviceKey, setCurrentEditDeviceKey] = useState("");
+
 
   function deleteDevice() {
       if (editIndex === null) return;
       const newDevices = devices.filter((_, idx) => idx !== editIndex);
       setDevices(newDevices);
       toggleEditDevicePopUp();
-
+      resetAll();
   }
 
   function addDevice() {
@@ -174,8 +176,52 @@ function Devices() {
     setOpenEditDevice(!openEditDevice);
   }
 
+  function loadEditDevice(key) {
+    //setCurrentEditDeviceKey(key);
+    setEditIndex(key);
+
+    const device = devices[key];
+
+    setName(device.name);
+    setTyp(device.typ);
+
+    if (device.typ === "Erzeuger") {
+      setNennleistung(device.nennleistung);
+      setNeigungswinkel(device.neigungswinkel);
+      setAusrichtung(device.ausrichtung);
+      setStandort(device.standort);
+
+    } else if (device.typ === "Verbraucher") {
+      setLeistung(device.leistung);
+      setDauer(device.dauer);
+
+    } else if (device.typ === "Speicher") {
+      setKapazität(device.kapazität);
+
+    }
+  }
+
   function editDevice() {
-    toggleEditDevicePopUp();
+    if (editIndex === null) return;
+
+    const updatedDevices = [...devices];
+
+    updatedDevices[editIndex] = {
+      ...updatedDevices[editIndex],
+      name: name,
+      typ: typ,
+      nennleistung: nennleistung,
+      neigungswinkel: neigungswinkel,
+      ausrichtung: ausrichtung,
+      standort: standort,
+      leistung: leistung,
+      dauer: dauer,
+      kapazität: kapazität
+    }
+
+    setDevices(updatedDevices);
+    resetAll();
+    setOpenEditDevice(false);
   }
 
   return (
@@ -190,11 +236,39 @@ function Devices() {
             <div
               className="device-popup-inputs"
             >
-              <input placeholder="Typ" />
-              <input placeholder="Name" />
-              <input placeholder="Max-Leistung" />
-              <input placeholder="Min-Leistung" />
-            </div>
+                <select value={typ} onChange={(e) => setTyp(e.target.value)}>
+                    <option value="Erzeuger">Erzeuger</option>
+                    <option value="Verbraucher">Verbraucher</option>
+                    <option value="Speicher">Speicher</option>
+                </select>
+                <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+
+
+                {typ === "Erzeuger" && (
+                    <>
+                        <input placeholder="Nennleistung" value={nennleistung} onChange={(e) => setNennleistung(e.target.value)} />
+                        <input placeholder="Neigungswinkel" value={neigungswinkel} onChange={(e) => setNeigungswinkel(e.target.value)} />
+                        <input placeholder="Ausrichtung" value={ausrichtung} onChange={(e) => setAusrichtung(e.target.value)} />
+                        <input placeholder="Standort" value={standort} onChange={(e) => setStandort(e.target.value)} />
+                    </>
+                )}
+
+                {typ === "Verbraucher" && (
+                    <>
+                        <input placeholder="Leistung" value={leistung} onChange={(e) => setLeistung(e.target.value)} />
+                        <input placeholder="Dauer (min)" value={dauer} onChange={(e) => setDauer(e.target.value)} />
+                        <select value={flexibilität} onChange={(e) => setFlexibilität(e.target.value)}>
+                            <option value="durchlauf">durchlaufen</option>
+                            <option value="flexibel">flexibel</option>
+                        </select>
+                    </>
+                )}
+
+                {typ === "Speicher" && (
+                    <input placeholder="Kapazität" value={kapazität} onChange={(e) => setKapazität(e.target.value)} />
+                )}
+
+          </div>
             <div className="device-popup-buttons">
               <button className="devices-edit-delete-button"
               onClick={() => {deleteDevice(editIndex)}}>
@@ -336,9 +410,9 @@ function Devices() {
         </button>
       </div>
       <div className="devices-grid">
-        {devices.map((val, key) => {
+        {devices.map((val, key) => { //setEditIndex(key)
           return (
-            <div onClick={()=> {setEditIndex(key); toggleEditDevicePopUp()}}>
+            <div onClick={()=> {toggleEditDevicePopUp(); loadEditDevice(key)}}> 
               <Device
                 typ={val.typ}
                 name={val.name}
