@@ -276,7 +276,10 @@ function Devices() {
               </button>
               <button
                 className="devices-edit-cancel-button"
-                onClick={toggleEditDevicePopUp}
+                onClick={() => {
+                  toggleEditDevicePopUp();
+                  resetAll();
+                }}
               >
                 Abbrechen
               </button>
@@ -340,7 +343,10 @@ function Devices() {
             <div className="device-popup-buttons">
               <button
                 className="devices-create-cancel-button"
-                onClick={toggleCreateDevicePopUp}
+                onClick={() => {
+                  toggleCreateDevicePopUp();
+                  resetAll();
+                }}
               >
                 Abbrechen
               </button>
