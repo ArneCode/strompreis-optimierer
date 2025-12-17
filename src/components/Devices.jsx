@@ -161,6 +161,9 @@ function Devices() {
     setVerbrauchProZeit("");
     setGesamtVerbrauch("");
     setMaxVerbrauchProZeit("");
+
+    setName(""); setNennleistung(""); setNeigungswinkel(""); setAusrichtung(""); setStandort("");
+      setLeistung(""); setDauer(""); setFlexibilität("durchlauf"); setKapazität("");
   }
 
   function toggleCreateDevicePopUp() {
