@@ -150,7 +150,7 @@
 
 .error-message {
     position: absolute;
-    top: -40px; /* über dem Pop-up Header */
+    top: -40px;
     left: 50%;
     background-color: #f44336;
     color: white;
