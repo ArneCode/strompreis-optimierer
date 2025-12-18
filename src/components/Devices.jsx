@@ -15,6 +15,21 @@ function Devices() {
     const [devices, setDevices] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
 
+    /*
+    const [deviceForm, setDeviceForm] = useState({
+      typ: "Erzeuger",
+      name: "",
+      nennleistung: "",
+      neigungswinkel: "",
+      ausrichtung: "",
+      standort: "",
+      leistung: "",
+      dauer: "",
+      flexibilität: "durchlauf",
+      kapazität: "",
+    });
+    */
+
     const[errorMessage, setErrorMessage] = useState("");
 
     const [openCreateDevice, setOpenCreateDevice] = useState(false);
