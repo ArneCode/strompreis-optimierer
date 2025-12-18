@@ -5,17 +5,11 @@ import Device from './Device.jsx';
 
 
 function Devices() {
-  /*const [devices, setDevices] = useState([{
-    typ: 'Erzeuger',
-    name: 'PV-1',
-    nennleistung: 8.5,
-    ausrichtung: "Süd",
-    neigungswinkel: 30
-  }]);*/
     const [devices, setDevices] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
-
     const[errorMessage, setErrorMessage] = useState("");
+
+
 
     const [openCreateDevice, setOpenCreateDevice] = useState(false);
     const [openEditDevice, setOpenEditDevice] = useState(false);
@@ -25,9 +19,6 @@ function Devices() {
     const [neigungswinkel, setNeigungswinkel] = useState("");
     const [ausrichtung, setAusrichtung] = useState("");
     const [standort, setStandort] = useState("");
-    const [leistung, setLeistung] = useState("");
-    const [dauer, setDauer] = useState("");
-    const [flexibilität, setFlexibilität] = useState("durchlauf");
     const [kapazität, setKapazität] = useState("");
 
     const [typ, setTyp] = useState("Erzeuger");
@@ -45,7 +36,6 @@ function Devices() {
 
     const [openCreateAction, setOpenCreateAction] = useState(false);
 
-    //const [currentEditDeviceKey, setCurrentEditDeviceKey] = useState("");
 
 
   function deleteDevice() {
@@ -57,24 +47,13 @@ function Devices() {
   }
 
   function addDevice() {
-    /*setDevices([
-      ...devices, {
-        typ: 'Erzeuger',
-        name: 'PV-1',
-        nennleistung: 8.5,
-        ausrichtung: "Süd",
-        neigungswinkel: 30
-      }
-    ]);
-    setOpenCreateDevice(false);*/
 
       let newDevice = { typ, name };
       let valid = true;
       if(!name) valid = false;
       if (typ === "Erzeuger") {
           if (!nennleistung || !neigungswinkel || !ausrichtung || !standort) valid = false;
-      } else if (typ === "Verbraucher") {
-          if (!leistung || !dauer || !flexibilität) valid = false;
+
       } else if (typ === "Speicher") {
           if (!kapazität) valid = false;
       }
@@ -94,9 +73,6 @@ function Devices() {
           newDevice.standort = standort;
 
       } else if (typ === "Verbraucher") {
-          newDevice.leistung = leistung;
-          newDevice.dauer = dauer;
-          newDevice.flexibilität = flexibilität;
           setOpenCreateDevice(false);
           setOpenCreateAction(true);
           return;
@@ -109,7 +85,7 @@ function Devices() {
 
       setOpenCreateDevice(false);
       setName(""); setNennleistung(""); setNeigungswinkel(""); setAusrichtung(""); setStandort("");
-      setLeistung(""); setDauer(""); setFlexibilität("durchlauf"); setKapazität("");
+      setKapazität("");
 
   }
 
@@ -137,8 +113,6 @@ function Devices() {
     const consumerDevice = {
       typ: "Verbraucher",
       name,
-      leistung,
-      dauer,
       actions: [...actions, newAction]
     };
 
@@ -165,7 +139,7 @@ function Devices() {
     setMaxVerbrauchProZeit("");
 
     setName(""); setNennleistung(""); setNeigungswinkel(""); setAusrichtung(""); setStandort("");
-      setLeistung(""); setDauer(""); setFlexibilität("durchlauf"); setKapazität("");
+    setKapazität("");
   }
 
   function toggleCreateDevicePopUp() {
@@ -177,7 +151,6 @@ function Devices() {
   }
 
   function loadEditDevice(key) {
-    //setCurrentEditDeviceKey(key);
     setEditIndex(key);
 
     const device = devices[key];
@@ -191,9 +164,6 @@ function Devices() {
       setAusrichtung(device.ausrichtung);
       setStandort(device.standort);
 
-    } else if (device.typ === "Verbraucher") {
-      setLeistung(device.leistung);
-      setDauer(device.dauer);
 
     } else if (device.typ === "Speicher") {
       setKapazität(device.kapazität);
@@ -214,8 +184,6 @@ function Devices() {
       neigungswinkel: neigungswinkel,
       ausrichtung: ausrichtung,
       standort: standort,
-      leistung: leistung,
-      dauer: dauer,
       kapazität: kapazität
     }
 
@@ -253,16 +221,7 @@ function Devices() {
                     </>
                 )}
 
-                {typ === "Verbraucher" && (
-                    <>
-                        <input placeholder="Leistung" value={leistung} onChange={(e) => setLeistung(e.target.value)} />
-                        <input placeholder="Dauer (min)" value={dauer} onChange={(e) => setDauer(e.target.value)} />
-                        <select value={flexibilität} onChange={(e) => setFlexibilität(e.target.value)}>
-                            <option value="durchlauf">durchlaufen</option>
-                            <option value="flexibel">flexibel</option>
-                        </select>
-                    </>
-                )}
+
 
                 {typ === "Speicher" && (
                     <input placeholder="Kapazität" value={kapazität} onChange={(e) => setKapazität(e.target.value)} />
@@ -324,16 +283,6 @@ function Devices() {
                     </>
                 )}
 
-                {typ === "Verbraucher" && (
-                    <>
-                        <input placeholder="Leistung" value={leistung} onChange={(e) => setLeistung(e.target.value)} />
-                        <input placeholder="Dauer (min)" value={dauer} onChange={(e) => setDauer(e.target.value)} />
-                        <select value={flexibilität} onChange={(e) => setFlexibilität(e.target.value)}>
-                            <option value="durchlauf">durchlaufen</option>
-                            <option value="flexibel">flexibel</option>
-                        </select>
-                    </>
-                )}
 
                 {typ === "Speicher" && (
                     <input placeholder="Kapazität" value={kapazität} onChange={(e) => setKapazität(e.target.value)} />
@@ -416,7 +365,7 @@ function Devices() {
         </button>
       </div>
       <div className="devices-grid">
-        {devices.map((val, key) => { //setEditIndex(key)
+        {devices.map((val, key) => {
           return (
             <div onClick={()=> {toggleEditDevicePopUp(); loadEditDevice(key)}}> 
               <Device
