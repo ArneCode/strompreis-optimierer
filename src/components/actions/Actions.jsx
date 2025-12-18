@@ -9,6 +9,15 @@ function Actions() {
     ]);
 
 
+    const devices = [
+        { id: 1, name: "Waschmaschine" },
+        { id: 2, name: "E-Auto" },
+    ];
+
+
+
+
+
     const [openCreateAction, setOpenCreateAction] = useState(false);
     const [openEditAction, setOpenEditAction] = useState(false);
     const [editIndex, setEditIndex] = useState(null);
@@ -46,8 +55,6 @@ function Actions() {
 
 
 
-
-
             {openCreateAction &&
                 <div className="create-action-popup">
                     <div className="action-popup-window">
@@ -57,7 +64,14 @@ function Actions() {
                         <div
                             className="action-popup-inputs"
                         >
-                            //eingabe
+
+                            <select className="action-device-select">
+                                {devices.map((device) => (
+                                    <option key={device.id} value={device.name}>
+                                        {device.name}
+                                    </option>
+                                ))}
+                            </select>
 
 
 

@@ -156,3 +156,10 @@
 }
 
 
+.action-device-select {
+    position: absolute;
+    top: 90px;
+    cursor: pointer;
+}
+
+
