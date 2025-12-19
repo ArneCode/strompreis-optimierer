@@ -14,6 +14,15 @@ function Actions() {
         { id: 2, name: "E-Auto" },
     ];
 
+    const [actionForm, setActionForm] = useState({
+        deviceName: "",
+        type: "konstant",
+        duration: "",
+        startTime: "",
+        endTime: "",
+        consumptionPerTime: ""
+    });
+
 
 
 
@@ -29,11 +38,23 @@ function Actions() {
 
 
 
+
+
     function toggleCreateActionPopup() {
         setOpenCreateAction(!openCreateAction);
     }
 
     function addAction() {
+        const newAction = {
+            deviceName: actionForm.deviceName,
+            type: actionForm.type,
+            duration: actionForm.duration,
+            startTime: actionForm.startTime,
+            endTime: actionForm.endTime,
+            consumptionPerTime: actionForm.consumptionPerTime,
+        }
+
+        setActions([...actions, newAction]);
 
     }
 
@@ -72,6 +93,10 @@ function Actions() {
                                     </option>
                                 ))}
                             </select>
+                            <input/>
+                            <input/>
+                            <input/>
+                            <input/>
 
 
 
