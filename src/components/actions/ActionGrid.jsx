@@ -1,18 +1,24 @@
 import Action from "./Action";
 import "./Actions.css";
 
-function ActionGrid({ actions, onEdit }) {
+function ActionGrid({ devices, onEdit }) {
     return (
         <div className="actions-grid">
-            {actions.map((action, index) => (
-                <div key={index} onClick={() => onEdit(index)}>
-                    <Action
-                        name={action.deviceName}
-                        startTime={action.startTime}
-                        endTime={action.endTime}
-                    />
-                </div>
-            ))}
+            {devices.map((device, deviceIndex) =>
+                device.actions?.map((action, actionIndex) => (
+                    <div
+                        key={`${deviceIndex}-${actionIndex}`}
+                        className="action-card"
+                        onClick={() => onEdit(deviceIndex, actionIndex)}
+                    >
+                        <Action
+                            name={device.name}
+                            startTime={action.startTime}
+                            endTime={action.endTime}
+                        />
+                    </div>
+                ))
+            )}
         </div>
     );
 }

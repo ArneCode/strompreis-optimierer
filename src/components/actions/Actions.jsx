@@ -3,56 +3,100 @@ import { useState } from "react";
 import ActionGrid from "./ActionGrid";
 
 function Actions() {
-    const [actions, setActions] = useState([
-        { deviceName: "Waschmaschine", startTime: "10", endTime: "10" },
-        { deviceName: "E-Auto laden",startTime: "10", endTime: "10" }
+    const [devices, setDevices] = useState([
+        {
+            name: "Waschmaschine",
+            actions: [
+                { startTime: "10:00", endTime: "10:00" },
+                { startTime: "10:00", endTime: "12:00" },
+            ],
+        },
+        {
+            name: "E-auto",
+            actions: [
+                { startTime: "10:00", endTime: "10:00" },
+            ],
+        },
     ]);
 
-
-    const devices = [
-        { id: 1, name: "Waschmaschine" },
-        { id: 2, name: "E-Auto" },
-    ];
-
     const [actionForm, setActionForm] = useState({
-        deviceId: "",
         startTime: "",
         endTime: "",
     });
 
-
-
-
-
     const [openCreateAction, setOpenCreateAction] = useState(false);
     const [openEditAction, setOpenEditAction] = useState(false);
-    const [editIndex, setEditIndex] = useState(null);
+    const [editIndex, setEditIndex] = useState({ deviceIndex: null, actionIndex: null });
 
-    function toggleEditActionPopUp(index) {
-        setEditIndex(index);
-        setOpenEditAction(true);
-    }
-
-
-
-
-
-    function toggleCreateActionPopup() {
+    const toggleCreateActionPopup = () => {
         setOpenCreateAction(!openCreateAction);
-    }
+        setActionForm({ deviceName: "", startTime: "", endTime: "" });
+    };
 
-    function addAction() {
-        const newAction = {
-            deviceName: actionForm.deviceName,
-            startTime: actionForm.startTime,
-            endTime: actionForm.endTime,
-        }
+    const toggleEditActionPopUp = () => setOpenEditAction(!openEditAction);
 
-        setActions([...actions, newAction]);
+    const addAction = () => {
+        if (!actionForm.deviceName) return;
+
+        setDevices(prev =>
+            prev.map((device) =>
+                device.name === actionForm.deviceName
+                    ? {
+                        ...device,
+                        actions: [
+                            ...device.actions,
+                            {
+                                startTime: actionForm.startTime,
+                                endTime: actionForm.endTime,
+                            },
+                        ],
+                    }
+                    : device
+            )
+        );
+
         toggleCreateActionPopup();
+    };
 
+    const editAction = () => {
+        const { deviceIndex, actionIndex } = editIndex;
+        if (deviceIndex === null || actionIndex === null) return;
 
-    }
+        setDevices(prev =>
+            prev.map((device, dIdx) =>
+                dIdx === deviceIndex
+                    ? {
+                        ...device,
+                        actions: device.actions.map((action, aIdx) =>
+                            aIdx === actionIndex
+                                ? { startTime: actionForm.startTime, endTime: actionForm.endTime }
+                                : action
+                        ),
+                    }
+                    : device
+            )
+        );
+
+        toggleEditActionPopUp();
+    };
+
+    const removeAction = () => {
+        const { deviceIndex, actionIndex } = editIndex;
+        if (deviceIndex === null || actionIndex === null) return;
+
+        setDevices(prev =>
+            prev.map((device, dIdx) =>
+                dIdx === deviceIndex
+                    ? {
+                        ...device,
+                        actions: device.actions.filter((_, aIdx) => aIdx !== actionIndex),
+                    }
+                    : device
+            )
+        );
+
+        toggleEditActionPopUp();
+    };
 
     return (
         <div className="action">
@@ -61,147 +105,102 @@ function Actions() {
             </div>
 
             <button className="new-action-button" onClick={toggleCreateActionPopup}>
-                <img className="new-action-plus-image" src="./src/assets/plus.png"/>
-
+                <img className="new-action-plus-image" src="./src/assets/plus.png" />
                 Aktion hinzufügen
             </button>
 
-
-
-
-
-
-
-            {openCreateAction &&
+            {openCreateAction && (
                 <div className="create-action-popup">
                     <div className="action-popup-window">
-                        <p className="action-head">
-                            Aktion erstellen
-                        </p>
-                        <div
-                            className="action-popup-inputs"
-                        >
-
+                        <p className="action-head">Aktion erstellen</p>
+                        <div className="action-popup-inputs">
                             <select
                                 className="action-device-select"
                                 value={actionForm.deviceName}
-                                onChange={(e) =>
-                                    setActionForm({ ...actionForm, deviceName: e.target.value })
-                                }
+                                onChange={(e) => setActionForm({ ...actionForm, deviceName: e.target.value })}
                             >
                                 <option value="">-- Gerät auswählen --</option>
-                                {devices.map((device) => (
-                                    <option key={device.id} value={device.name}>
+                                {devices.map((device, idx) => (
+                                    <option key={idx} value={device.name}>
                                         {device.name}
                                     </option>
                                 ))}
                             </select>
 
-
-
-
-
-                            <label className="action-time">Startzeit:</label>
+                            <label>Startzeit:</label>
                             <input
                                 type="time"
-                                placeholder="Startzeit"
                                 value={actionForm.startTime}
-                                onChange={(e) =>
-                                    setActionForm({ ...actionForm, startTime: e.target.value })
-                                }
+                                onChange={(e) => setActionForm({ ...actionForm, startTime: e.target.value })}
                             />
 
-                            <label className="action-time">Endzeit:</label>
+                            <label>Endzeit:</label>
                             <input
                                 type="time"
-                                placeholder="Endzeit"
                                 value={actionForm.endTime}
-                                onChange={(e) =>
-                                    setActionForm({ ...actionForm, endTime: e.target.value })
-                                }
+                                onChange={(e) => setActionForm({ ...actionForm, endTime: e.target.value })}
                             />
-
-
-
-
-
                         </div>
+
                         <div className="action-popup-buttons">
-                            <button
-                                className="actions-create-cancel-button"
-                                onClick={() => {
-                                    toggleCreateActionPopup();
-                                }}
-                            >
+                            <button className="actions-create-cancel-button" onClick={toggleCreateActionPopup}>
                                 Abbrechen
                             </button>
-                            <button
-                                className="actions-save-button"
-                                onClick={addAction}
-                            >
-                                Weiter
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            <ActionGrid
-                actions={actions}
-                onEdit={toggleEditActionPopUp}
-            />
-            {openEditAction && (
-                <div className="edit-action-popup">
-                    <div className="action-popup-window">
-                        <p className="action-head">Aktion bearbeiten</p>
-
-                        <p className="action-head">{actions[editIndex].deviceName}</p>
-
-                        <div className="action-popup-inputs">
-
-
-
-                            <label className="action-time">Startzeit:</label>
-                            <input
-                                type="time"
-                                placeholder="Startzeit"
-                                value={actionForm.startTime}
-                                onChange={(e) =>
-                                    setActionForm({ ...actionForm, startTime: e.target.value })
-                                }
-                            />
-
-                            <label className="action-time">Endzeit:</label>
-                            <input
-                                type="time"
-                                placeholder="Endzeit"
-                                value={actionForm.endTime}
-                                onChange={(e) =>
-                                    setActionForm({ ...actionForm, endTime: e.target.value })
-                                }
-                            />
-
-                        </div>
-
-                        <div className="action-popup-buttons">
-                            <button
-                                className="actions-save-button"
-                                onClick={() => setOpenEditAction(false)}
-                            >
-                                Speichern
-                            </button>
-
-                            <button
-                                className="actions-delete-button"
-                                onClick={() => setOpenEditAction(false)}
-                            >
-                                Löschen
+                            <button className="actions-save-button" onClick={addAction}>
+                                Erstellen
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
+            <ActionGrid
+                devices={devices}
+                onEdit={(deviceIndex, actionIndex) => {
+                    setEditIndex({ deviceIndex, actionIndex });
+                    const action = devices[deviceIndex].actions[actionIndex];
+                    setActionForm({
+                        deviceName: devices[deviceIndex].name,
+                        startTime: action.startTime,
+                        endTime: action.endTime,
+                    });
+                    toggleEditActionPopUp();
+                }}
+            />
+
+            {openEditAction && editIndex.deviceIndex !== null && editIndex.actionIndex !== null && (
+                <div className="edit-action-popup">
+                    <div className="action-popup-window">
+                        <p className="action-head">Aktion bearbeiten</p>
+                        <p className="action-head">{devices[editIndex.deviceIndex]?.name}</p>
+
+                        <div className="action-popup-inputs">
+                            <label>Start-Zeitpunkt:</label>
+                            <input
+                                type="time"
+                                value={actionForm.startTime}
+                                onChange={(e) => setActionForm({ ...actionForm, startTime: e.target.value })}
+                            />
+
+                            <label>End-Zeitpunkt:</label>
+                            <input
+                                type="time"
+                                value={actionForm.endTime}
+                                onChange={(e) => setActionForm({ ...actionForm, endTime: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="action-popup-buttons">
+                            <button className="actions-save-button" onClick={editAction}>
+                                Speichern
+                            </button>
+                            <button className="actions-delete-button" onClick={removeAction}>
+                                Löschen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
