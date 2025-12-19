@@ -2,22 +2,8 @@ import "./Actions.css";
 import { useState } from "react";
 import ActionGrid from "./ActionGrid";
 
-function Actions() {
-    const [devices, setDevices] = useState([
-        {
-            name: "Waschmaschine",
-            actions: [
-                { startTime: "10:00", endTime: "10:00" },
-                { startTime: "10:00", endTime: "12:00" },
-            ],
-        },
-        {
-            name: "E-auto",
-            actions: [
-                { startTime: "10:00", endTime: "10:00" },
-            ],
-        },
-    ]);
+function Actions({devices, setDevices}) {
+
 
     const [actionForm, setActionForm] = useState({
         startTime: "",
