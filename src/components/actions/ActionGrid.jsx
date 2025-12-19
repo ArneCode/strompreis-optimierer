@@ -7,8 +7,9 @@ function ActionGrid({ actions, onEdit }) {
             {actions.map((action, index) => (
                 <div key={index} onClick={() => onEdit(index)}>
                     <Action
-                        name={action.name}
-                        type={action.type}
+                        name={action.deviceName}
+                        startTime={action.startTime}
+                        endTime={action.endTime}
                     />
                 </div>
             ))}
