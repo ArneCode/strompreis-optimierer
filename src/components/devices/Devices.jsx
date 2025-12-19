@@ -27,21 +27,29 @@ function Devices() {
     const [openEditDevice, setOpenEditDevice] = useState(false);
 
     //Action States
-    const [actions, setActions] = useState([]);
-    const [actionType, setActionType] = useState("Konstant");
 
-    const [startZeit, setStartZeit] = useState("");
-    const [endZeit, setEndZeit] = useState("");
-    const [actionDauer, setActionDauer] = useState("");
-    const [verbrauchProZeit, setVerbrauchProZeit] = useState("");
-    const [gesamtVerbrauch, setGesamtVerbrauch] = useState("");
-    const [maxVerbrauchProZeit, setMaxVerbrauchProZeit] = useState("");
+    const [actionForm, setActionForm] = useState({
+      typ: "Konstant",
+      startZeit: "",
+      endZeit: "",
+      dauer: "",
+      verbrauchProZeit: "",
+      gesamtVerbrauch: "",
+      maxVerbrauchProZeit: "",
+    });
+
+    const [actions, setActions] = useState([]);
 
     const [openCreateAction, setOpenCreateAction] = useState(false);
 
   function handleDeviceFormChange(e) {
     const {name, value} = e.target;
     setDeviceForm(prev => ({...prev, [name]: value}));
+  }
+
+  function handleActionFormChange(e) {
+    const { name, value } = e.target;
+    setActionForm(prev => ({...prev, [name]: value}));
   }
   
 
@@ -102,24 +110,29 @@ function Devices() {
   }
 
   function addAction() {
-    let newAction = {type: actionType, startZeit, endZeit};
+    //let newAction = {type: actionType, startZeit, endZeit};
+    let newAction = {
+      typ: actionForm.typ,
+      startZeit: actionForm.startZeit,
+      endZeit: actionForm.endZeit,
+    }
 
-    if (actionType === "Konstant") {
-      if (!actionDauer || !verbrauchProZeit) {
+    if (actionForm.typ === "Konstant") {
+      if (!actionForm.dauer || !actionForm.verbrauchProZeit) {
         setErrorMessage("Alle Felder ausfüllen");
         return;
       }
-      newAction.dauer = actionDauer;
-      newAction.verbrauchProZeit = verbrauchProZeit;
+      newAction.dauer = actionForm.dauer;
+      newAction.verbrauchProZeit = actionForm.verbrauchProZeit;
     }
 
-    if (actionType === "Flexibel") {
-      if (!gesamtVerbrauch || !maxVerbrauchProZeit) {
+    if (actionForm.typ === "Flexibel") {
+      if (!actionForm.gesamtVerbrauch || !actionForm.maxVerbrauchProZeit) {
         setErrorMessage("Alle Felder ausfüllen");
         return;
-        }
-        newAction.gesamtVerbrauch = gesamtVerbrauch;
-        newAction.maxVerbrauchProZeit = maxVerbrauchProZeit;
+      }
+      newAction.gesamtVerbrauch = actionForm.gesamtVerbrauch;
+      newAction.maxVerbrauchProZeit = actionForm.maxVerbrauchProZeit;
     }
 
     const consumerDevice = {
@@ -156,12 +169,16 @@ function Devices() {
     resetDeviceForm();
     setActions([]);
     setOpenCreateAction(false);
-    setStartZeit("");
-    setEndZeit("");
-    setActionDauer("");
-    setVerbrauchProZeit("");
-    setGesamtVerbrauch("");
-    setMaxVerbrauchProZeit("");
+    
+    setActionForm({
+      typ: "Konstant",
+      startZeit: "",
+      endZeit: "",
+      dauer: "",
+      verbrauchProZeit: "",
+      gesamtVerbrauch: "",
+      maxVerbrauchProZeit: "",
+    });
   }
 
   function toggleCreateDevicePopUp() {
@@ -361,29 +378,29 @@ function Devices() {
           <h3 className="create-action-header">Gerät erstellen: Aktion</h3>
 
           <div className="create-action-inputs">
-            <select value={actionType} onChange={(e) => setActionType(e.target.value)}>
-          <option value="Konstant">Konstant</option>
-          <option value="Flexibel">Flexibel</option>
+            <select name="typ" value={actionForm.typ} onChange={handleActionFormChange}>
+              <option value="Konstant">Konstant</option>
+              <option value="Flexibel">Flexibel</option>
           </select>
 
 
-          <input placeholder="Start-Zeitpunkt" value={startZeit} onChange={(e) => setStartZeit(e.target.value)} />
-          <input placeholder="End-Zeitpunkt" value={endZeit} onChange={(e) => setEndZeit(e.target.value)} />
+          <input name="startZeit" placeholder="Start-Zeitpunkt" value={actionForm.startZeit} onChange={handleActionFormChange} />
+          <input name="endZeit" placeholder="End-Zeitpunkt" value={actionForm.endZeit} onChange={handleActionFormChange} />
 
 
-          {actionType === "Konstant" && (
-          <>
-          <input placeholder="Dauer" value={actionDauer} onChange={(e) => setActionDauer(e.target.value)} />
-          <input placeholder="Verbrauch / Zeit" value={verbrauchProZeit} onChange={(e) => setVerbrauchProZeit(e.target.value)} />
-          </>
+          {actionForm.typ === "Konstant" && (
+            <>
+              <input name="dauer" placeholder="Dauer" value={actionForm.dauer} onChange={handleActionFormChange} />
+              <input name="verbrauchProZeit" placeholder="Verbrauch / Zeit" value={actionForm.verbrauchProZeit} onChange={handleActionFormChange} />
+            </>
           )}
 
 
-          {actionType === "Flexibel" && (
-          <>
-          <input placeholder="Gesamtverbrauch" value={gesamtVerbrauch} onChange={(e) => setGesamtVerbrauch(e.target.value)} />
-          <input placeholder="Max. Verbrauch / Zeit" value={maxVerbrauchProZeit} onChange={(e) => setMaxVerbrauchProZeit(e.target.value)} />
-          </>
+          {actionForm.typ === "Flexibel" && (
+            <>
+              <input name="gesamtVerbrauch" placeholder="Gesamtverbrauch" value={actionForm.gesamtVerbrauch} onChange={handleActionFormChange} />
+              <input name="maxVerbrauchProZeit" placeholder="Max. Verbrauch / Zeit" value={actionForm.maxVerbrauchProZeit} onChange={handleActionFormChange} />
+            </>
           )}
           </div>
           
