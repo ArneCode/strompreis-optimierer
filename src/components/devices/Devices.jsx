@@ -5,78 +5,76 @@ import Device from './Device.jsx';
 
 
 function Devices() {
-  /*const [devices, setDevices] = useState([{
-    typ: 'Erzeuger',
-    name: 'PV-1',
-    nennleistung: 8.5,
-    ausrichtung: "Süd",
-    neigungswinkel: 30
-  }]);*/
     const [devices, setDevices] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
+
+    const [deviceForm, setDeviceForm] = useState({
+      name: "",
+      typ: "Erzeuger",
+      nennleistung: "",
+      neigungswinkel: "",
+      ausrichtung: "",
+      standort: "",
+      leistung: "",
+      dauer: "",
+      flexibilität: "durchlauf",
+      kapazität: ""
+    });
 
     const[errorMessage, setErrorMessage] = useState("");
 
     const [openCreateDevice, setOpenCreateDevice] = useState(false);
     const [openEditDevice, setOpenEditDevice] = useState(false);
 
-    const [name, setName] = useState("");
-    const [nennleistung, setNennleistung] = useState("");
-    const [neigungswinkel, setNeigungswinkel] = useState("");
-    const [ausrichtung, setAusrichtung] = useState("");
-    const [standort, setStandort] = useState("");
-    const [leistung, setLeistung] = useState("");
-    const [dauer, setDauer] = useState("");
-    const [flexibilität, setFlexibilität] = useState("durchlauf");
-    const [kapazität, setKapazität] = useState("");
-
-    const [typ, setTyp] = useState("Erzeuger");
-
     //Action States
-    const [actions, setActions] = useState([]);
-    const [actionType, setActionType] = useState("Konstant");
 
-    const [startZeit, setStartZeit] = useState("");
-    const [endZeit, setEndZeit] = useState("");
-    const [actionDauer, setActionDauer] = useState("");
-    const [verbrauchProZeit, setVerbrauchProZeit] = useState("");
-    const [gesamtVerbrauch, setGesamtVerbrauch] = useState("");
-    const [maxVerbrauchProZeit, setMaxVerbrauchProZeit] = useState("");
+    const [actionForm, setActionForm] = useState({
+      typ: "Konstant",
+      startZeit: "",
+      endZeit: "",
+      dauer: "",
+      verbrauchProZeit: "",
+      gesamtVerbrauch: "",
+      maxVerbrauchProZeit: "",
+    });
+
+    const [actions, setActions] = useState([]);
 
     const [openCreateAction, setOpenCreateAction] = useState(false);
 
-    //const [currentEditDeviceKey, setCurrentEditDeviceKey] = useState("");
+  function handleDeviceFormChange(e) {
+    const {name, value} = e.target;
+    setDeviceForm(prev => ({...prev, [name]: value}));
+  }
 
+  function handleActionFormChange(e) {
+    const { name, value } = e.target;
+    setActionForm(prev => ({...prev, [name]: value}));
+  }
+  
 
   function deleteDevice() {
-      if (editIndex === null) return;
-      const newDevices = devices.filter((_, idx) => idx !== editIndex);
-      setDevices(newDevices);
-      toggleEditDevicePopUp();
-      resetAll();
+    if (editIndex === null) return;
+    const newDevices = devices.filter((_, idx) => idx !== editIndex);
+    setDevices(newDevices);
+    toggleEditDevicePopUp();
+    resetAll();
   }
 
   function addDevice() {
-    /*setDevices([
-      ...devices, {
-        typ: 'Erzeuger',
-        name: 'PV-1',
-        nennleistung: 8.5,
-        ausrichtung: "Süd",
-        neigungswinkel: 30
+      let newDevice = {
+        typ: deviceForm.typ,
+        name: deviceForm.name
       }
-    ]);
-    setOpenCreateDevice(false);*/
 
-      let newDevice = { typ, name };
       let valid = true;
-      if(!name) valid = false;
-      if (typ === "Erzeuger") {
-          if (!nennleistung || !neigungswinkel || !ausrichtung || !standort) valid = false;
-      } else if (typ === "Verbraucher") {
-          if (!leistung || !dauer || !flexibilität) valid = false;
-      } else if (typ === "Speicher") {
-          if (!kapazität) valid = false;
+      if(!deviceForm.name) valid = false;
+      if (deviceForm.typ === "Erzeuger") {
+          if (!deviceForm.nennleistung || !deviceForm.neigungswinkel || !deviceForm.ausrichtung || !deviceForm.standort) valid = false;
+      } else if (deviceForm.typ === "Verbraucher") {
+          if (!deviceForm.leistung || !deviceForm.dauer || !deviceForm.flexibilität) valid = false;
+      } else if (deviceForm.typ === "Speicher") {
+          if (!deviceForm.kapazität) valid = false;
       }
 
       if (!valid) {
@@ -87,58 +85,61 @@ function Devices() {
           return;
       }
 
-      if (typ === "Erzeuger") {
-          newDevice.nennleistung = nennleistung;
-          newDevice.neigungswinkel = neigungswinkel;
-          newDevice.ausrichtung = ausrichtung;
-          newDevice.standort = standort;
+      if (deviceForm.typ === "Erzeuger") {
+          newDevice.nennleistung = deviceForm.nennleistung;
+          newDevice.neigungswinkel = deviceForm.neigungswinkel;
+          newDevice.ausrichtung = deviceForm.ausrichtung;
+          newDevice.standort = deviceForm.standort;
 
-      } else if (typ === "Verbraucher") {
-          newDevice.leistung = leistung;
-          newDevice.dauer = dauer;
-          newDevice.flexibilität = flexibilität;
+      } else if (deviceForm.typ === "Verbraucher") {
+          newDevice.leistung = deviceForm.leistung;
+          newDevice.dauer = deviceForm.dauer;
+          newDevice.flexibilität = deviceForm.flexibilität;
           setOpenCreateDevice(false);
           setOpenCreateAction(true);
           return;
 
-      } else if (typ === "Speicher") {
-          newDevice.kapazität = kapazität;
+      } else if (deviceForm.typ === "Speicher") {
+          newDevice.kapazität = deviceForm.kapazität;
       }
 
       setDevices([...devices, newDevice]);
 
+      resetDeviceForm();
       setOpenCreateDevice(false);
-      setName(""); setNennleistung(""); setNeigungswinkel(""); setAusrichtung(""); setStandort("");
-      setLeistung(""); setDauer(""); setFlexibilität("durchlauf"); setKapazität("");
-
   }
 
   function addAction() {
-    let newAction = {type: actionType, startZeit, endZeit};
+    //let newAction = {type: actionType, startZeit, endZeit};
+    let newAction = {
+      typ: actionForm.typ,
+      startZeit: actionForm.startZeit,
+      endZeit: actionForm.endZeit,
+    }
 
-    if (actionType === "Konstant") {
-      if (!actionDauer || !verbrauchProZeit) {
+    if (actionForm.typ === "Konstant") {
+      if (!actionForm.dauer || !actionForm.verbrauchProZeit) {
         setErrorMessage("Alle Felder ausfüllen");
         return;
       }
-      newAction.dauer = actionDauer;
-      newAction.verbrauchProZeit = verbrauchProZeit;
+      newAction.dauer = actionForm.dauer;
+      newAction.verbrauchProZeit = actionForm.verbrauchProZeit;
     }
 
-    if (actionType === "Flexibel") {
-      if (!gesamtVerbrauch || !maxVerbrauchProZeit) {
+    if (actionForm.typ === "Flexibel") {
+      if (!actionForm.gesamtVerbrauch || !actionForm.maxVerbrauchProZeit) {
         setErrorMessage("Alle Felder ausfüllen");
         return;
-        }
-        newAction.gesamtVerbrauch = gesamtVerbrauch;
-        newAction.maxVerbrauchProZeit = maxVerbrauchProZeit;
+      }
+      newAction.gesamtVerbrauch = actionForm.gesamtVerbrauch;
+      newAction.maxVerbrauchProZeit = actionForm.maxVerbrauchProZeit;
     }
 
     const consumerDevice = {
       typ: "Verbraucher",
-      name,
-      leistung,
-      dauer,
+      name: deviceForm.name,
+      leistung: deviceForm.leistung,
+      dauer: deviceForm.dauer,
       actions: [...actions, newAction]
     };
 
@@ -148,8 +149,19 @@ function Devices() {
   }
 
   function resetDeviceForm() {
-    setName("");
-    setTyp("Erzeuger");
+    setDeviceForm({
+      name: "",
+      typ: "Erzeuger",
+      nennleistung: "",
+      neigungswinkel: "",
+      ausrichtung: "",
+      standort: "",
+      leistung: "",
+      dauer: "",
+      flexibilität: "durchlauf",
+      kapazität: ""
+    });
+
     setOpenCreateDevice(false);
   }
 
@@ -157,15 +169,16 @@ function Devices() {
     resetDeviceForm();
     setActions([]);
     setOpenCreateAction(false);
-    setStartZeit("");
-    setEndZeit("");
-    setActionDauer("");
-    setVerbrauchProZeit("");
-    setGesamtVerbrauch("");
-    setMaxVerbrauchProZeit("");
-
-    setName(""); setNennleistung(""); setNeigungswinkel(""); setAusrichtung(""); setStandort("");
-      setLeistung(""); setDauer(""); setFlexibilität("durchlauf"); setKapazität("");
+    
+    setActionForm({
+      typ: "Konstant",
+      startZeit: "",
+      endZeit: "",
+      dauer: "",
+      verbrauchProZeit: "",
+      gesamtVerbrauch: "",
+      maxVerbrauchProZeit: "",
+    });
   }
 
   function toggleCreateDevicePopUp() {
@@ -177,29 +190,27 @@ function Devices() {
   }
 
   function loadEditDevice(key) {
-    //setCurrentEditDeviceKey(key);
     setEditIndex(key);
 
     const device = devices[key];
 
-    setName(device.name);
-    setTyp(device.typ);
+    setDeviceForm({
+      name: device.name || "",
+      typ: device.typ || "Erzeuger",
 
-    if (device.typ === "Erzeuger") {
-      setNennleistung(device.nennleistung);
-      setNeigungswinkel(device.neigungswinkel);
-      setAusrichtung(device.ausrichtung);
-      setStandort(device.standort);
+      nennleistung: device.nennleistung || "",
+      neigungswinkel: device.neigungswinkel || "",
+      ausrichtung: device.ausrichtung || "",
+      standort: device.standort || "",
 
-    } else if (device.typ === "Verbraucher") {
-      setLeistung(device.leistung);
-      setDauer(device.dauer);
+      leistung: device.leistung || "",
+      dauer: device.dauer || "",
+      flexibilität: device.flexibilität || "durchlauf",
 
-    } else if (device.typ === "Speicher") {
-      setKapazität(device.kapazität);
-
-    }
+      kapazität: device.kapazität || "",
+    });
   }
+
 
   function editDevice() {
     if (editIndex === null) return;
@@ -208,15 +219,15 @@ function Devices() {
 
     updatedDevices[editIndex] = {
       ...updatedDevices[editIndex],
-      name: name,
-      typ: typ,
-      nennleistung: nennleistung,
-      neigungswinkel: neigungswinkel,
-      ausrichtung: ausrichtung,
-      standort: standort,
-      leistung: leistung,
-      dauer: dauer,
-      kapazität: kapazität
+      name: deviceForm.name,
+      typ: deviceForm.typ,
+      nennleistung: deviceForm.nennleistung,
+      neigungswinkel: deviceForm.neigungswinkel,
+      ausrichtung: deviceForm.ausrichtung,
+      standort: deviceForm.standort,
+      leistung: deviceForm.leistung,
+      dauer: deviceForm.dauer,
+      kapazität: deviceForm.kapazität
     }
 
     setDevices(updatedDevices);
@@ -236,36 +247,36 @@ function Devices() {
             <div
               className="device-popup-inputs"
             >
-                <select value={typ} onChange={(e) => setTyp(e.target.value)}>
+                <select name="typ" value={deviceForm.typ} onChange={handleDeviceFormChange}>
                     <option value="Erzeuger">Erzeuger</option>
                     <option value="Verbraucher">Verbraucher</option>
                     <option value="Speicher">Speicher</option>
                 </select>
-                <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                <input name="name" placeholder="Name" value={deviceForm.name} onChange={handleDeviceFormChange} />
 
 
-                {typ === "Erzeuger" && (
+                {deviceForm.typ === "Erzeuger" && (
                     <>
-                        <input placeholder="Nennleistung" value={nennleistung} onChange={(e) => setNennleistung(e.target.value)} />
-                        <input placeholder="Neigungswinkel" value={neigungswinkel} onChange={(e) => setNeigungswinkel(e.target.value)} />
-                        <input placeholder="Ausrichtung" value={ausrichtung} onChange={(e) => setAusrichtung(e.target.value)} />
-                        <input placeholder="Standort" value={standort} onChange={(e) => setStandort(e.target.value)} />
+                        <input name="nennleistung" placeholder="Nennleistung" value={deviceForm.nennleistung} onChange={handleDeviceFormChange} />
+                        <input name="neigungswinkel" placeholder="Neigungswinkel" value={deviceForm.neigungswinkel} onChange={handleDeviceFormChange} />
+                        <input name="ausrichtung" placeholder="Ausrichtung" value={deviceForm.ausrichtung} onChange={handleDeviceFormChange} />
+                        <input name="standort" placeholder="Standort" value={deviceForm.standort} onChange={handleDeviceFormChange} />
                     </>
                 )}
 
-                {typ === "Verbraucher" && (
+                {deviceForm.typ === "Verbraucher" && (
                     <>
-                        <input placeholder="Leistung" value={leistung} onChange={(e) => setLeistung(e.target.value)} />
-                        <input placeholder="Dauer (min)" value={dauer} onChange={(e) => setDauer(e.target.value)} />
-                        <select value={flexibilität} onChange={(e) => setFlexibilität(e.target.value)}>
+                        <input name="leistung" placeholder="Leistung" value={deviceForm.leistung} onChange={handleDeviceFormChange} />
+                        <input name="dauer" placeholder="Dauer (min)" value={deviceForm.dauer} onChange={handleDeviceFormChange} />
+                        <select name="flexibilität" value={deviceForm.flexibilität} onChange={handleDeviceFormChange}>
                             <option value="durchlauf">durchlaufen</option>
                             <option value="flexibel">flexibel</option>
                         </select>
                     </>
                 )}
 
-                {typ === "Speicher" && (
-                    <input placeholder="Kapazität" value={kapazität} onChange={(e) => setKapazität(e.target.value)} />
+                {deviceForm.typ === "Speicher" && (
+                    <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={handleDeviceFormChange} />
                 )}
 
           </div>
@@ -307,36 +318,36 @@ function Devices() {
             <div
               className="device-popup-inputs"
             >
-                <select value={typ} onChange={(e) => setTyp(e.target.value)}>
+                <select name="typ" value={deviceForm.typ} onChange={handleDeviceFormChange}>
                     <option value="Erzeuger">Erzeuger</option>
                     <option value="Verbraucher">Verbraucher</option>
                     <option value="Speicher">Speicher</option>
                 </select>
-                <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                <input name="name" placeholder="Name" value={deviceForm.name} onChange={handleDeviceFormChange} />
 
 
-                {typ === "Erzeuger" && (
+                {deviceForm.typ === "Erzeuger" && (
                     <>
-                        <input placeholder="Nennleistung" value={nennleistung} onChange={(e) => setNennleistung(e.target.value)} />
-                        <input placeholder="Neigungswinkel" value={neigungswinkel} onChange={(e) => setNeigungswinkel(e.target.value)} />
-                        <input placeholder="Ausrichtung" value={ausrichtung} onChange={(e) => setAusrichtung(e.target.value)} />
-                        <input placeholder="Standort" value={standort} onChange={(e) => setStandort(e.target.value)} />
+                        <input name="nennleistung" placeholder="Nennleistung" value={deviceForm.nennleistung} onChange={handleDeviceFormChange} />
+                        <input name="neigungswinkel" placeholder="Neigungswinkel" value={deviceForm.neigungswinkel} onChange={handleDeviceFormChange} />
+                        <input name="ausrichtung" placeholder="Ausrichtung" value={deviceForm.ausrichtung} onChange={handleDeviceFormChange} />
+                        <input name="standort" placeholder="Standort" value={deviceForm.standort} onChange={handleDeviceFormChange} />
                     </>
                 )}
 
-                {typ === "Verbraucher" && (
+                {deviceForm.typ === "Verbraucher" && (
                     <>
-                        <input placeholder="Leistung" value={leistung} onChange={(e) => setLeistung(e.target.value)} />
-                        <input placeholder="Dauer (min)" value={dauer} onChange={(e) => setDauer(e.target.value)} />
-                        <select value={flexibilität} onChange={(e) => setFlexibilität(e.target.value)}>
+                        <input name="leistung" placeholder="Leistung" value={deviceForm.leistung} onChange={handleDeviceFormChange} />
+                        <input name="dauer" placeholder="Dauer (min)" value={deviceForm.dauer} onChange={handleDeviceFormChange} />
+                        <select name="flexibilität" value={deviceForm.flexibilität} onChange={handleDeviceFormChange}>
                             <option value="durchlauf">durchlaufen</option>
                             <option value="flexibel">flexibel</option>
                         </select>
                     </>
                 )}
 
-                {typ === "Speicher" && (
-                    <input placeholder="Kapazität" value={kapazität} onChange={(e) => setKapazität(e.target.value)} />
+                {deviceForm.typ === "Speicher" && (
+                    <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={handleDeviceFormChange} />
                 )}
 
           </div>
@@ -367,29 +378,29 @@ function Devices() {
           <h3 className="create-action-header">Gerät erstellen: Aktion</h3>
 
           <div className="create-action-inputs">
-            <select value={actionType} onChange={(e) => setActionType(e.target.value)}>
-          <option value="Konstant">Konstant</option>
-          <option value="Flexibel">Flexibel</option>
+            <select name="typ" value={actionForm.typ} onChange={handleActionFormChange}>
+              <option value="Konstant">Konstant</option>
+              <option value="Flexibel">Flexibel</option>
           </select>
 
 
-          <input placeholder="Start-Zeitpunkt" value={startZeit} onChange={(e) => setStartZeit(e.target.value)} />
-          <input placeholder="End-Zeitpunkt" value={endZeit} onChange={(e) => setEndZeit(e.target.value)} />
+          <input name="startZeit" placeholder="Start-Zeitpunkt" value={actionForm.startZeit} onChange={handleActionFormChange} />
+          <input name="endZeit" placeholder="End-Zeitpunkt" value={actionForm.endZeit} onChange={handleActionFormChange} />
 
 
-          {actionType === "Konstant" && (
-          <>
-          <input placeholder="Dauer" value={actionDauer} onChange={(e) => setActionDauer(e.target.value)} />
-          <input placeholder="Verbrauch / Zeit" value={verbrauchProZeit} onChange={(e) => setVerbrauchProZeit(e.target.value)} />
-          </>
+          {actionForm.typ === "Konstant" && (
+            <>
+              <input name="dauer" placeholder="Dauer" value={actionForm.dauer} onChange={handleActionFormChange} />
+              <input name="verbrauchProZeit" placeholder="Verbrauch / Zeit" value={actionForm.verbrauchProZeit} onChange={handleActionFormChange} />
+            </>
           )}
 
 
-          {actionType === "Flexibel" && (
-          <>
-          <input placeholder="Gesamtverbrauch" value={gesamtVerbrauch} onChange={(e) => setGesamtVerbrauch(e.target.value)} />
-          <input placeholder="Max. Verbrauch / Zeit" value={maxVerbrauchProZeit} onChange={(e) => setMaxVerbrauchProZeit(e.target.value)} />
-          </>
+          {actionForm.typ === "Flexibel" && (
+            <>
+              <input name="gesamtVerbrauch" placeholder="Gesamtverbrauch" value={actionForm.gesamtVerbrauch} onChange={handleActionFormChange} />
+              <input name="maxVerbrauchProZeit" placeholder="Max. Verbrauch / Zeit" value={actionForm.maxVerbrauchProZeit} onChange={handleActionFormChange} />
+            </>
           )}
           </div>
           
