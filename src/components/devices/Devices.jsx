@@ -1,11 +1,12 @@
 import {useState} from 'react';
 import './Devices.css';
 import Device from './Device.jsx';
+import DeviceForm from './DeviceForm';
+import ActionForm from './ActionForm';
 
 
 
 function Devices({devices, setDevices}) {
-    //const [devices, setDevices] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
 
     const [deviceForm, setDeviceForm] = useState({
@@ -247,38 +248,7 @@ function Devices({devices, setDevices}) {
             <div
               className="device-popup-inputs"
             >
-                <select name="typ" value={deviceForm.typ} onChange={handleDeviceFormChange}>
-                    <option value="Erzeuger">Erzeuger</option>
-                    <option value="Verbraucher">Verbraucher</option>
-                    <option value="Speicher">Speicher</option>
-                </select>
-                <input name="name" placeholder="Name" value={deviceForm.name} onChange={handleDeviceFormChange} />
-
-
-                {deviceForm.typ === "Erzeuger" && (
-                    <>
-                        <input name="nennleistung" placeholder="Nennleistung" value={deviceForm.nennleistung} onChange={handleDeviceFormChange} />
-                        <input name="neigungswinkel" placeholder="Neigungswinkel" value={deviceForm.neigungswinkel} onChange={handleDeviceFormChange} />
-                        <input name="ausrichtung" placeholder="Ausrichtung" value={deviceForm.ausrichtung} onChange={handleDeviceFormChange} />
-                        <input name="standort" placeholder="Standort" value={deviceForm.standort} onChange={handleDeviceFormChange} />
-                    </>
-                )}
-
-                {deviceForm.typ === "Verbraucher" && (
-                    <>
-                        <input name="leistung" placeholder="Leistung" value={deviceForm.leistung} onChange={handleDeviceFormChange} />
-                        <input name="dauer" placeholder="Dauer (min)" value={deviceForm.dauer} onChange={handleDeviceFormChange} />
-                        <select name="flexibilität" value={deviceForm.flexibilität} onChange={handleDeviceFormChange}>
-                            <option value="durchlauf">durchlaufen</option>
-                            <option value="flexibel">flexibel</option>
-                        </select>
-                    </>
-                )}
-
-                {deviceForm.typ === "Speicher" && (
-                    <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={handleDeviceFormChange} />
-                )}
-
+                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} />
           </div>
             <div className="device-popup-buttons">
               <button className="devices-edit-delete-button"
@@ -318,38 +288,7 @@ function Devices({devices, setDevices}) {
             <div
               className="device-popup-inputs"
             >
-                <select name="typ" value={deviceForm.typ} onChange={handleDeviceFormChange}>
-                    <option value="Erzeuger">Erzeuger</option>
-                    <option value="Verbraucher">Verbraucher</option>
-                    <option value="Speicher">Speicher</option>
-                </select>
-                <input name="name" placeholder="Name" value={deviceForm.name} onChange={handleDeviceFormChange} />
-
-
-                {deviceForm.typ === "Erzeuger" && (
-                    <>
-                        <input name="nennleistung" placeholder="Nennleistung" value={deviceForm.nennleistung} onChange={handleDeviceFormChange} />
-                        <input name="neigungswinkel" placeholder="Neigungswinkel" value={deviceForm.neigungswinkel} onChange={handleDeviceFormChange} />
-                        <input name="ausrichtung" placeholder="Ausrichtung" value={deviceForm.ausrichtung} onChange={handleDeviceFormChange} />
-                        <input name="standort" placeholder="Standort" value={deviceForm.standort} onChange={handleDeviceFormChange} />
-                    </>
-                )}
-
-                {deviceForm.typ === "Verbraucher" && (
-                    <>
-                        <input name="leistung" placeholder="Leistung" value={deviceForm.leistung} onChange={handleDeviceFormChange} />
-                        <input name="dauer" placeholder="Dauer (min)" value={deviceForm.dauer} onChange={handleDeviceFormChange} />
-                        <select name="flexibilität" value={deviceForm.flexibilität} onChange={handleDeviceFormChange}>
-                            <option value="durchlauf">durchlaufen</option>
-                            <option value="flexibel">flexibel</option>
-                        </select>
-                    </>
-                )}
-
-                {deviceForm.typ === "Speicher" && (
-                    <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={handleDeviceFormChange} />
-                )}
-
+                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} />
           </div>
             <div className="device-popup-buttons">
               <button
@@ -378,33 +317,8 @@ function Devices({devices, setDevices}) {
           <h3 className="create-action-header">Gerät erstellen: Aktion</h3>
 
           <div className="create-action-inputs">
-            <select name="typ" value={actionForm.typ} onChange={handleActionFormChange}>
-              <option value="Konstant">Konstant</option>
-              <option value="Flexibel">Flexibel</option>
-          </select>
-
-
-          <input name="startZeit" placeholder="Start-Zeitpunkt" value={actionForm.startZeit} onChange={handleActionFormChange} />
-          <input name="endZeit" placeholder="End-Zeitpunkt" value={actionForm.endZeit} onChange={handleActionFormChange} />
-
-
-          {actionForm.typ === "Konstant" && (
-            <>
-              <input name="dauer" placeholder="Dauer" value={actionForm.dauer} onChange={handleActionFormChange} />
-              <input name="verbrauchProZeit" placeholder="Verbrauch / Zeit" value={actionForm.verbrauchProZeit} onChange={handleActionFormChange} />
-            </>
-          )}
-
-
-          {actionForm.typ === "Flexibel" && (
-            <>
-              <input name="gesamtVerbrauch" placeholder="Gesamtverbrauch" value={actionForm.gesamtVerbrauch} onChange={handleActionFormChange} />
-              <input name="maxVerbrauchProZeit" placeholder="Max. Verbrauch / Zeit" value={actionForm.maxVerbrauchProZeit} onChange={handleActionFormChange} />
-            </>
-          )}
+            <ActionForm actionForm={actionForm} onChange={handleActionFormChange} />
           </div>
-          
-          
 
           <div className="create-action-buttons">
             <button onClick={resetAll}>Abbrechen</button>
@@ -413,8 +327,6 @@ function Devices({devices, setDevices}) {
           </div>
         </div>
       )}
-
-      
 
       <div className="devices-head">
         <p>Geräte</p>
