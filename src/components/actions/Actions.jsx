@@ -98,7 +98,7 @@ function Actions({devices, setDevices}) {
             {openCreateAction && (
                 <div className="create-action-popup">
                     <div className="action-popup-window">
-                        <p className="action-head">Aktion erstellen</p>
+                        <p className="create-action-head">Aktion erstellen</p>
                         <div className="action-popup-inputs">
                             <select
                                 className="action-device-select"
@@ -113,14 +113,14 @@ function Actions({devices, setDevices}) {
                                 ))}
                             </select>
 
-                            <label>Startzeit:</label>
+                            <p>Startzeit:</p>
                             <input
                                 type="time"
                                 value={actionForm.startTime}
                                 onChange={(e) => setActionForm({ ...actionForm, startTime: e.target.value })}
                             />
 
-                            <label>Endzeit:</label>
+                            <p>Endzeit:</p>
                             <input
                                 type="time"
                                 value={actionForm.endTime}
@@ -156,19 +156,19 @@ function Actions({devices, setDevices}) {
 
             {openEditAction && editIndex.deviceIndex !== null && editIndex.actionIndex !== null && (
                 <div className="edit-action-popup">
-                    <div className="action-popup-window">
-                        <p className="action-edit-head">Aktion bearbeiten</p>
+                    <div className="edit-action-popup-window">
+                        <p className="edit-action-head">Aktion bearbeiten</p>
                         <p className="action-edit-name">{devices[editIndex.deviceIndex]?.name}</p>
 
                         <div className="action-popup-inputs">
-                            <label>Start-Zeitpunkt:</label>
+                            <p>Start-Zeitpunkt:</p>
                             <input
                                 type="time"
                                 value={actionForm.startTime}
                                 onChange={(e) => setActionForm({ ...actionForm, startTime: e.target.value })}
                             />
 
-                            <label>End-Zeitpunkt:</label>
+                            <p>End-Zeitpunkt:</p>
                             <input
                                 type="time"
                                 value={actionForm.endTime}
