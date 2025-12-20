@@ -157,8 +157,8 @@ function Actions({devices, setDevices}) {
             {openEditAction && editIndex.deviceIndex !== null && editIndex.actionIndex !== null && (
                 <div className="edit-action-popup">
                     <div className="action-popup-window">
-                        <p className="action-head">Aktion bearbeiten</p>
-                        <p className="action-head">{devices[editIndex.deviceIndex]?.name}</p>
+                        <p className="action-edit-head">Aktion bearbeiten</p>
+                        <p className="action-edit-name">{devices[editIndex.deviceIndex]?.name}</p>
 
                         <div className="action-popup-inputs">
                             <label>Start-Zeitpunkt:</label>
@@ -177,11 +177,11 @@ function Actions({devices, setDevices}) {
                         </div>
 
                         <div className="action-popup-buttons">
-                            <button className="actions-save-button" onClick={editAction}>
-                                Speichern
-                            </button>
                             <button className="actions-delete-button" onClick={removeAction}>
                                 Löschen
+                            </button>
+                            <button className="actions-save-button" onClick={editAction}>
+                                Speichern
                             </button>
                         </div>
                     </div>
