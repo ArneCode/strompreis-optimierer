@@ -37,6 +37,8 @@
   margin-left: 10px;
   margin-right: 10px;
   border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .sidebar-row:hover {
@@ -44,5 +46,16 @@
 }
 
 .sidebar-list #active {
+  background-color: rgb(108, 182, 255);
+}
+
+.sidebar-row:visited,
+.sidebar-row:hover,
+.sidebar-row:active {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sidebar-row.active {
   background-color: rgb(108, 182, 255);
 }
