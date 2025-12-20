@@ -140,10 +140,11 @@ function Devices() {
       name: deviceForm.name,
       leistung: deviceForm.leistung,
       dauer: deviceForm.dauer,
-      actions: [...actions, newAction]
+      actions: [newAction]
     };
 
     setDevices([...devices, consumerDevice]);
+    setActions([...actions, newAction]);
 
     resetAll();
   }
@@ -167,7 +168,6 @@ function Devices() {
 
   function resetAll() {
     resetDeviceForm();
-    setActions([]);
     setOpenCreateAction(false);
     
     setActionForm({
