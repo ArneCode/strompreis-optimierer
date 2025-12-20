@@ -7,9 +7,9 @@ import ActionForm from './ActionForm';
 
 
 function Devices({devices, setDevices}) {
-    const [editIndex, setEditIndex] = useState(null);
+    const [actions, setActions] = useState([]);
 
-    const [deviceForm, setDeviceForm] = useState({
+    const INITIAL_DEVICE_FORM = {
       name: "",
       typ: "Erzeuger",
       nennleistung: "",
@@ -20,27 +20,32 @@ function Devices({devices, setDevices}) {
       dauer: "",
       flexibilität: "durchlauf",
       kapazität: ""
-    });
+    };
 
-    const[errorMessage, setErrorMessage] = useState("");
-
-    const [openCreateDevice, setOpenCreateDevice] = useState(false);
-    const [openEditDevice, setOpenEditDevice] = useState(false);
-
-    //Action States
-
-    const [actionForm, setActionForm] = useState({
+    const INITIAL_ACTION_FORM = {
       typ: "Konstant",
       startZeit: "",
       endZeit: "",
       dauer: "",
       verbrauchProZeit: "",
       gesamtVerbrauch: "",
-      maxVerbrauchProZeit: "",
-    });
+      maxVerbrauchProZeit: ""
+    };
 
-    const [actions, setActions] = useState([]);
+    const REQUIRED_FIELDS = {
+      Erzeuger: ["nennleistung", "neigungswinkel", "ausrichtung", "standort"],
+      Verbraucher: ["leistung", "dauer", "flexibilität"],
+      Speicher: ["kapazität"]
+    };
 
+    const [deviceForm, setDeviceForm] = useState(INITIAL_DEVICE_FORM);
+    const [actionForm, setActionForm] = useState(INITIAL_ACTION_FORM);
+
+    const[errorMessage, setErrorMessage] = useState("");
+    const [editIndex, setEditIndex] = useState(null);
+
+    const [openCreateDevice, setOpenCreateDevice] = useState(false);
+    const [openEditDevice, setOpenEditDevice] = useState(false);
     const [openCreateAction, setOpenCreateAction] = useState(false);
 
   function handleDeviceFormChange(e) {
@@ -51,6 +56,14 @@ function Devices({devices, setDevices}) {
   function handleActionFormChange(e) {
     const { name, value } = e.target;
     setActionForm(prev => ({...prev, [name]: value}));
+  }
+
+  function isValidDevice(form) {
+    if (!form.name) return false;
+    
+    return REQUIRED_FIELDS[form.typ].every(
+      field => form[field]
+    );
   }
   
 
@@ -68,22 +81,12 @@ function Devices({devices, setDevices}) {
         name: deviceForm.name
       }
 
-      let valid = true;
-      if(!deviceForm.name) valid = false;
-      if (deviceForm.typ === "Erzeuger") {
-          if (!deviceForm.nennleistung || !deviceForm.neigungswinkel || !deviceForm.ausrichtung || !deviceForm.standort) valid = false;
-      } else if (deviceForm.typ === "Verbraucher") {
-          if (!deviceForm.leistung || !deviceForm.dauer || !deviceForm.flexibilität) valid = false;
-      } else if (deviceForm.typ === "Speicher") {
-          if (!deviceForm.kapazität) valid = false;
-      }
-
-      if (!valid) {
-          setErrorMessage("Bitte fülle alle Felder aus!");
-          setTimeout(() => {
-              setErrorMessage("");
-          }, 3000)
-          return;
+      if (!isValidDevice(deviceForm)) {
+        setErrorMessage("Bitte fülle alle Felder aus!");
+        setTimeout(() => {
+          setErrorMessage("");
+        }, 3000);
+        return;
       }
 
       if (deviceForm.typ === "Erzeuger") {
@@ -151,19 +154,7 @@ function Devices({devices, setDevices}) {
   }
 
   function resetDeviceForm() {
-    setDeviceForm({
-      name: "",
-      typ: "Erzeuger",
-      nennleistung: "",
-      neigungswinkel: "",
-      ausrichtung: "",
-      standort: "",
-      leistung: "",
-      dauer: "",
-      flexibilität: "durchlauf",
-      kapazität: ""
-    });
-
+    setDeviceForm(INITIAL_DEVICE_FORM);
     setOpenCreateDevice(false);
   }
 
@@ -171,15 +162,7 @@ function Devices({devices, setDevices}) {
     resetDeviceForm();
     setOpenCreateAction(false);
     
-    setActionForm({
-      typ: "Konstant",
-      startZeit: "",
-      endZeit: "",
-      dauer: "",
-      verbrauchProZeit: "",
-      gesamtVerbrauch: "",
-      maxVerbrauchProZeit: "",
-    });
+    setActionForm(INITIAL_ACTION_FORM);
   }
 
   function toggleCreateDevicePopUp() {
