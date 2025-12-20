@@ -106,12 +106,16 @@ function Actions({devices, setDevices}) {
                                 onChange={(e) => setActionForm({ ...actionForm, deviceName: e.target.value })}
                             >
                                 <option value="">-- Gerät auswählen --</option>
-                                {devices.map((device, idx) => (
-                                    <option key={idx} value={device.name}>
-                                        {device.name}
-                                    </option>
-                                ))}
+                                {devices
+                                    .filter(device => device.typ === "Verbraucher")
+                                    .map((device, idx) => (
+                                        <option key={idx} value={device.name}>
+                                            {device.name}
+                                        </option>
+                                    ))}
+
                             </select>
+
 
                             <p>Startzeit:</p>
                             <input

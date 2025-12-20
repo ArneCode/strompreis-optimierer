@@ -47,7 +47,7 @@ function App() {
                 />
                 <Route 
                   path="/einstellungen"
-                  element={<Settings />}
+                  element={<Settings devices={devices} setDevices={setDevices} />}
                 />
               </Routes>
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import './Settings.css';
 
-function Settings() {
+function Settings({devices, setDevices}) {
     const [openReset, setOpenReset] = useState(false);
 
     function toggleResetPopUp() {
@@ -9,7 +9,7 @@ function Settings() {
     }
 
     function handleReset() {
-        console.log("Haushalt wurde zurückgesetzt!");
+        setDevices([]);
         setOpenReset(false);
     }
 
