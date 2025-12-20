@@ -3,7 +3,7 @@ import Devices from './components/devices/Devices.jsx';
 import Plan from './components/plan/Plan.jsx';
 import Settings from './components/settings/Settings.jsx';
 import Actions from './components/actions/Actions.jsx';
-import './App.css'
+import './styles/App.css'
 import {useState} from "react";
 import { BrowserRouter, Routes, Route} from "react-router-dom";
 

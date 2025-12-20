@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import './Devices.css';
+import '../../styles/components/Devices.css';
 import Device from './Device.jsx';
 import DeviceForm from './DeviceForm';
 import ActionForm from './ActionForm';

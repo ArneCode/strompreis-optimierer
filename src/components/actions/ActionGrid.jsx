@@ -1,5 +1,5 @@
 import Action from "./Action";
-import "./Actions.css";
+import "../../styles/components/Actions.css";
 
 function ActionGrid({ devices, onEdit }) {
     return (

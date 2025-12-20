@@ -1,4 +1,4 @@
-import './Sidebar.css';
+import '../styles/components/Sidebar.css';
 import { SidebarData, SidebarSettings } from './SidebarData.jsx';
 import { NavLink } from "react-router-dom";
 

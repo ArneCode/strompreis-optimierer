@@ -1,4 +1,4 @@
-import "./Actions.css";
+import "../../styles/components/Actions.css";
 import { useState } from "react";
 import ActionGrid from "./ActionGrid";
 

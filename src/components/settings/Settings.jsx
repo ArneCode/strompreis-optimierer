@@ -1,5 +1,5 @@
 import { useState } from "react";
-import './Settings.css';
+import '../../styles/components/Settings.css';
 
 function Settings({devices, setDevices}) {
     const [openReset, setOpenReset] = useState(false);

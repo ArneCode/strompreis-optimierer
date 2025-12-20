@@ -1,6 +1,6 @@
 import {Gantt, Willow} from '@svar-ui/react-gantt';
 import '@svar-ui/react-gantt/all.css'
-import './Plan.css';
+import '../../styles/components/Plan.css';
 
 const tasks = [
   {

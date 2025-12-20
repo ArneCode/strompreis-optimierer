@@ -1,5 +1,5 @@
-import "./Actions.css";
-import "./Actions.css";
+import "../../styles/components/Actions.css";
+import "../../styles/components/Actions.css";
 
 function Action({ name, startTime, endTime }) {
     return (
