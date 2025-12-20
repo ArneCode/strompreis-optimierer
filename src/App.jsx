@@ -10,6 +10,7 @@ function App() {
     const [devices, setDevices] = useState([
         {
             name: "Waschmaschine",
+            typ: "Verbraucher",
             actions: [
                 { startTime: "10:00", endTime: "10:00" },
                 { startTime: "10:00", endTime: "12:00" },
@@ -17,6 +18,7 @@ function App() {
         },
         {
             name: "E-auto",
+            typ: "Verbraucher",
             actions: [
                 { startTime: "10:00", endTime: "10:00" },
             ],
@@ -28,7 +30,7 @@ function App() {
     <div className="app">
       <Sidebar />
       <div className="main-section">
-          {window.location.pathname === '/geraete' ? <Devices /> : <></>}
+          {window.location.pathname === '/geraete' ? <Devices devices={devices} setDevices={setDevices} /> : <></>}
           {window.location.pathname === '/aktionen' ? <Actions devices={devices} setDevices={setDevices} /> : <></>}
           {window.location.pathname === '/ablaufplan' ? <Plan /> : <></>}
           {window.location.pathname === '/einstellungen' ? <Settings /> : <></>}

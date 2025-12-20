@@ -4,8 +4,8 @@ import Device from './Device.jsx';
 
 
 
-function Devices() {
-    const [devices, setDevices] = useState([]);
+function Devices({devices, setDevices}) {
+    //const [devices, setDevices] = useState([]);
     const [editIndex, setEditIndex] = useState(null);
 
     const [deviceForm, setDeviceForm] = useState({
