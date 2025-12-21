@@ -8,6 +8,7 @@ import ActionForm from './ActionForm';
 
 function Devices({devices, setDevices}) {
     const [actions, setActions] = useState([]);
+    const [deviceErrors, setDeviceErrors] = useState({});
 
     const INITIAL_DEVICE_FORM = {
       name: "",
@@ -32,7 +33,7 @@ function Devices({devices, setDevices}) {
       maxVerbrauchProZeit: ""
     };
 
-    const REQUIRED_FIELDS = {
+    const DEVICE_REQUIRED_FIELDS = {
       Erzeuger: ["nennleistung", "neigungswinkel", "ausrichtung", "standort"],
       Verbraucher: ["leistung", "dauer", "flexibilität"],
       Speicher: ["kapazität"]
@@ -50,7 +51,9 @@ function Devices({devices, setDevices}) {
 
   function handleDeviceFormChange(e) {
     const {name, value} = e.target;
+
     setDeviceForm(prev => ({...prev, [name]: value}));
+    setDeviceErrors(prev => ({ ...prev, [name]: false}));
   }
 
   function handleActionFormChange(e) {
@@ -58,12 +61,30 @@ function Devices({devices, setDevices}) {
     setActionForm(prev => ({...prev, [name]: value}));
   }
 
+  /*
   function isValidDevice(form) {
     if (!form.name) return false;
     
     return REQUIRED_FIELDS[form.typ].every(
       field => form[field]
     );
+  }
+  */
+
+  function validateDevice(form) {
+    const errors = {};
+
+    if (!form.name) {
+      errors.name = true;
+    }
+
+    DEVICE_REQUIRED_FIELDS[form.typ].forEach(field => {
+      if (!form[field]) {
+        errors[field] = true;
+      }
+    });
+
+    return errors;
   }
   
 
@@ -81,6 +102,18 @@ function Devices({devices, setDevices}) {
         name: deviceForm.name
       }
 
+      const errors = validateDevice(deviceForm);
+
+      if (Object.keys(errors).length > 0) {
+        setDeviceErrors(errors);
+        setErrorMessage("Bitte fülle alle Felder aus!");
+        setTimeout(() => {
+          setErrorMessage("");
+        }, 3000);
+        return;
+      }
+
+      /*
       if (!isValidDevice(deviceForm)) {
         setErrorMessage("Bitte fülle alle Felder aus!");
         setTimeout(() => {
@@ -88,6 +121,7 @@ function Devices({devices, setDevices}) {
         }, 3000);
         return;
       }
+      */
 
       if (deviceForm.typ === "Erzeuger") {
           newDevice.nennleistung = deviceForm.nennleistung;
@@ -108,6 +142,7 @@ function Devices({devices, setDevices}) {
       }
 
       setDevices([...devices, newDevice]);
+      setDeviceErrors({});
 
       resetDeviceForm();
       setOpenCreateDevice(false);
@@ -231,7 +266,7 @@ function Devices({devices, setDevices}) {
             <div
               className="device-popup-inputs"
             >
-                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} />
+                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} errors={deviceErrors} />
           </div>
             <div className="device-popup-buttons">
               <button className="devices-edit-delete-button"
@@ -271,7 +306,7 @@ function Devices({devices, setDevices}) {
             <div
               className="device-popup-inputs"
             >
-                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} />
+                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} errors={deviceErrors}/>
           </div>
             <div className="device-popup-buttons">
               <button
