@@ -186,6 +186,7 @@ function Devices({devices, setDevices}) {
   function resetAll() {
     resetDeviceForm();
     setOpenCreateAction(false);
+    setDeviceErrors({});
     
     setActionForm(INITIAL_ACTION_FORM);
   }
@@ -251,7 +252,6 @@ function Devices({devices, setDevices}) {
     }
 
     setDevices(updatedDevices);
-    setDeviceErrors({});
     resetAll();
     setOpenEditDevice(false);
   }
