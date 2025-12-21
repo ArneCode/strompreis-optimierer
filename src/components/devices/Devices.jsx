@@ -113,16 +113,6 @@ function Devices({devices, setDevices}) {
         return;
       }
 
-      /*
-      if (!isValidDevice(deviceForm)) {
-        setErrorMessage("Bitte fülle alle Felder aus!");
-        setTimeout(() => {
-          setErrorMessage("");
-        }, 3000);
-        return;
-      }
-      */
-
       if (deviceForm.typ === "Erzeuger") {
           newDevice.nennleistung = deviceForm.nennleistung;
           newDevice.neigungswinkel = deviceForm.neigungswinkel;
@@ -234,6 +224,17 @@ function Devices({devices, setDevices}) {
   function editDevice() {
     if (editIndex === null) return;
 
+    const errors = validateDevice(deviceForm);
+
+    if (Object.keys(errors).length > 0) {
+      setDeviceErrors(errors);
+      setErrorMessage("Bitte fülle alle Felder aus!");
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
+      return;
+    }
+
     const updatedDevices = [...devices];
 
     updatedDevices[editIndex] = {
@@ -250,6 +251,7 @@ function Devices({devices, setDevices}) {
     }
 
     setDevices(updatedDevices);
+    setDeviceErrors({});
     resetAll();
     setOpenEditDevice(false);
   }
