@@ -197,4 +197,9 @@
   font-size: 25px;
 }
 
+.input-error {
+  border: 2px solid #e53935;
+  background-color: rgba(229, 57, 53, 0.05);
+}
+
 
