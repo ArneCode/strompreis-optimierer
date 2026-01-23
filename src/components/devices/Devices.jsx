@@ -1,14 +1,21 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import '../../styles/components/Devices.css';
 import Device from './Device.jsx';
 import DeviceForm from './DeviceForm';
 import ActionForm from './ActionForm';
+import ApiService from "../../services/ApiService.js";
 
 
 
-function Devices({devices, setDevices}) {
+function Devices() {
+    const [devices, setDevices] = useState([]);
     const [actions, setActions] = useState([]);
     const [deviceErrors, setDeviceErrors] = useState({});
+    useEffect(() => {
+        ApiService.fetchDevices()
+            .then(data => setDevices(data))
+            .catch(err => console.error("Fehler beim Laden der Geräte:", err));
+    }, []);
 
     const INITIAL_DEVICE_FORM = {
       name: "",
