@@ -3,12 +3,10 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-lea
 import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
 import L from 'leaflet';
 
-// Icons fixen (falls sie nicht angezeigt werden)
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 const DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
 
-// Hilfskomponente für die Suche
 function SearchControl({ onLocationSelected }) {
     const map = useMap();
     useEffect(() => {
@@ -16,13 +14,12 @@ function SearchControl({ onLocationSelected }) {
         const searchControl = new GeoSearchControl({
             provider,
             style: 'bar',
-            showMarker: false, // Wir setzen den Marker selbst
+            showMarker: false,
             autoClose: true,
         });
 
         map.addControl(searchControl);
 
-        // Event-Handler für Suchergebnis
         map.on('geosearch/showlocation', (result) => {
             onLocationSelected({
                 lat: result.location.y,
@@ -36,12 +33,10 @@ function SearchControl({ onLocationSelected }) {
     return null;
 }
 
-// Hilfskomponente für Klicks auf die Karte
 function MapEvents({ onLocationSelected }) {
     useMapEvents({
         click: async (e) => {
             const { lat, lng } = e.latlng;
-            // Reverse Geocoding (optional, um den Namen zu bekommen)
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
             const data = await response.json();
             onLocationSelected({ lat, lng, label: data.display_name || "Gewählter Punkt" });
