@@ -7,15 +7,14 @@ import ApiService from "../../services/ApiService.js";
 
 
 
-function Devices() {
-    const [devices, setDevices] = useState([]);
+function Devices({devices, setDevices}) {
     const [actions, setActions] = useState([]);
     const [deviceErrors, setDeviceErrors] = useState({});
-    useEffect(() => {
+    /*useEffect(() => {
         ApiService.fetchDevices()
             .then(data => setDevices(data))
             .catch(err => console.error("Fehler beim Laden der Geräte:", err));
-    }, []);
+    }, []);*/
 
     const INITIAL_DEVICE_FORM = {
       name: "",
@@ -24,6 +23,8 @@ function Devices() {
       neigungswinkel: "",
       ausrichtung: "",
       standort: "",
+      lat: null,
+      lng: null,
       leistung: "",
       dauer: "",
       flexibilität: "durchlauf",
@@ -55,6 +56,9 @@ function Devices() {
     const [openCreateDevice, setOpenCreateDevice] = useState(false);
     const [openEditDevice, setOpenEditDevice] = useState(false);
     const [openCreateAction, setOpenCreateAction] = useState(false);
+
+
+
 
   function handleDeviceFormChange(e) {
     const {name, value} = e.target;
@@ -125,6 +129,8 @@ function Devices() {
           newDevice.neigungswinkel = deviceForm.neigungswinkel;
           newDevice.ausrichtung = deviceForm.ausrichtung;
           newDevice.standort = deviceForm.standort;
+          newDevice.lat = deviceForm.lat;
+          newDevice.lng = deviceForm.lng;
 
       } else if (deviceForm.typ === "Verbraucher") {
           newDevice.leistung = deviceForm.leistung;
@@ -227,6 +233,9 @@ function Devices() {
       kapazität: device.kapazität || "",
     });
   }
+
+
+
 
 
   function editDevice() {

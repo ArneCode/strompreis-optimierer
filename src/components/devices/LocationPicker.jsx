@@ -1,0 +1,75 @@
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
+import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
+import L from 'leaflet';
+
+// Icons fixen (falls sie nicht angezeigt werden)
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+const DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
+
+// Hilfskomponente für die Suche
+function SearchControl({ onLocationSelected }) {
+    const map = useMap();
+    useEffect(() => {
+        const provider = new OpenStreetMapProvider();
+        const searchControl = new GeoSearchControl({
+            provider,
+            style: 'bar',
+            showMarker: false, // Wir setzen den Marker selbst
+            autoClose: true,
+        });
+
+        map.addControl(searchControl);
+
+        // Event-Handler für Suchergebnis
+        map.on('geosearch/showlocation', (result) => {
+            onLocationSelected({
+                lat: result.location.y,
+                lng: result.location.x,
+                label: result.location.label
+            });
+        });
+
+        return () => map.removeControl(searchControl);
+    }, [map, onLocationSelected]);
+    return null;
+}
+
+// Hilfskomponente für Klicks auf die Karte
+function MapEvents({ onLocationSelected }) {
+    useMapEvents({
+        click: async (e) => {
+            const { lat, lng } = e.latlng;
+            // Reverse Geocoding (optional, um den Namen zu bekommen)
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+            const data = await response.json();
+            onLocationSelected({ lat, lng, label: data.display_name || "Gewählter Punkt" });
+        },
+    });
+    return null;
+}
+
+export default function LocationPicker({ onSelect, onCancel }) {
+    const [tempLocation, setTempLocation] = useState(null);
+
+    return (
+        <div style={{ border: '1px solid #ccc', marginTop: '10px', padding: '10px' }}>
+            <div style={{ height: '300px', marginBottom: '10px' }}>
+                <MapContainer center={[52.52, 13.40]} zoom={11} style={{ height: '100%' }}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <SearchControl onLocationSelected={setTempLocation} />
+                    <MapEvents onLocationSelected={setTempLocation} />
+                    {tempLocation && <Marker position={[tempLocation.lat, tempLocation.lng]} icon={DefaultIcon} />}
+                </MapContainer>
+            </div>
+
+            {tempLocation && (
+                <p style={{ fontSize: '12px' }}><strong>Ausgewählt:</strong> {tempLocation.label}</p>
+            )}
+
+            <button type="button" onClick={() => onSelect(tempLocation)} disabled={!tempLocation}>Übernehmen</button>
+            <button type="button" onClick={onCancel}>Abbrechen</button>
+        </div>
+    );
+}
