@@ -82,7 +82,6 @@ export default function LocationPickerModal({ onSelect, onCancel }) {
     );
 }
 
-// --- Styles ---
 const modalOverlayStyle = {
     position: 'fixed',
     top: 0,
