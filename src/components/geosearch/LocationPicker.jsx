@@ -39,7 +39,7 @@ function MapEvents({ onLocationSelected }) {
             const { lat, lng } = e.latlng;
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
             const data = await response.json();
-            onLocationSelected({ lat, lng, label: data.display_name || "Gewählter Punkt" });
+            onLocationSelected({ lat, lng, label: data.display_name || "lat: " + lat + " lng: " + lng });
         },
     });
     return null;
