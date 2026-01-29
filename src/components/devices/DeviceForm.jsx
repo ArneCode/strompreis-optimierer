@@ -1,4 +1,26 @@
+import React, { useState} from 'react'
+import LocationPickerModal from "./LocationPickerModal.jsx";
+
 function DeviceForm({ deviceForm, onChange, errors = {}}) {
+    const [isMapOpen, setIsMapOpen] = useState(false);
+
+    const handleLocationConfirm = (location) => {
+        if (!location) return;
+
+        onChange({
+            target: { name: 'standort', value: location.label }
+        });
+        onChange({
+            target: { name: 'lat', value: location.lat }
+        });
+
+        onChange({
+            target: { name: 'lng', value: location.lng }
+        });
+
+        setIsMapOpen(false);
+    };
+
   return (
     <>
       <select name="typ" value={deviceForm.typ} onChange={onChange} className={errors.typ ? "input-error" : ""}>
@@ -9,14 +31,24 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
 
       <input name="name" placeholder="Name" value={deviceForm.name} onChange={onChange} className={errors.name ? "input-error" : ""}/>
 
-      {deviceForm.typ === "Erzeuger" && (
-        <>
-          <input name="nennleistung" placeholder="Nennleistung" value={deviceForm.nennleistung} onChange={onChange} className={errors.nennleistung ? "input-error" : ""}/>
-          <input name="neigungswinkel" placeholder="Neigungswinkel" value={deviceForm.neigungswinkel} onChange={onChange} className={errors.neigungswinkel ? "input-error" : ""}/>
-          <input name="ausrichtung" placeholder="Ausrichtung" value={deviceForm.ausrichtung} onChange={onChange} className={errors.ausrichtung ? "input-error" : ""}/>
-          <input name="standort" placeholder="Standort" value={deviceForm.standort} onChange={onChange} className={errors.standort ? "input-error" : ""}/>
-        </>
-      )}
+        {deviceForm.typ === "Erzeuger" && (
+            <>
+                <input name="nennleistung" placeholder="Nennleistung" value={deviceForm.nennleistung} onChange={onChange} className={errors.nennleistung ? "input-error" : ""}/>
+                <input name="neigungswinkel" placeholder="Neigungswinkel" value={deviceForm.neigungswinkel} onChange={onChange} className={errors.neigungswinkel ? "input-error" : ""}/>
+                <input name="ausrichtung" placeholder="Ausrichtung" value={deviceForm.ausrichtung} onChange={onChange} className={errors.ausrichtung ? "input-error" : ""}/>
+
+                <button type="button" className="device-popup-inputs-button" onClick={() => setIsMapOpen(true)}>
+                    📍 {deviceForm.standort || "Standort wählen"}
+                </button>
+
+                {isMapOpen && (
+                    <LocationPickerModal
+                        onSelect={handleLocationConfirm}
+                        onCancel={() => setIsMapOpen(false)}
+                    />
+                )}
+            </>
+        )}
 
       {deviceForm.typ === "Verbraucher" && (
         <>

@@ -14,39 +14,54 @@ function Settings({devices, setDevices}) {
     }
 
     return (
-        <div className="settings-container">
-            <button
-                className="settings-reset-button"
-                onClick={toggleResetPopUp}
-            >
-                Haushalt zurücksetzen
-            </button>
+        <>
+          <div className="settings-head">
+            <p>Einstellungen</p>
+          </div>
 
-            {openReset && (
-                <div className="reset-popup-overlay">
-                    <div className="reset-popup-window">
+          <div className="settings-container">
+              <p className="title">
+                <b>Haushalt zurücksetzen</b>
+              </p>
+              
+              <p className="description">
+                  Setzen Sie den gesamten Haushalt, samt Geräten, Aktionen und Ablaufplan zurück.
+              </p>
+
+              <button
+                  className="settings-reset-button"
+                  onClick={toggleResetPopUp}
+              >
+                  Haushalt zurücksetzen
+              </button>
+
+              {openReset && (
+                  <div className="reset-popup-overlay">
+                      <div className="reset-popup-window">
 
 
-                        <p>Möchten Sie den Haushalt wirklich zurücksetzen?</p>
+                          <p>Möchten Sie den Haushalt wirklich zurücksetzen?</p>
 
-                        <div className="reset-popup-buttons">
-                            <button
-                                className="reset-cancel-button"
-                                onClick={toggleResetPopUp}
-                            >
-                                Abbrechen
-                            </button>
-                            <button
-                                className="reset-confirm-button"
-                                onClick={handleReset}
-                            >
-                                Zurücksetzen
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                          <div className="reset-popup-buttons">
+                              <button
+                                  className="reset-cancel-button"
+                                  onClick={toggleResetPopUp}
+                              >
+                                  Abbrechen
+                              </button>
+                              <button
+                                  className="reset-confirm-button"
+                                  onClick={handleReset}
+                              >
+                                  Zurücksetzen
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              )}
+          </div>
+        </>
+        
     );
 }
 
