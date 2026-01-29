@@ -21,12 +21,13 @@ function Devices({devices, setDevices}) {
       typ: "Erzeuger",
       nennleistung: "",
       neigungswinkel: "",
-      ausrichtung: "",
+      ausrichtung: "Süd",
       standort: "",
       lat: null,
       lng: null,
       leistung: "",
       dauer: "",
+      prognose: "",
       flexibilität: "durchlauf",
       kapazität: ""
     };
@@ -42,7 +43,8 @@ function Devices({devices, setDevices}) {
     };
 
     const DEVICE_REQUIRED_FIELDS = {
-      Erzeuger: ["nennleistung", "neigungswinkel", "ausrichtung", "standort"],
+      PVAnlage: ["nennleistung", "neigungswinkel", "ausrichtung", "standort"],
+      Erzeuger: ["prognose"],
       Verbraucher: ["leistung", "dauer", "flexibilität"],
       Speicher: ["kapazität"]
     };
@@ -125,6 +127,8 @@ function Devices({devices, setDevices}) {
       }
 
       if (deviceForm.typ === "Erzeuger") {
+          newDevice.prognose = deviceForm.prognose;
+      } else if (deviceForm.typ === "PVAnlage") {
           newDevice.nennleistung = deviceForm.nennleistung;
           newDevice.neigungswinkel = deviceForm.neigungswinkel;
           newDevice.ausrichtung = deviceForm.ausrichtung;
@@ -225,6 +229,8 @@ function Devices({devices, setDevices}) {
       neigungswinkel: device.neigungswinkel || "",
       ausrichtung: device.ausrichtung || "",
       standort: device.standort || "",
+
+      prognose: device.prognose || "",
 
       leistung: device.leistung || "",
       dauer: device.dauer || "",

@@ -63,7 +63,7 @@ export default function LocationPickerModal({ onSelect, onCancel }) {
 
                 <div style={{ marginTop: '15px' }}>
                     <p style={{ fontSize: '14px', color: '#555', minHeight: '40px' }}>
-                        {tempLocation ? `📍 ${tempLocation.label}` : "Bitte Ort suchen oder auf Karte klicken"}
+                        {tempLocation ? `📍 ${tempLocation.label}` : "Bitte Standort suchen oder auf Karte klicken"}
                     </p>
 
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
