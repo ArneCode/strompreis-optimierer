@@ -52,8 +52,8 @@ export default function LocationPickerModal({ onSelect, onCancel }) {
             <div style={modalContentStyle}>
                 <h3 style={{ marginTop: 0 }}>Standort wählen</h3>
 
-                <div style={{ height: '350px', width: '100%', borderRadius: '8px', overflow: 'hidden' }}>
-                    <MapContainer center={[52.52, 13.40]} zoom={11} style={{ height: '100%' }}>
+                <div style={{ height: '350px', width: '100%', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}>
+                    <MapContainer center={[52.52, 13.40]} zoom={11} style={{ height: '100%', cursor: "crosshair" }}>
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         <SearchControl onLocationSelected={setTempLocation} />
                         <MapEvents onLocationSelected={setTempLocation} />
@@ -92,7 +92,7 @@ const modalOverlayStyle = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 2000
+    zIndex: 2000,
 };
 
 const modalContentStyle = {
@@ -102,7 +102,7 @@ const modalContentStyle = {
     width: '90%',
     maxWidth: '700px',
     boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-    position: 'relative'
+    position: 'relative',
 };
 
 const buttonStylePrimary = { padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' };

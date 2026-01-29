@@ -37,12 +37,9 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
                 <input name="neigungswinkel" placeholder="Neigungswinkel" value={deviceForm.neigungswinkel} onChange={onChange} className={errors.neigungswinkel ? "input-error" : ""}/>
                 <input name="ausrichtung" placeholder="Ausrichtung" value={deviceForm.ausrichtung} onChange={onChange} className={errors.ausrichtung ? "input-error" : ""}/>
 
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                    <input name="standort" placeholder="Standort wählen..." value={deviceForm.standort || ""} readOnly className={errors.standort ? "input-error" : ""} style={{ flex: 1 }}/>
-                    <button type="button"  onClick={() => setIsMapOpen(true)}
-                        style={{ cursor: 'pointer', padding: '0 15px' }}>📍 Karte
-                    </button>
-                </div>
+                <button type="button" className="device-popup-inputs-button" onClick={() => setIsMapOpen(true)}>
+                    📍 {deviceForm.standort || "Standort wählen"}
+                </button>
 
                 {isMapOpen && (
                     <LocationPickerModal
