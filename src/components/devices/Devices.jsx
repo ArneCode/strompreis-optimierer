@@ -49,6 +49,50 @@ function Devices({devices, setDevices}) {
       Speicher: ["kapazität"]
     };
 
+    const RULES = {
+      required: value => value ? null : "Pflichtfeld",
+      number: value => isNaN(Number(value)) ? "Geben Sie eine Zahl ein" : null,
+      positive: value => Number(value) > 0 ? null : "Muss größer als 0 sein",
+    };
+
+    /*
+    const DEVICE_VALIDATION_SCHEME = {
+      name: [RULES.required],
+      typ: [RULES.required],
+      nennleistung: [RULES.required, RULES.number, RULES.positive],
+      neigungswinkel: [RULES.required, RULES.number, RULES.positive],
+      ausrichtung: [RULES.required],
+      leistung: [RULES.required, RULES.number, RULES.positive],
+      dauer: [RULES.required, RULES.number, RULES.positive],
+      flexibilität: [RULES.required],
+      kapazität: [RULES.required, RULES.number, RULES.positive]
+    }
+    */
+
+    const DEVICE_VALIDATION_SCHEME = {
+    Erzeuger: {
+      prognose: [RULES.required],
+    },
+
+    PVAnlage: {
+      nennleistung: [RULES.required, RULES.number, RULES.positive],
+      neigungswinkel: [RULES.required, RULES.number],
+      ausrichtung: [RULES.required],
+      standort: [RULES.required],
+    },
+
+    Verbraucher: {
+      leistung: [RULES.required, RULES.number, RULES.positive],
+      dauer: [RULES.required, RULES.number, RULES.positive],
+      flexibilität: [RULES.required],
+    },
+
+    Speicher: {
+      kapazität: [RULES.required, RULES.number, RULES.positive],
+    },
+  };
+
+
     const [deviceForm, setDeviceForm] = useState(INITIAL_DEVICE_FORM);
     const [actionForm, setActionForm] = useState(INITIAL_ACTION_FORM);
 
@@ -66,7 +110,7 @@ function Devices({devices, setDevices}) {
     const {name, value} = e.target;
 
     setDeviceForm(prev => ({...prev, [name]: value}));
-    setDeviceErrors(prev => ({ ...prev, [name]: false}));
+    setDeviceErrors(prev => ({ ...prev, [name]: undefined}));
   }
 
   function handleActionFormChange(e) {
@@ -84,16 +128,43 @@ function Devices({devices, setDevices}) {
   }
   */
 
+  /*
   function validateDevice(form) {
     const errors = {};
 
-    if (!form.name) {
-      errors.name = true;
+    if (!form.name.trim()) {
+      errors.name = "Dieses Feld darf nicht leer sein";
     }
 
     DEVICE_REQUIRED_FIELDS[form.typ].forEach(field => {
       if (!form[field]) {
-        errors[field] = true;
+        errors[field] = "Dieses Feld darf nicht leer sein";
+      }
+    });
+
+
+
+    return errors;
+  }
+  */
+
+  function validateDevice(form) {
+    return validateDeviceWithScheme(form, {
+      name: [RULES.required],
+      ...DEVICE_VALIDATION_SCHEME[form.typ],
+    });
+  }
+
+  function validateDeviceWithScheme(form, scheme) {
+    const errors = {};
+
+    Object.entries(scheme).forEach(([field, validators]) => {
+      for (const validateFn of validators) {
+        const error = validateFn(form[field]);
+        if (error) {
+          errors[field] = error;
+          break;
+        }
       }
     });
 

@@ -5,6 +5,18 @@
   gap: 20px;
 }
 
+.field-error {
+  color: #d32f2f;
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+  width: 230px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+}
+
+
+
 .device {
   background-color: rgb(52, 123, 255);
   height: 200px;

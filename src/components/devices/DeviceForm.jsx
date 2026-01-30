@@ -40,6 +40,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
         <option value="Speicher">Speicher</option>
       </select>
 
+      {errors.name && <div className="field-error">{errors.name}</div>}
       <input name="name" placeholder="Name" value={deviceForm.name} onChange={onChange} className={errors.name ? "input-error" : ""}/>
 
 
@@ -61,8 +62,13 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
 
         {deviceForm.typ === "PVAnlage" && (
             <>
+                {errors.nennleistung && <div className="field-error">{errors.nennleistung}</div>}
                 <input name="nennleistung" placeholder="Nennleistung (kWp)" value={deviceForm.nennleistung} onChange={onChange} className={errors.nennleistung ? "input-error" : ""}/>
+
+                {errors.neigungswinkel && <div className="field-error">{errors.neigungswinkel}</div>}
                 <input name="neigungswinkel" placeholder="Neigungswinkel °" value={deviceForm.neigungswinkel} onChange={onChange} className={errors.neigungswinkel ? "input-error" : ""}/>
+
+                {errors.ausrichtung && <div className="field-error">{errors.ausrichtung}</div>}
                 <select name="ausrichtung" value={deviceForm.ausrichtung} onChange={onChange} className={errors.ausrichtung ? "input-error" : ""}>
                     <option value="Süd">Süd</option>
                     <option value="Südost">Südost</option>
@@ -91,8 +97,13 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
 
       {deviceForm.typ === "Verbraucher" && (
         <>
+          {errors.leistung && <div className="field-error">{errors.leistung}</div>}
           <input name="leistung" placeholder="Leistung" value={deviceForm.leistung} onChange={onChange} className={errors.leistung ? "input-error" : ""}/>
+
+          {errors.dauer && <div className="field-error">{errors.dauer}</div>}
           <input name="dauer" placeholder="Dauer (min)" value={deviceForm.dauer} onChange={onChange} className={errors.dauer ? "input-error" : ""}/>
+
+          {errors.flexibilität && <div className="field-error">{errors.flexibilität}</div>}
           <select name="flexibilität" value={deviceForm.flexibilität} onChange={onChange} className={errors.flexibilität ? "input-error" : ""}>
             <option value="durchlauf">durchlaufen</option>
             <option value="flexibel">flexibel</option>
@@ -101,7 +112,10 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
       )}
 
       {deviceForm.typ === "Speicher" && (
-        <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={onChange} className={errors.kapazität ? "input-error" : ""}/>
+        <>
+            {errors.kapazität && <div className="field-error">{errors.kapazität}</div>}
+            <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={onChange} className={errors.kapazität ? "input-error" : ""}/>
+        </>
       )}
     </>
   );
