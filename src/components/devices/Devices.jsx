@@ -51,23 +51,9 @@ function Devices({devices, setDevices}) {
 
     const RULES = {
       required: value => value ? null : "Pflichtfeld",
-      number: value => isNaN(Number(value)) ? "Geben Sie eine Zahl ein" : null,
-      positive: value => Number(value) > 0 ? null : "Muss größer als 0 sein",
+      number: value => isNaN(Number(value)) ? "Gib eine Zahl an" : null,
+      positive: value => Number(value) > 0 ? null : "Muss >= 0 sein",
     };
-
-    /*
-    const DEVICE_VALIDATION_SCHEME = {
-      name: [RULES.required],
-      typ: [RULES.required],
-      nennleistung: [RULES.required, RULES.number, RULES.positive],
-      neigungswinkel: [RULES.required, RULES.number, RULES.positive],
-      ausrichtung: [RULES.required],
-      leistung: [RULES.required, RULES.number, RULES.positive],
-      dauer: [RULES.required, RULES.number, RULES.positive],
-      flexibilität: [RULES.required],
-      kapazität: [RULES.required, RULES.number, RULES.positive]
-    }
-    */
 
     const DEVICE_VALIDATION_SCHEME = {
     Erzeuger: {
@@ -76,7 +62,7 @@ function Devices({devices, setDevices}) {
 
     PVAnlage: {
       nennleistung: [RULES.required, RULES.number, RULES.positive],
-      neigungswinkel: [RULES.required, RULES.number],
+      neigungswinkel: [RULES.required, RULES.number, RULES.positive],
       ausrichtung: [RULES.required],
       standort: [RULES.required],
     },
