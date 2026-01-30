@@ -29,7 +29,8 @@ function Devices({devices, setDevices}) {
       dauer: "",
       prognose: "",
       flexibilität: "durchlauf",
-      kapazität: ""
+      kapazität: "",
+      maxEntladung: ""
     };
 /*
     const INITIAL_ACTION_FORM = {
@@ -47,7 +48,7 @@ function Devices({devices, setDevices}) {
       PVAnlage: ["nennleistung", "neigungswinkel", "ausrichtung", "standort"],
       Erzeuger: ["prognose"],
       Verbraucher: ["leistung", "dauer", "flexibilität"],
-      Speicher: ["kapazität"]
+      Speicher: ["kapazität", "maxEntladung"],
     };
 
     const RULES = {
@@ -76,6 +77,7 @@ function Devices({devices, setDevices}) {
 
     Speicher: {
       kapazität: [RULES.required, RULES.number, RULES.positive],
+      maxEntladung: [RULES.required, RULES.number, RULES.positive],
     },
   };
 
@@ -206,6 +208,7 @@ function Devices({devices, setDevices}) {
 
       } else if (deviceForm.typ === "Speicher") {
           newDevice.kapazität = deviceForm.kapazität;
+          newDevice.maxEntladung = deviceForm.maxEntladung;
       }
 
       setDevices([...devices, newDevice]);
@@ -299,6 +302,7 @@ function Devices({devices, setDevices}) {
       flexibilität: device.flexibilität || "durchlauf",
 
       kapazität: device.kapazität || "",
+      maxEntladung: device.maxEntladung || "",
     });
   }
 

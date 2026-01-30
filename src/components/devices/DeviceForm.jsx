@@ -136,6 +136,13 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
               {errors.kapazität && <div className="field-error">{errors.kapazität}</div>}
             </div>
             <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={onChange} className={errors.kapazität ? "input-error" : ""}/>
+
+
+            <div className="input-label">
+                Max. Entladung (kW)
+                {errors.maxEntladung && <div className="field-error">{errors.maxEntladung}</div>}
+            </div>
+            <input name="maxEntladung" placeholder="maxEntladung (kW)" value={deviceForm.maxEntladung} onChange={onChange} className={errors.maxEntladung ? "input-error" : ""}/>
         </>
       )}
     </>
