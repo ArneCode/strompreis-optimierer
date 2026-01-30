@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import '../../styles/components/Devices.css';
 import Device from './Device.jsx';
 import DeviceForm from './DeviceForm';
