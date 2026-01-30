@@ -2,13 +2,13 @@ import {useState} from 'react';
 import '../../styles/components/Devices.css';
 import Device from './Device.jsx';
 import DeviceForm from './DeviceForm';
-import ActionForm from './ActionForm';
+//import ActionForm from './ActionForm';
 import ApiService from "../../services/ApiService.js";
 
 
 
 function Devices({devices, setDevices}) {
-    const [actions, setActions] = useState([]);
+    //const [actions, setActions] = useState([]);
     const [deviceErrors, setDeviceErrors] = useState({});
     /*useEffect(() => {
         ApiService.fetchDevices()
@@ -31,7 +31,7 @@ function Devices({devices, setDevices}) {
       flexibilität: "durchlauf",
       kapazität: ""
     };
-
+/*
     const INITIAL_ACTION_FORM = {
       typ: "Konstant",
       startZeit: "",
@@ -41,6 +41,7 @@ function Devices({devices, setDevices}) {
       gesamtVerbrauch: "",
       maxVerbrauchProZeit: ""
     };
+    */
 
     const DEVICE_REQUIRED_FIELDS = {
       PVAnlage: ["nennleistung", "neigungswinkel", "ausrichtung", "standort"],
@@ -80,14 +81,14 @@ function Devices({devices, setDevices}) {
 
 
     const [deviceForm, setDeviceForm] = useState(INITIAL_DEVICE_FORM);
-    const [actionForm, setActionForm] = useState(INITIAL_ACTION_FORM);
+    //const [actionForm, setActionForm] = useState(INITIAL_ACTION_FORM);
 
     const[errorMessage, setErrorMessage] = useState("");
     const [editIndex, setEditIndex] = useState(null);
 
     const [openCreateDevice, setOpenCreateDevice] = useState(false);
     const [openEditDevice, setOpenEditDevice] = useState(false);
-    const [openCreateAction, setOpenCreateAction] = useState(false);
+    //const [openCreateAction, setOpenCreateAction] = useState(false);
 
 
 
@@ -99,10 +100,12 @@ function Devices({devices, setDevices}) {
     setDeviceErrors(prev => ({ ...prev, [name]: undefined}));
   }
 
+  /*
   function handleActionFormChange(e) {
     const { name, value } = e.target;
     setActionForm(prev => ({...prev, [name]: value}));
   }
+    */
 
   /*
   function isValidDevice(form) {
@@ -198,8 +201,8 @@ function Devices({devices, setDevices}) {
           newDevice.dauer = deviceForm.dauer;
           newDevice.flexibilität = deviceForm.flexibilität;
           setOpenCreateDevice(false);
-          setOpenCreateAction(true);
-          return;
+          //setOpenCreateAction(true);
+          //return;
 
       } else if (deviceForm.typ === "Speicher") {
           newDevice.kapazität = deviceForm.kapazität;
@@ -212,6 +215,7 @@ function Devices({devices, setDevices}) {
       setOpenCreateDevice(false);
   }
 
+  /*
   function addAction() {
     //let newAction = {type: actionType, startZeit, endZeit};
     let newAction = {
@@ -251,6 +255,7 @@ function Devices({devices, setDevices}) {
 
     resetAll();
   }
+    */
 
   function resetDeviceForm() {
     setDeviceForm(INITIAL_DEVICE_FORM);
@@ -259,10 +264,10 @@ function Devices({devices, setDevices}) {
 
   function resetAll() {
     resetDeviceForm();
-    setOpenCreateAction(false);
+    //setOpenCreateAction(false);
     setDeviceErrors({});
     
-    setActionForm(INITIAL_ACTION_FORM);
+    //setActionForm(INITIAL_ACTION_FORM);
   }
 
   function toggleCreateDevicePopUp() {
@@ -403,13 +408,14 @@ function Devices({devices, setDevices}) {
                 className="devices-create-button"
                 onClick={addDevice}
               >
-                Weiter
+                Erstellen
               </button>
             </div>
           </div>
         </div>
       }
 
+      {/* 
       {openCreateAction && (
         <div className="create-device-popup">
           <div className="device-popup-window">
@@ -426,6 +432,7 @@ function Devices({devices, setDevices}) {
           </div>
         </div>
       )}
+      */}
 
       <div className="devices-head">
         <p>Geräte</p>
