@@ -87,7 +87,8 @@
 }
 
 .device-popup-window {
-  height: 600px;
+  /*height: 600px;*/
+  min-height: 400px;
   position: relative;
   width: 400px;
   background-color: white;
@@ -140,6 +141,7 @@
 .device-popup-buttons {
   display: flex;
   justify-content: end;
+  margin-top: 15px;
 }
 
 .device-popup-buttons button {
