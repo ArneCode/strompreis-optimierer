@@ -1,6 +1,11 @@
 import {Gantt, Willow} from '@svar-ui/react-gantt';
+import {downloadCSV, downloadPDF} from "./exportHelper.js";
+
 import '@svar-ui/react-gantt/all.css'
 import '../../styles/pages/Plan.css';
+import {useEffect} from "react";
+
+
 
 const tasks = [
   {
@@ -59,6 +64,9 @@ const scales = [
   { unit: "hour", step: 1, format: "h"}
 ];
 
+
+
+
 function PlanPage() {
 
     function handleUpdate() {
@@ -105,9 +113,13 @@ function PlanPage() {
             Vergleichen
           </button>
 
-          <button className="plan-export-button">
-            Exportieren
-          </button>
+            <button className="plan-export-button" onClick={() => downloadCSV(tasks)}>
+                Exportieren als CSV
+            </button>
+
+            <button className="plan-export-button" onClick={() => downloadPDF(tasks)}>
+                Exportieren als PDF
+            </button>
         </div>
       </div>
     </>

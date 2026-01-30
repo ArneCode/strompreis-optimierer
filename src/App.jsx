@@ -2,7 +2,7 @@ import Sidebar from './components/Sidebar.jsx';
 import DevicesPage from './pages/devices/./DevicesPage.jsx';
 import PlanPage from './pages/plan/./PlanPage.jsx';
 import SettingsPage from './pages/settings/SettingsPage.jsx';
-import Actions from './pages/actions/Actions.jsx';
+import ActionsPage from './pages/actions/ActionsPage.jsx';
 import './styles/App.css'
 import {useState} from "react";
 import { BrowserRouter, Routes, Route} from "react-router-dom";
@@ -39,7 +39,7 @@ function App() {
                 />
                 <Route 
                   path="/aktionen"
-                  element={<Actions devices={devices} setDevices={setDevices} />}
+                  element={<ActionsPage devices={devices} setDevices={setDevices} />}
                 />
                 <Route 
                   path="/ablaufplan"
@@ -53,7 +53,7 @@ function App() {
 
               {/* 
                 {window.location.pathname === '/geraete' ? <DevicesPage devices={devices} setDevices={setDevices} /> : <></>}
-                {window.location.pathname === '/aktionen' ? <Actions devices={devices} setDevices={setDevices} /> : <></>}
+                {window.location.pathname === '/aktionen' ? <ActionsPage devices={devices} setDevices={setDevices} /> : <></>}
                 {window.location.pathname === '/ablaufplan' ? <PlanPage /> : <></>}
                 {window.location.pathname === '/einstellungen' ? <SettingsPage /> : <></>}
               */}

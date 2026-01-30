@@ -1,4 +1,4 @@
-import ActionsPage from "./ActionsPage.jsx";
+import Action from "./Action.jsx";
 import "../../styles/pages/Actions.css";
 
 function ActionGrid({ devices, onEdit }) {
@@ -11,7 +11,7 @@ function ActionGrid({ devices, onEdit }) {
                         className="action-card"
                         onClick={() => onEdit(deviceIndex, actionIndex)}
                     >
-                        <ActionsPage
+                        <Action
                             name={device.name}
                             startTime={action.startTime}
                             endTime={action.endTime}

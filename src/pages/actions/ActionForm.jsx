@@ -1,5 +1,5 @@
 import React from 'react';
-import TimeRangeSlider from "./TimeRangeSlider.jsx";
+import TimeRangeSlider from "../../components/TimeRangeSlider.jsx";
 
 
 function ActionForm({
