@@ -40,12 +40,17 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
         <option value="Speicher">Speicher</option>
       </select>
 
+      <div className="input-label">
+        Name
+        {errors.name && <div className="field-error">{errors.name}</div>}
+      </div>
       <input name="name" placeholder="Name" value={deviceForm.name} onChange={onChange} className={errors.name ? "input-error" : ""}/>
 
 
         {deviceForm.typ === "Erzeuger" && (
             <div className="upload-section">
 
+                <div className="input-label">Prognose</div>
                 <input
                     type="file"
                     accept=".csv"
@@ -61,8 +66,19 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
 
         {deviceForm.typ === "PVAnlage" && (
             <>
+                <div className="input-label">
+                  Nennleistung (kWp)
+                  {errors.nennleistung && <div className="field-error">{errors.nennleistung}</div>}
+                </div>
                 <input name="nennleistung" placeholder="Nennleistung (kWp)" value={deviceForm.nennleistung} onChange={onChange} className={errors.nennleistung ? "input-error" : ""}/>
+
+                <div className="input-label">
+                  Neigungswinkel (°)
+                  {errors.neigungswinkel && <div className="field-error">{errors.neigungswinkel}</div>}
+                </div>
                 <input name="neigungswinkel" placeholder="Neigungswinkel °" value={deviceForm.neigungswinkel} onChange={onChange} className={errors.neigungswinkel ? "input-error" : ""}/>
+
+                <div className="input-label">Ausrichtung</div>
                 <select name="ausrichtung" value={deviceForm.ausrichtung} onChange={onChange} className={errors.ausrichtung ? "input-error" : ""}>
                     <option value="Süd">Süd</option>
                     <option value="Südost">Südost</option>
@@ -75,7 +91,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
                     <option value="Ost-West">Ost-West</option>
                 </select>
 
-
+                <div className="input-label">Standort</div>
                 <button type="button" className="device-popup-inputs-button" onClick={() => setIsMapOpen(true)}>
                     📍 {deviceForm.standort || "Standort wählen"}
                 </button>
@@ -91,8 +107,21 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
 
       {deviceForm.typ === "Verbraucher" && (
         <>
+          <div className="input-label">
+            Leistung
+            {errors.leistung && <div className="field-error">{errors.leistung}</div>}
+          </div>
           <input name="leistung" placeholder="Leistung" value={deviceForm.leistung} onChange={onChange} className={errors.leistung ? "input-error" : ""}/>
+
+          <div className="input-label">
+            Dauer
+            {errors.dauer && <div className="field-error">{errors.dauer}</div>}
+          </div>
           <input name="dauer" placeholder="Dauer (min)" value={deviceForm.dauer} onChange={onChange} className={errors.dauer ? "input-error" : ""}/>
+
+          <div className="input-label">
+            Flexibilität
+          </div>
           <select name="flexibilität" value={deviceForm.flexibilität} onChange={onChange} className={errors.flexibilität ? "input-error" : ""}>
             <option value="durchlauf">durchlaufen</option>
             <option value="flexibel">flexibel</option>
@@ -101,7 +130,13 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
       )}
 
       {deviceForm.typ === "Speicher" && (
-        <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={onChange} className={errors.kapazität ? "input-error" : ""}/>
+        <>
+            <div className="input-label">
+              Kapazität
+              {errors.kapazität && <div className="field-error">{errors.kapazität}</div>}
+            </div>
+            <input name="kapazität" placeholder="Kapazität" value={deviceForm.kapazität} onChange={onChange} className={errors.kapazität ? "input-error" : ""}/>
+        </>
       )}
     </>
   );
