@@ -1,4 +1,4 @@
-import '../../styles/components/Devices.css';
+import '../../styles/pages/Devices.css';
 
 function Device({typ, name}) {
   return (

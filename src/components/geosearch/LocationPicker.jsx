@@ -5,6 +5,7 @@ import L from 'leaflet';
 
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import {geoService as GeoService} from "../../services/geoService.jsx";
 const DefaultIcon = L.icon({ iconUrl: markerIcon, shadowUrl: markerShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
 
 function SearchControl({ onLocationSelected }) {
@@ -37,9 +38,8 @@ function MapEvents({ onLocationSelected }) {
     useMapEvents({
         click: async (e) => {
             const { lat, lng } = e.latlng;
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
-            const data = await response.json();
-            onLocationSelected({ lat, lng, label: data.display_name || "lat: " + lat + " lng: " + lng });
+            const label = await GeoService.getAddressFromCoords(lat, lng);
+            onLocationSelected({ lat, lng, label });
         },
     });
     return null;

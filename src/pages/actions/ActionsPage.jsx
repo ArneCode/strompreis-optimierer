@@ -1,7 +1,7 @@
-import "../../styles/components/Actions.css";
-import "../../styles/components/Actions.css";
+import "../../styles/pages/Actions.css";
+import "../../styles/pages/Actions.css";
 
-function Action({ name, startTime, endTime }) {
+function ActionsPage({ name, startTime, endTime }) {
     return (
         <div className="action-card">
             <p className="action-name">{name}</p>
@@ -14,4 +14,4 @@ function Action({ name, startTime, endTime }) {
     );
 }
 
-export default Action;
+export default ActionsPage;

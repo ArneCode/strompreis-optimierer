@@ -1,5 +1,5 @@
 import React, { useState} from 'react'
-import LocationPickerModal from "../geosearch/LocationPickerModal.jsx";
+import LocationPickerModal from "../../components/geosearch/LocationPickerModal.jsx";
 
 function DeviceForm({ deviceForm, onChange, errors = {}}) {
     const [isMapOpen, setIsMapOpen] = useState(false);

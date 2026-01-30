@@ -1,5 +1,5 @@
-import Action from "./Action";
-import "../../styles/components/Actions.css";
+import ActionsPage from "./ActionsPage.jsx";
+import "../../styles/pages/Actions.css";
 
 function ActionGrid({ devices, onEdit }) {
     return (
@@ -11,7 +11,7 @@ function ActionGrid({ devices, onEdit }) {
                         className="action-card"
                         onClick={() => onEdit(deviceIndex, actionIndex)}
                     >
-                        <Action
+                        <ActionsPage
                             name={device.name}
                             startTime={action.startTime}
                             endTime={action.endTime}

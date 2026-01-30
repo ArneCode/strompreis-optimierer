@@ -1,6 +1,6 @@
 import {Gantt, Willow} from '@svar-ui/react-gantt';
 import '@svar-ui/react-gantt/all.css'
-import '../../styles/components/Plan.css';
+import '../../styles/pages/Plan.css';
 
 const tasks = [
   {
@@ -59,7 +59,7 @@ const scales = [
   { unit: "hour", step: 1, format: "h"}
 ];
 
-function Plan() {
+function PlanPage() {
 
     function handleUpdate() {
         console.log("Update");
@@ -114,4 +114,4 @@ function Plan() {
   );
 }
 
-export default Plan;
+export default PlanPage;

@@ -1,8 +1,8 @@
 import Sidebar from './components/Sidebar.jsx';
-import Devices from './components/devices/Devices.jsx';
-import Plan from './components/plan/Plan.jsx';
-import Settings from './components/settings/Settings.jsx';
-import Actions from './components/actions/Actions.jsx';
+import DevicesPage from './pages/devices/./DevicesPage.jsx';
+import PlanPage from './pages/plan/./PlanPage.jsx';
+import SettingsPage from './pages/settings/SettingsPage.jsx';
+import Actions from './pages/actions/Actions.jsx';
 import './styles/App.css'
 import {useState} from "react";
 import { BrowserRouter, Routes, Route} from "react-router-dom";
@@ -35,7 +35,7 @@ function App() {
               <Routes>
                 <Route 
                   path="/geraete"
-                  element={<Devices devices={devices} setDevices={setDevices} />}
+                  element={<DevicesPage devices={devices} setDevices={setDevices} />}
                 />
                 <Route 
                   path="/aktionen"
@@ -43,19 +43,19 @@ function App() {
                 />
                 <Route 
                   path="/ablaufplan"
-                  element={<Plan />}
+                  element={<PlanPage />}
                 />
                 <Route 
                   path="/einstellungen"
-                  element={<Settings devices={devices} setDevices={setDevices} />}
+                  element={<SettingsPage devices={devices} setDevices={setDevices} />}
                 />
               </Routes>
 
               {/* 
-                {window.location.pathname === '/geraete' ? <Devices devices={devices} setDevices={setDevices} /> : <></>}
+                {window.location.pathname === '/geraete' ? <DevicesPage devices={devices} setDevices={setDevices} /> : <></>}
                 {window.location.pathname === '/aktionen' ? <Actions devices={devices} setDevices={setDevices} /> : <></>}
-                {window.location.pathname === '/ablaufplan' ? <Plan /> : <></>}
-                {window.location.pathname === '/einstellungen' ? <Settings /> : <></>}
+                {window.location.pathname === '/ablaufplan' ? <PlanPage /> : <></>}
+                {window.location.pathname === '/einstellungen' ? <SettingsPage /> : <></>}
               */}
           </div>
         </div>

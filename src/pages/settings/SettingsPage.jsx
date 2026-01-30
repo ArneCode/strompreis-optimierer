@@ -1,7 +1,7 @@
 import { useState } from "react";
-import '../../styles/components/Settings.css';
+import '../../styles/pages/Settings.css';
 
-function Settings({devices, setDevices}) {
+function SettingsPage({devices, setDevices}) {
     const [openReset, setOpenReset] = useState(false);
 
     function toggleResetPopUp() {
@@ -65,4 +65,4 @@ function Settings({devices, setDevices}) {
     );
 }
 
-export default Settings;
+export default SettingsPage;

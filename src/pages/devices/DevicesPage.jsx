@@ -1,13 +1,13 @@
 import {useState} from 'react';
-import '../../styles/components/Devices.css';
+import '../../styles/pages/Devices.css';
 import Device from './Device.jsx';
-import DeviceForm from './DeviceForm';
+import DeviceForm from './DeviceForm.jsx';
 //import ActionForm from './ActionForm';
-import ApiService from "../../services/ApiService.js";
+import ApiService from "../../services/apiService.js";
 
 
 
-function Devices({devices, setDevices}) {
+function DevicesPage({devices, setDevices}) {
     //const [actions, setActions] = useState([]);
     const [deviceErrors, setDeviceErrors] = useState({});
     /*useEffect(() => {
@@ -465,4 +465,4 @@ function Devices({devices, setDevices}) {
   );
 }
 
-export default Devices;
+export default DevicesPage;

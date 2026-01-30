@@ -1,7 +1,7 @@
-import "../../styles/components/Actions.css";
+import "../../styles/pages/Actions.css";
 import "../../styles/components/Slider.css"
 import { useState, useMemo } from "react";
-import ActionGrid from "./ActionGrid";
+import ActionGrid from "./ActionGrid.jsx";
 import ActionForm from "./ActionForm.jsx";
 
 const roundToNext5Min = (date) => {
