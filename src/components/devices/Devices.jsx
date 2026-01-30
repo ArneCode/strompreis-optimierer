@@ -52,7 +52,7 @@ function Devices({devices, setDevices}) {
     const RULES = {
       required: value => value ? null : "Pflichtfeld",
       number: value => isNaN(Number(value)) ? "Gib eine Zahl an" : null,
-      positive: value => Number(value) > 0 ? null : "Muss >= 0 sein",
+      positive: value => Number(value) > 0 ? null : "Muss > 0 sein",
     };
 
     const DEVICE_VALIDATION_SCHEME = {
