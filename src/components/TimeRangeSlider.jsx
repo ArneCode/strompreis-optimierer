@@ -28,7 +28,7 @@ function TimeRangeSlider({
                 value={sliderValue}
                 onChange={handleSliderChange}
                 min={0}
-                max={1440}
+                max={1435}
                 step={5}
                 disableSwap
                 valueLabelDisplay="auto"

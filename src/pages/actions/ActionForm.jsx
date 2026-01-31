@@ -33,7 +33,7 @@ function ActionForm({
                         onChange={onChange}
                         className={`action-device-select ${errors.deviceName ? "input-error" : ""}`}
                     >
-                        <option value="">-Verbraucher wählen-</option>
+                        <option value="">Verbraucher wählen</option>
                         {devices
                             .filter(device => device.typ === "Verbraucher")
                             .map((device, idx) => (
@@ -81,10 +81,15 @@ function ActionForm({
                 hasError={hasError}
                 currentTimeStr={currentTimeStr}
             />
+
+            <div className="input-label">
+                Dauer (min)
+                {errors.duration && <span className="field-error">{errors.duration}</span>}
+            </div>
             <input
                 type="number"
                 name="duration"
-                placeholder="Dauer"
+                placeholder="Dauer (min)"
                 value={actionForm.duration}
                 onChange={onChange}
                 className={errors.duration ? "input-error" : ""}
