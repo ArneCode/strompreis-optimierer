@@ -1,13 +1,43 @@
 .sidebar {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
   width: 250px;
   background-color: lightgray;
   border-radius: 10px;
   margin: 10px;
+  margin-right: 5px;
   padding-top: 20px;
+  transition: width 0.2s ease;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar-toggle {
+  border: none;
+  background-color: lightgray;
+  cursor: pointer;
+  border-radius: 7px;
+}
+
+.sidebar-toggle:hover {
+  background-color: rgb(232, 232, 232);
+}
+
+.sidebar-toggle img {
+  width: 30px;
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  padding-right: 10px;
+  padding-bottom: 20px;
+}
+
+.sidebar-head.collapsed {
+  justify-content: center;
+  padding-right: 0px;
 }
 
 .sidebar-data-icon {

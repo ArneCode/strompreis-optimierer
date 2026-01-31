@@ -50,13 +50,6 @@ function App() {
                   element={<SettingsPage devices={devices} setDevices={setDevices} />}
                 />
               </Routes>
-
-              {/* 
-                {window.location.pathname === '/geraete' ? <DevicesPage devices={devices} setDevices={setDevices} /> : <></>}
-                {window.location.pathname === '/aktionen' ? <ActionsPage devices={devices} setDevices={setDevices} /> : <></>}
-                {window.location.pathname === '/ablaufplan' ? <PlanPage /> : <></>}
-                {window.location.pathname === '/einstellungen' ? <SettingsPage /> : <></>}
-              */}
           </div>
         </div>
     </BrowserRouter>
