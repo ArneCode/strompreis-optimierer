@@ -64,6 +64,7 @@ function ActionsPage({ devices, setDevices }) {
     };
 
     const saveAction = (isEdit = false) => {
+
         const errors = validateActionForm(actionForm, timeOffset, isEdit);
         if (Object.keys(errors).length > 0) {
             setActionErrors(errors);
@@ -79,26 +80,37 @@ function ActionsPage({ devices, setDevices }) {
             ));
             setOpenEditAction(false);
         } else {
-            setDevices(prev => prev.map(d =>
-                d.name === actionForm.deviceName
-                    ? { ...d, actions: [...d.actions, { ...actionForm }] }
-                    : d
-            ));
-            toggleCreateActionPopup();
-        }
+        setDevices(prev => prev.map(d =>
+            d.name === actionForm.deviceName
+                ? {
+                    ...d,
+                    actions: [...(d.actions || []), { ...actionForm }]
+                }
+                : d
+        ));
+        toggleCreateActionPopup();
+
+
+    }
     };
 
     const removeAction = () => {
         const { deviceIndex, actionIndex } = editIndex;
-        setDevices(prev => prev.map((d, di) =>
-            di === deviceIndex
-                ? { ...d, actions: d.actions.filter((_, ai) => ai !== actionIndex) }
-                : d
-        ));
+        setDevices(prev => prev.map((d, di) => {
+            if (di === deviceIndex) {
+                const currentActions = d.actions || [];
+                return {
+                    ...d,
+                    actions: currentActions.filter((_, ai) => ai !== actionIndex)
+                };
+            }
+            return d;
+        }));
         setOpenEditAction(false);
     };
 
     return (
+
         <div className="action">
             <div className="action-head"><h1>Aktionen</h1></div>
             <button className="new-action-button" onClick={toggleCreateActionPopup}>
