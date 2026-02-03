@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
 import L from 'leaflet';
+import '../../styles/components/LocationPicker.css'
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-geosearch/dist/geosearch.css';
@@ -43,17 +44,20 @@ function MapEvents({ onLocationSelected }) {
     return null;
 }
 
-
 export default function LocationPickerModal({ onSelect, onCancel }) {
     const [tempLocation, setTempLocation] = useState(null);
 
     return (
-        <div style={modalOverlayStyle}>
-            <div style={modalContentStyle}>
-                <h3 style={{ marginTop: 0 }}>Standort wählen</h3>
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <h3 className="modal-header">Standort wählen</h3>
 
-                <div style={{ height: '350px', width: '100%', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}>
-                    <MapContainer center={[52.52, 13.40]} zoom={11} style={{ height: '100%', cursor: "crosshair" }}>
+                <div className="map-wrapper">
+                    <MapContainer
+                        className="map-container-inner"
+                        center={[52.52, 13.40]}
+                        zoom={11}
+                    >
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         <SearchControl onLocationSelected={setTempLocation} />
                         <MapEvents onLocationSelected={setTempLocation} />
@@ -61,17 +65,17 @@ export default function LocationPickerModal({ onSelect, onCancel }) {
                     </MapContainer>
                 </div>
 
-                <div style={{ marginTop: '15px' }}>
-                    <p style={{ fontSize: '14px', color: '#555', minHeight: '40px' }}>
-                        {tempLocation ? `📍 ${tempLocation.label}` : "Bitte Standort suchen oder auf Karte klicken"}
+                <div className="info-section">
+                    <p className="location-text">
+                        {tempLocation ? `📍 ${tempLocation.label}` : "Bitte Standort auf der Karte auswählen"}
                     </p>
 
-                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                        <button onClick={onCancel} style={buttonStyleSecondary}>Abbrechen</button>
+                    <div className="button-group">
+                        <button onClick={onCancel} className="btn-secondary">Abbrechen</button>
                         <button
                             onClick={() => onSelect(tempLocation)}
                             disabled={!tempLocation}
-                            style={tempLocation ? buttonStylePrimary : buttonStyleDisabled}
+                            className={`btn-primary ${!tempLocation ? 'btn-disabled' : ''}`}
                         >
                             Übernehmen
                         </button>
@@ -81,30 +85,3 @@ export default function LocationPickerModal({ onSelect, onCancel }) {
         </div>
     );
 }
-
-const modalOverlayStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2000,
-};
-
-const modalContentStyle = {
-    backgroundColor: 'white',
-    padding: '20px',
-    borderRadius: '12px',
-    width: '90%',
-    maxWidth: '700px',
-    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-    position: 'relative',
-};
-
-const buttonStylePrimary = { padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' };
-const buttonStyleSecondary = { padding: '10px 20px', backgroundColor: '#ccc', border: 'none', borderRadius: '5px', cursor: 'pointer' };
-const buttonStyleDisabled = { ...buttonStylePrimary, backgroundColor: '#a0a0a0', cursor: 'not-allowed' };
