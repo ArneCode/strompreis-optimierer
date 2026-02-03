@@ -102,7 +102,7 @@ function ActionsPage({ devices, setDevices }) {
         <div className="action">
             <div className="action-head"><h1>Aktionen</h1></div>
             <button className="new-action-button" onClick={toggleCreateActionPopup}>
-                <img className="new-device-plus-image" src="./src/assets/plus.png" alt="plus" />
+                <img className="new-device-plus-image" src="./src/assets/plus.png"/>
                 Neue Aktion
             </button>
 

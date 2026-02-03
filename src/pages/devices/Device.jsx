@@ -1,13 +1,13 @@
 import '../../styles/pages/Devices.css';
 
-function Device({typ, name}) {
+function Device({type, name}) {
   return (
     <div className="device">
-      <p class="device-name">
+      <p className="device-name">
         {name}
       </p>
-      <p class="device-type">
-        {typ}
+      <p className="device-type">
+        {type}
       </p>
     </div>
   );
