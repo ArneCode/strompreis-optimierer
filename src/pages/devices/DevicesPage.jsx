@@ -2,7 +2,7 @@ import {useState} from 'react';
 import '../../styles/pages/Devices.css';
 import Device from './Device.jsx';
 import DeviceForm from './DeviceForm.jsx';
-import {INITIAL_DEVICE_FORM, RULES, DEVICE_VALIDATION_SCHEME, validateDeviceWithScheme} from './DevicesLogic.js'
+import {INITIAL_DEVICE_FORM, validateDevice} from './DevicesLogic.js'
 
 
 
@@ -22,12 +22,7 @@ function DevicesPage({devices, setDevices}) {
     setDeviceErrors(prev => ({ ...prev, [name]: undefined}));
   }
 
-  function validateDevice(form) {
-    return validateDeviceWithScheme(form, {
-      name: [RULES.required],
-      ...DEVICE_VALIDATION_SCHEME[form.type],
-    });
-  }
+
 
   function deleteDevice() {
     if (editIndex === null) return;

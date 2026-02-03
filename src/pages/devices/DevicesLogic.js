@@ -60,3 +60,10 @@ export function validateDeviceWithScheme(form, scheme) {
 
     return errors;
 }
+
+export function validateDevice(form) {
+    return validateDeviceWithScheme(form, {
+        name: [RULES.required],
+        ...DEVICE_VALIDATION_SCHEME[form.type],
+    });
+}
