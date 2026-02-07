@@ -3,6 +3,7 @@
   flex-direction: column;
 }
 
+/*
 .plan-chart {
   flex-grow: 1;
   margin-top: 20px;
@@ -12,15 +13,28 @@
   overflow: hidden;
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
 }
+*/
+
+.plan-chart {
+  flex-grow: 1;
+  margin: 1.25rem 3rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 0.3rem 0.3rem rgba(0, 0, 0, 0.2);
+}
 
 .charts-header {
   font-size: 40px;
+  /*
   margin-bottom: 25px;
   margin-top: 15px;
   margin-left: 50px;
   margin-right: 50px;
+  */
+  margin: 1rem 3rem 1.5rem;
 }
 
+/*
 .charts {
   display: grid;
   grid-template-columns: auto auto;
@@ -28,10 +42,18 @@
   margin-right: 50px;
   margin-bottom: 100px;
 }
+*/
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 0 1rem 6rem 3rem;
+}
 
 .chart {
   background-color: white;
-  margin-right: 20px;
+  /*margin-right: 20px;*/
   min-height: 200px;
   border-radius: 10px;
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
@@ -39,7 +61,8 @@
 
 .chart p {
   font-size: 20px;
-  margin-left: 40px;
+  /*margin-left: 40px;*/
+  margin-left: 3rem;
   font-weight: 550;
   color: rgb(113, 113, 113);
 }
@@ -50,12 +73,34 @@
   justify-content: center;
 }
 
+/*
 .plan-options {
   display: flex;
   margin: 20px 50px 0 50px;
   justify-content: end;
 }
+*/
 
+.plan-options {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1.25rem 2rem 0;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-right: 3rem;
+}
+
+.plan-options button {
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0px 0.3rem 0.3rem rgba(0, 0, 0, 0.2);
+  border: none;
+  background-color: white;
+}
+
+/*
 .plan-options button {
   padding: 15px 15px;
   background-color: white;
@@ -66,21 +111,31 @@
   font-size: 15px;
   cursor: pointer;
 }
+*/
 
 .plan-header {
+  /*
   margin-left: 50px;
   margin-right: 50px;
+  */
+  margin: 0 3rem;
+  margin-bottom: 1rem;
 }
 
 .plan-header p {
   font-size: 40px;
+  /*
   margin-bottom: 10px;
   margin-top: 15px;
+  */
+  margin-bottom: 1rem;
+  margin-top: 1rem;
 }
 
 .plan-refresh-button {
   background-color: rgb(211, 69, 91);
-  padding: 10px 15px;
+  /*padding: 10px 15px;*/
+  padding: 0.6rem 1rem;
   font-size: 15px;
   color: white;
   border: none;
