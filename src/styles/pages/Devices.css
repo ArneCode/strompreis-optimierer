@@ -1,8 +1,17 @@
+/*
 .devices-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 200px));
   padding: 30px 20px 20px 50px;
   gap: 20px;
+}
+*/
+
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 200px));
+  padding: 2rem 3rem;
+  gap: 1.25rem;
 }
 
 .field-error {
@@ -28,8 +37,13 @@
 
 .device {
   background-color: rgb(52, 123, 255);
+  /*
   height: 200px;
   width: 200px;
+  */
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 200px;
   border-radius: 15px;
   display: flex;
   flex-direction: column;
@@ -38,6 +52,7 @@
   box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.25);
   cursor: pointer;
 }
+  
 
 .device-name {
   color: white;
@@ -53,8 +68,12 @@
 }
 
 .devices-head {
+  /*
   margin-left: 50px;
   margin-right: 50px;
+  */
+  margin: 0 auto;
+  padding: 0 3rem;
 }
 
 .new-device-plus-image {
@@ -90,7 +109,8 @@
   /*height: 600px;*/
   min-height: 400px;
   position: relative;
-  width: 400px;
+  /*width: 400px;*/
+  width: min(90%, 400px);
   background-color: white;
   border-radius: 10px;
   display: flex;
@@ -241,5 +261,15 @@
   border: 2px solid #e53935;
   background-color: rgba(229, 57, 53, 0.05);
 }
+
+
+.device-popup-inputs input,
+.device-popup-inputs select,
+.device-popup-inputs-button {
+  width: 90%;
+  max-width: 230px;
+  box-sizing: border-box;
+}
+  
 
 

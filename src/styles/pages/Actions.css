@@ -1,15 +1,29 @@
 
+/*
 .actions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 200px));
     padding: 30px 20px 20px 50px;
     gap: 20px;
 }
+    */
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 200px));
+  padding: 2rem 3rem;
+  gap: 1.25rem;
+}
 
 .action-card {
     background-color: rgb(52, 180, 120); /* GRÜN */
+    /*
     height: 200px;
     width: 200px;
+    */
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 200px;
     border-radius: 15px;
     display: flex;
     flex-direction: column;
@@ -70,7 +84,6 @@
     border-radius: 10px;
     box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    margin-left: 50px;
 }
 
 
@@ -91,10 +104,15 @@
   margin-bottom: 20px;
 }
 
-.action-popup-window {
+.action-popup-window,
+.edit-action-popup-window {
     /*height: 550px;*/
     min-height: 400px;
+    /*
     width: 400px;
+    */
+    width: min(90%, 400px);
+    box-sizing: border-box;
     background-color: white;
     border-radius: 10px;
     display: flex;
@@ -104,6 +122,7 @@
     /*align-items: center;*/
 }
 
+/*
 .edit-action-popup-window {
     min-height: 400px;
     width: 400px;
@@ -114,6 +133,7 @@
     position: relative;
     padding: 0px;
 }
+*/
 
 .create-action-head {
     font-size: 30px;
@@ -188,7 +208,10 @@
 
 .action-popup-inputs input, 
 .action-device-select {
-    width: 200px;
+    /*width: 200px;*/
+    width: 90%;
+    max-width: 230px;
+    box-sizing: border-box;
     padding: 10px 15px;
     border-radius: 10px;
     border: 1px solid #ccc;
@@ -233,6 +256,11 @@
     color: #333;
     margin-bottom: 5px;
     text-transform: capitalize;
+}
+
+.action-head {
+  margin: 0 auto;
+  padding: 0 3rem;
 }
 
 
