@@ -69,18 +69,21 @@ function ActionForm({
                 className={errors.endTime ? "input-error" : ""}
             />
 
-            <TimeRangeSlider
-                startTime={actionForm.startTime}
-                endTime={actionForm.endTime}
-                onChange={(start, end) => {
-                    onChange({ target: { name: 'startTime', value: start } });
-                    onChange({ target: { name: 'endTime', value: end } });
-                }}
-                timeToSlider={timeToSlider}
-                sliderToTime={sliderToTime}
-                hasError={hasError}
-                currentTimeStr={currentTimeStr}
-            />
+            <div className="action-slider">
+
+                <TimeRangeSlider
+                    startTime={actionForm.startTime}
+                    endTime={actionForm.endTime}
+                    onChange={(start, end) => {
+                        onChange({ target: { name: 'startTime', value: start } });
+                        onChange({ target: { name: 'endTime', value: end } });
+                    }}
+                    timeToSlider={timeToSlider}
+                    sliderToTime={sliderToTime}
+                    hasError={hasError}
+                    currentTimeStr={currentTimeStr}
+                />
+            </div>
 
             <div className="input-label">
                 Dauer (min)
@@ -89,7 +92,6 @@ function ActionForm({
             <input
                 type="number"
                 name="duration"
-                placeholder="Dauer (min)"
                 value={actionForm.duration}
                 onChange={onChange}
                 className={errors.duration ? "input-error" : ""}

@@ -44,7 +44,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
         Name
         {errors.name && <div className="field-error">{errors.name}</div>}
       </div>
-      <input name="name" placeholder="Name" value={deviceForm.name} onChange={onChange} className={errors.name ? "input-error" : ""}/>
+      <input name="name" value={deviceForm.name} onChange={onChange} className={errors.name ? "input-error" : ""}/>
 
 
         {deviceForm.type === "Erzeuger" && (
@@ -70,13 +70,13 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
                   Nennleistung (kWp)
                   {errors.ratedPower && <div className="field-error">{errors.ratedPower}</div>}
                 </div>
-                <input name="ratedPower" placeholder="Nennleistung (kWp)" value={deviceForm.ratedPower} onChange={onChange} className={errors.ratedPower ? "input-error" : ""}/>
+                <input name="ratedPower" value={deviceForm.ratedPower} onChange={onChange} className={errors.ratedPower ? "input-error" : ""}/>
 
                 <div className="input-label">
                   Neigungswinkel (°)
                   {errors.angleOfInclination && <div className="field-error">{errors.angleOfInclination}</div>}
                 </div>
-                <input name="angleOfInclination" placeholder="Neigungswinkel °" value={deviceForm.angleOfInclination} onChange={onChange} className={errors.angleOfInclination ? "input-error" : ""}/>
+                <input name="angleOfInclination" value={deviceForm.angleOfInclination} onChange={onChange} className={errors.angleOfInclination ? "input-error" : ""}/>
 
                 <div className="input-label">Ausrichtung</div>
                 <select name="alignment" value={deviceForm.alignment} onChange={onChange} className={errors.alignment ? "input-error" : ""}>
@@ -107,16 +107,16 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
       {deviceForm.type === "Verbraucher" && (
         <>
           <div className="input-label">
-            Leistung
+            Leistung (kW)
             {errors.power && <div className="field-error">{errors.power}</div>}
           </div>
-          <input name="power" placeholder="Leistung" value={deviceForm.power} onChange={onChange} className={errors.power ? "input-error" : ""}/>
+          <input name="power" value={deviceForm.power} onChange={onChange} className={errors.power ? "input-error" : ""}/>
 
           <div className="input-label">
-            Dauer
+            Dauer (min)
             {errors.duration && <div className="field-error">{errors.duration}</div>}
           </div>
-          <input name="duration" placeholder="Dauer (min)" value={deviceForm.duration} onChange={onChange} className={errors.duration ? "input-error" : ""}/>
+          <input name="duration" value={deviceForm.duration} onChange={onChange} className={errors.duration ? "input-error" : ""}/>
 
           <div className="input-label">
             Flexibilität
@@ -131,17 +131,17 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
       {deviceForm.type === "Speicher" && (
         <>
             <div className="input-label">
-              Kapazität
+              Kapazität (kWh)
               {errors.capacity && <div className="field-error">{errors.capacity}</div>}
             </div>
-            <input name="capacity" placeholder="Kapazität" value={deviceForm.capacity} onChange={onChange} className={errors.capacity ? "input-error" : ""}/>
+            <input name="capacity" value={deviceForm.capacity} onChange={onChange} className={errors.capacity ? "input-error" : ""}/>
 
 
             <div className="input-label">
                 Max. Entladung (kW)
                 {errors.maxDischarge && <div className="field-error">{errors.maxDischarge}</div>}
             </div>
-            <input name="maxDischarge" placeholder="maxEntladung (kW)" value={deviceForm.maxDischarge} onChange={onChange} className={errors.maxDischarge ? "input-error" : ""}/>
+            <input name="maxDischarge" value={deviceForm.maxDischarge} onChange={onChange} className={errors.maxDischarge ? "input-error" : ""}/>
         </>
       )}
     </>

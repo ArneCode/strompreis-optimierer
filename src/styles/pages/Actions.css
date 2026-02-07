@@ -19,6 +19,12 @@
     cursor: pointer;
 }
 
+.actions-edit-delete-button {
+  background-color: rgb(216, 52, 52);
+  color: white;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
 
 .action-name {
     color: white;
@@ -81,9 +87,13 @@
     justify-content: center;
 }
 
+.action-slider {
+  margin-bottom: 20px;
+}
 
 .action-popup-window {
-    height: 550px;
+    /*height: 550px;*/
+    min-height: 400px;
     width: 400px;
     background-color: white;
     border-radius: 10px;
@@ -95,7 +105,7 @@
 }
 
 .edit-action-popup-window {
-    height: 400px;
+    min-height: 400px;
     width: 400px;
     background-color: white;
     border-radius: 10px;

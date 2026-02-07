@@ -167,7 +167,10 @@ function ActionsPage({ devices, setDevices }) {
                             currentTimeStr={getCurrentTimeStr()}
                         />
                         <div className="action-popup-buttons">
-                            <button onClick={removeAction}>Löschen</button>
+                            <button className="actions-edit-delete-button" onClick={removeAction}>Löschen</button>
+                            <button onClick={() => {
+                                setOpenEditAction(false);
+                            }}>Abbrechen</button>
                             <button className="actions-save-button" onClick={() => saveAction(true)}>Speichern</button>
                         </div>
                     </div>
