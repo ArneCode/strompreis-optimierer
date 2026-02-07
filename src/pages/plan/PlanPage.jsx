@@ -164,10 +164,6 @@ function PlanPage() {
           </Willow>
         </div>
         <div className="plan-options">
-          <button className="plan-compare-button">
-            Vergleichen
-          </button>
-
             <button className="plan-export-button" onClick={() => downloadCSV(tasks)}>
                 Exportieren als CSV
             </button>
