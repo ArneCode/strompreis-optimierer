@@ -4,7 +4,7 @@ from electricity_price_optimizer_py import Schedule, OptimizerContext, Prognoses
 from electricity_price_optimizer_py.units import Euro, EuroPerWh
 from datetime import datetime, timezone
 from concurrent.futures import Future, ThreadPoolExecutor
-
+from enum import Enum
 
 from services.interfaces import IOrchestratorService
 
@@ -19,7 +19,12 @@ class OrchestratorService(IOrchestratorService):
 
     def __init__(self):
         self._schedule = None
-        self.executor = ThreadPoolExecutor(max_workers=2)
+        self.executor = ThreadPoolExecutor(max_workers=1)
+
+    @property
+    def has_schedule(self) -> bool:
+        """Check if a schedule has been generated."""
+        return self._schedule is not None
 
     def get_schedule(self) -> "Schedule":
         """Get the current schedule."""
@@ -43,7 +48,6 @@ class OrchestratorService(IOrchestratorService):
         """Run the optimization algorithm."""
         if self.currently_running:
             raise RuntimeError("Optimization is already running.")
-        self.currently_running = True
 
         now = datetime.now(timezone.utc)
 
@@ -62,6 +66,8 @@ class OrchestratorService(IOrchestratorService):
 
         print("Starting optimization...")
         future = self.executor.submit(run_simulated_annealing, context)
+        self.currently_running = True
+
         print("Optimization task submitted...")
         future.add_done_callback(self._process_result)
         print("Optimization callback registered...")
