@@ -620,6 +620,12 @@ fn run_simulated_annealing(
     context: &OptimizerContext,
 ) -> PyResult<(Euro, Schedule)> {
     // 2. Release the GIL for the heavy computation
+    println!(
+        "Starting simulated annealing optimization. Num constant actions: {}, variable actions: {}, batteries: {}",
+        context.constant_actions.len(),
+        context.variable_actions.len(),
+        context.batteries.len()
+    );
     let (cost, rust_schedule) = py.detach(|| -> PyResult<(i64, RustSchedule)> {
         // This closure runs WITHOUT the GIL
         let rust_context = context.to_rust()?;
