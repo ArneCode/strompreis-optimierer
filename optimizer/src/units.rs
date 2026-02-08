@@ -186,6 +186,9 @@ impl Watt {
             CompareOp::Ge => self.value >= other.value,
         }
     }
+    fn __neg__(&self) -> Watt {
+        Watt { value: -self.value }
+    }
 }
 impl Watt {
     /// Convert to milli-Wh per timestep using MINUTES_PER_TIMESTEP.
@@ -377,6 +380,9 @@ impl WattHour {
             CompareOp::Ge => self.value >= other.value,
         }
     }
+    fn __neg__(&self) -> WattHour {
+        WattHour { value: -self.value }
+    }
 }
 impl WattHour {
     /// Convert to milli-Wh.
@@ -531,6 +537,9 @@ impl Euro {
             CompareOp::Gt => self.value > other.value,
             CompareOp::Ge => self.value >= other.value,
         }
+    }
+    fn __neg__(&self) -> Euro {
+        Euro { value: -self.value }
     }
 }
 impl Euro {
@@ -688,6 +697,9 @@ impl EuroPerWh {
             CompareOp::Gt => self.value > other.value,
             CompareOp::Ge => self.value >= other.value,
         }
+    }
+    fn __neg__(&self) -> EuroPerWh {
+        EuroPerWh { value: -self.value }
     }
 }
 impl EuroPerWh {
