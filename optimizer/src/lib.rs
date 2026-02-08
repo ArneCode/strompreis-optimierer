@@ -12,7 +12,7 @@
 //! - Power/energy: milli-Wh and milli-Wh per timestep (i64) internally
 //! - DateTime values must lie on timestep boundaries (minute % MINUTES_PER_TIMESTEP == 0; seconds/nanoseconds == 0)
 mod units;
-use std::{fmt::Debug, rc::Rc};
+use std::{fmt::Debug, sync::Arc};
 
 use chrono::{DateTime, Datelike, TimeDelta, TimeZone, Timelike, Utc};
 use electricity_price_optimizer::{
@@ -32,7 +32,7 @@ use electricity_price_optimizer::{
     time::{MINUTES_PER_TIMESTEP, Time},
 };
 use pyo3::{
-    Bound, FromPyObject, Py, PyAny, PyErr, PyResult, Python,
+    Bound, Py, PyAny, PyErr, PyResult, Python,
     exceptions::PyValueError,
     prelude::FromPyObjectOwned,
     pyclass, pyfunction, pymethods, pymodule,
@@ -97,7 +97,7 @@ fn time_to_datetime(time: Time, start_time: DateTime<Utc>) -> PyResult<DateTime<
 /// Validate that a DateTime<Utc> is on a timestep boundary relative to start_time.
 /// Returns error if before start_time or not aligned to the timestep.
 fn check_on_timestep_boundary(dt: DateTime<Utc>, start_time: DateTime<Utc>) -> PyResult<()> {
-    if (dt < start_time) {
+    if dt < start_time {
         return Err(PyValueError::new_err(format!(
             "DateTime {} is before start time {}",
             dt, start_time
@@ -173,7 +173,7 @@ impl PrognosesProvider {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
 #[derive(Clone)]
 /// A fixed-duration action with constant consumption per timestep.
 /// Times must be on timestep boundaries.
@@ -244,7 +244,7 @@ impl ConstantAction {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
 /// A constant action assigned by the optimizer, exposing start/end times and ID.
 pub struct AssignedConstantAction {
     inner: RustAssignedConstantAction,
@@ -266,7 +266,8 @@ impl AssignedConstantAction {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
+#[derive(Clone)]
 /// A variable action with total energy and per-timestep max consumption constraints.
 /// Times must be on timestep boundaries.
 pub struct VariableAction {
@@ -319,7 +320,7 @@ impl VariableAction {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
 pub struct AssignedVariableAction {
     inner: RustAssignedVariableAction,
     start_timestamp: DateTime<Utc>,
@@ -337,7 +338,8 @@ impl AssignedVariableAction {
         self.inner.get_id()
     }
 }
-#[pyclass(unsendable)]
+#[pyclass]
+#[derive(Clone)]
 pub struct Battery {
     /// Maximum capacity.
     pub capacity: WattHour,
@@ -435,7 +437,7 @@ impl AssignedBattery {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
 /// Builder holding prognoses and assets before solving.
 /// Add actions/batteries/prognoses, then convert to RustOptimizerContext for solving.
 struct OptimizerContext {
@@ -446,11 +448,11 @@ struct OptimizerContext {
     /// Uncontrollable consumption prognoses: Wh/timestep (i64). Defaults to 0.
     beyond_control_consumption: Prognoses<i64>,
     /// Batteries.
-    batteries: Vec<Rc<RustBattery>>,
+    batteries: Vec<Arc<RustBattery>>,
     /// Constant actions.
-    constant_actions: Vec<Rc<RustConstantAction>>,
+    constant_actions: Vec<Arc<RustConstantAction>>,
     /// Variable actions.
-    variable_actions: Vec<Rc<RustVariableAction>>,
+    variable_actions: Vec<Arc<RustVariableAction>>,
     /// Reference start timestamp for conversions and first timestep fraction.
     start_time: DateTime<Utc>,
 }
@@ -496,7 +498,7 @@ impl OptimizerContext {
         action: &ConstantAction,
     ) -> PyResult<()> {
         self.constant_actions
-            .push(Rc::new(action.to_rust(py, self.start_time)?));
+            .push(Arc::new(action.to_rust(py, self.start_time)?));
         Ok(())
     }
 
@@ -507,13 +509,13 @@ impl OptimizerContext {
         action: &VariableAction,
     ) -> PyResult<()> {
         self.variable_actions
-            .push(Rc::new(action.to_rust(self.start_time)?));
+            .push(Arc::new(action.to_rust(self.start_time)?));
         Ok(())
     }
 
     /// Add a battery.
     fn add_battery(&mut self, battery: &Battery) -> PyResult<()> {
-        self.batteries.push(Rc::new(battery.to_rust()));
+        self.batteries.push(Arc::new(battery.to_rust()));
         Ok(())
     }
 
@@ -614,12 +616,16 @@ impl Schedule {
 /// Run simulated annealing with a given OptimizerContext.
 /// Returns total cost in Euro and the resulting Schedule.
 fn run_simulated_annealing(
-    _py: Python<'_>,
+    py: Python<'_>,
     context: &OptimizerContext,
 ) -> PyResult<(Euro, Schedule)> {
-    let rust_context = context.to_rust();
-    let (cost, rust_schedule) =
-        electricity_price_optimizer::simulated_annealing::run_simulated_annealing(rust_context?);
+    // 2. Release the GIL for the heavy computation
+    let (cost, rust_schedule) = py.detach(|| -> PyResult<(i64, RustSchedule)> {
+        // This closure runs WITHOUT the GIL
+        let rust_context = context.to_rust()?;
+
+        Ok(electricity_price_optimizer::simulated_annealing::run_simulated_annealing(rust_context))
+    })?;
     Ok((
         Euro::from_nano_euro(cost as f64),
         Schedule {
