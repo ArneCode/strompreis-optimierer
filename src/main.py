@@ -9,9 +9,10 @@ from electricity_price_optimizer_py import OptimizerContext, run_simulated_annea
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 
-from tasks import update_controllers, update_mock_interactors
+from tasks import initialize_services_from_db, update_controllers, update_mock_interactors
 
 init_db()
+initialize_services_from_db()
 
 # create a new session
 
