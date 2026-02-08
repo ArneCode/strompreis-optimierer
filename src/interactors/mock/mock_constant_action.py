@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from ..interfaces import ConstantActionInteractor, ActionState
@@ -24,7 +24,7 @@ class MockConstantActionInteractor(ConstantActionInteractor):
         """Start the action."""
         if self._state == ActionState.IDLE:
             self._state = ActionState.RUNNING
-            self._start_time = datetime.now()
+            self._start_time = datetime.now(timezone.utc)
 
     def stop_action(self, device_manager: "IDeviceManager") -> None:
         """Stop the action."""

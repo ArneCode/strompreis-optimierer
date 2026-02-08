@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from ..interfaces import VariableActionInteractor
 
 from electricity_price_optimizer_py import units
@@ -17,7 +17,7 @@ class MockVariableActionInteractor(VariableActionInteractor):
         self._id = id
         self._current = units.Watt(0)
         self._total_consumed = units.WattHour(0)
-        self._last_update = datetime.now()
+        self._last_update = datetime.now(timezone.utc)
 
     def set_current(self, current: "units.Watt", device_manager: "IDeviceManager") -> None:
         """Set the power consumption in W."""
