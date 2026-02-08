@@ -1,4 +1,5 @@
-from sqlalchemy import Float, TypeDecorator
+from datetime import datetime, timezone
+from sqlalchemy import DateTime, Float, TypeDecorator
 from electricity_price_optimizer_py.units import Watt, WattHour, Euro, EuroPerWh
 
 
@@ -56,3 +57,21 @@ class EuroPerWhMapper(TypeDecorator):
         if value is not None:
             return EuroPerWh(value)
         return None
+
+
+class TimezoneAwareDateMapper(TypeDecorator):
+    """Results returned from the DB will always be UTC-aware."""
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_result_value(self, value: datetime, dialect):
+        if value is not None and value.tzinfo is None:
+            # Assume UTC if the DB returns a naive datetime
+            return value.replace(tzinfo=timezone.utc)
+        return value
+
+    def process_bind_param(self, value: datetime, dialect):
+        if value is not None and value.tzinfo is not None:
+            # Convert to UTC before saving to keep the DB clean
+            return value.astimezone(timezone.utc)
+        return value
