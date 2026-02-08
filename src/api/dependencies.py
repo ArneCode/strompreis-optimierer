@@ -5,7 +5,9 @@ Provides:
 - get_controller_service / get_interactor_service: shared singleton instances
 - get_device_manager: composes dependencies into a DeviceManager
 """
+from contextlib import contextmanager
 from fastapi import Depends
+from api.scopes import uow_scope
 from uow import SqlAlchemyUnitOfWork, IUnitOfWork
 from database import SessionLocal
 from collections.abc import Generator
@@ -26,41 +28,20 @@ def get_interactor_service() -> IInteractorService:
     return interactor_service_instance
 
 
-def get_uow(interactor_service=Depends(get_interactor_service),
-            controller_service=Depends(get_controller_service)
-            ) -> Generator[IUnitOfWork, None, None]:
-    """Yield a Unit of Work (UoW) scoped to the request.
-
-    Behavior:
-    - Creates a SqlAlchemyUnitOfWork using the configured SessionLocal factory.
-    - Enters the UoW context (opens a SQLAlchemy Session and wires SqlAlchemyDeviceService).
-    - Yields the UoW to the dependency consumer (e.g., route handlers).
-    - On dependency teardown (after the route returns), exits the UoW:
-      - If no exception occurred: commits device changes and commits controller/interactor services.
-      - If an exception occurred: rolls back device changes and rolls back controller/interactor services.
-      - Always closes the SQLAlchemy Session.
-
-    Notes:
-    - The commit/rollback for interactor/controller services delegates to in-memory RollbackMap.
-    - Database transaction management is handled by the UoW using the underlying Session.
-    """
-    uow = SqlAlchemyUnitOfWork(
-        SessionLocal, interactor_service, controller_service)
-    with uow:
-        yield uow
-
-
 def get_orchestrator_service() -> IOrchestratorService:
     """Return the application-scoped orchestrator service singleton."""
     return orchestrator_service_instance
 
-# device manager depends on interactor, controller, and unit of work
+
+def get_uow(
+    interactor=Depends(get_interactor_service),
+    controller=Depends(get_controller_service)
+) -> Generator[IUnitOfWork, None, None]:
+    """FastAPI dependency for UoW."""
+    with uow_scope(interactor, controller) as uow:
+        yield uow
 
 
-def get_device_manager(
-    uow: IUnitOfWork = Depends(get_uow),
-) -> IDeviceManager:
-    """Compose a DeviceManager using DI-provided services and the current UoW."""
-    return DeviceManager(
-        uow=uow,
-    )
+def get_device_manager(uow: IUnitOfWork = Depends(get_uow)) -> IDeviceManager:
+    """FastAPI dependency for DeviceManager."""
+    return DeviceManager(uow=uow)

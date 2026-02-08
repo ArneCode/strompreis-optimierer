@@ -11,9 +11,7 @@ from controllers import ConstantActionController, VariableActionController, Batt
 
 if TYPE_CHECKING:
     from device import Battery, VariableActionDevice, Generator, ConstantActionDevice
-    from services.controller_service import IControllerServiceReader
-    from services.device_service import IDeviceServiceReader
-    from services.interactor_service import IInteractorServiceReader
+    from services.interfaces import IControllerServiceReader, IDeviceServiceReader, IInteractorServiceReader
     from uow import IUnitOfWork
 
 

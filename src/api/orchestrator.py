@@ -1,16 +1,17 @@
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, status
-from api.dependencies import get_device_manager
+from api.dependencies import get_device_manager, get_orchestrator_service
 from device_manager import IDeviceManager
 from device import Battery, VariableActionDevice, VariableAction, ConstantActionDevice, ConstantAction, GeneratorPV
 from electricity_price_optimizer_py.units import WattHour, Watt
-from services.orchestrator_service import OrchestratorService
+from services.orchestrator_service import IOrchestratorService, OrchestratorService
 
 router = APIRouter(prefix="/orchestrator", tags=["orchestrator"])
 
 
 @router.post("/test", status_code=status.HTTP_200_OK)
-def test_orchestrator(manager: IDeviceManager = Depends(get_device_manager)) -> dict:
+def test_orchestrator(manager: IDeviceManager = Depends(get_device_manager), orchestrator: IOrchestratorService = Depends(get_orchestrator_service)
+                      ) -> dict:
     # Seed sample devices
     # 1) Battery
     battery = Battery(
@@ -57,9 +58,9 @@ def test_orchestrator(manager: IDeviceManager = Depends(get_device_manager)) -> 
     manager.add_generator(pv)
 
     # Run orchestrator
-    orchestrator = OrchestratorService()
     orchestrator.run_optimization(manager)
-    schedule = orchestrator.get_schedule()
+    print("Optimization started...")
+    # schedule = orchestrator.get_schedule()
 
     # Return a minimal summary
     return {
