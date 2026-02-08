@@ -32,14 +32,14 @@ pub mod state;
 /// let generated_electricity_data = [100; STEPS_PER_DAY as usize];
 /// let beyond_control_consumption_data = [20; STEPS_PER_DAY as usize];
 /// let batteries = vec![Battery::new(1000, 10, 10, 7, 1.0, 1)];
-/// let constant_actions = vec![Rc::new(ConstantAction::new(
+/// let constant_actions = vec![Arc::new(ConstantAction::new(
 ///     Time::new(0, 0),
 ///     Time::new(2, 0),
 ///     Time::new(1, 0),
 ///     300,
 ///     2,
 /// ))];
-/// let variable_actions = vec![Rc::new(VariableAction::new(
+/// let variable_actions = vec![Arc::new(VariableAction::new(
 ///     Time::new(1, 15),
 ///     Time::new(10, 0),
 ///     300,
@@ -101,7 +101,7 @@ pub fn run_simulated_annealing(context: OptimizerContext) -> (i64, Schedule) {
             min_cost = old_cost;
         }
         temperature *= 0.999; // Cool down
-        println!("temperature: {temperature}, cost: {old_cost}");
+        // println!("temperature: {temperature}, cost: {old_cost}");
     }
 
     println!("Total iterations: {n_iterations}, min cost: {min_cost}");
@@ -138,15 +138,15 @@ mod tests {
         let electricity_price_data = [10; STEPS_PER_DAY as usize];
         let generated_electricity_data = [100; STEPS_PER_DAY as usize];
         let beyond_control_consumption_data = [20; STEPS_PER_DAY as usize];
-        let batteries = vec![Rc::new(Battery::new(1000, 10, 10, 7, 1.0, 1))];
-        let constant_actions = vec![Rc::new(ConstantAction::new(
+        let batteries = vec![Arc::new(Battery::new(1000, 10, 10, 7, 1.0, 1))];
+        let constant_actions = vec![Arc::new(ConstantAction::new(
             Time::new(0, 0),
             Time::new(2, 0),
             Time::new(1, 0),
             300,
             2,
         ))];
-        let variable_actions = vec![Rc::new(VariableAction::new(
+        let variable_actions = vec![Arc::new(VariableAction::new(
             Time::new(1, 15),
             Time::new(10, 0),
             300,
@@ -185,17 +185,17 @@ mod tests {
             (t.to_timestep() / (STEPS_PER_DAY / 4)) as i64 * 10
         });
 
-        let batteries = vec![Rc::new(Battery::new(1000, 50, 50, 100, 1.0, 1))];
+        let batteries = vec![Arc::new(Battery::new(1000, 50, 50, 100, 1.0, 1))];
 
-        let constant_actions: Vec<Rc<ConstantAction>> = vec![
-            Rc::new(ConstantAction::new(
+        let constant_actions: Vec<Arc<ConstantAction>> = vec![
+            Arc::new(ConstantAction::new(
                 Time::new(0, 0),
                 Time::new(23, 55),
                 Time::new(1, 0),
                 300,
                 2,
             )),
-            Rc::new(ConstantAction::new(
+            Arc::new(ConstantAction::new(
                 Time::new(12, 0),
                 Time::new(23, 55),
                 Time::new(2, 0),
@@ -205,14 +205,14 @@ mod tests {
         ];
 
         let variable_actions = vec![
-            Rc::new(VariableAction::new(
+            Arc::new(VariableAction::new(
                 Time::new(6, 0),
                 Time::new(18, 0),
                 500,
                 100,
                 3,
             )),
-            Rc::new(VariableAction::new(
+            Arc::new(VariableAction::new(
                 Time::new(0, 0),
                 Time::new(23, 55),
                 2000,

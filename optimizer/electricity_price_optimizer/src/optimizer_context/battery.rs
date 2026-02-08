@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{optimizer_context::prognoses::Prognoses, time::Time};
 
@@ -78,19 +78,19 @@ impl Battery {
 
 #[derive(Clone, Debug)]
 pub struct AssignedBattery {
-    battery: Rc<Battery>,
+    battery: Arc<Battery>,
     charge_level: Prognoses<i64>,
 }
 
 impl AssignedBattery {
-    pub fn new(battery: Rc<Battery>, charge_level: Prognoses<i64>) -> Self {
+    pub fn new(battery: Arc<Battery>, charge_level: Prognoses<i64>) -> Self {
         Self {
             battery,
             charge_level,
         }
     }
 
-    pub fn get_battery(&self) -> &Rc<Battery> {
+    pub fn get_battery(&self) -> &Arc<Battery> {
         &self.battery
     }
 

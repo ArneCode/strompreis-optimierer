@@ -21,10 +21,10 @@ impl Change for RandomMoveChange {
             .with_start_time(self.new_time);
         state.add_constant_action(new_action);
 
-        println!(
-            "Moved action {} from {:?} to {:?}",
-            self.action_id, self.old_time, self.new_time
-        );
+        // println!(
+        //     "Moved action {} from {:?} to {:?}",
+        //     self.action_id, self.old_time, self.new_time
+        // );
     }
     fn undo(&self, state: &mut State) {
         let new_action = state.remove_constant_action(self.action_id).unwrap();

@@ -1,4 +1,4 @@
-use std::{hash::Hash, ops::Deref, rc::Rc};
+use std::{hash::Hash, ops::Deref, rc::Rc, sync::Arc};
 
 use crate::time::Time;
 
@@ -65,7 +65,7 @@ impl ConstantAction {
         self.consumption
     }
 
-    pub fn with_start_time(self: Rc<Self>, start_time: Time) -> AssignedConstantAction {
+    pub fn with_start_time(self: Arc<Self>, start_time: Time) -> AssignedConstantAction {
         AssignedConstantAction::new(self, start_time)
     }
 }
@@ -74,7 +74,7 @@ impl ConstantAction {
 #[derive(Clone, Debug)]
 pub struct AssignedConstantAction {
     /// The constant action being assigned.
-    action: Rc<ConstantAction>,
+    action: Arc<ConstantAction>,
     /// The assigned start time of the action.
     start_time: Time,
 }
@@ -88,7 +88,7 @@ impl AssignedConstantAction {
     /// * Panics if the start_time is out of bounds for the constant action.
     /// # Returns
     /// * A new AssignedConstantAction instance.
-    pub fn new(action: Rc<ConstantAction>, start_time: Time) -> Self {
+    pub fn new(action: Arc<ConstantAction>, start_time: Time) -> Self {
         assert!(
             start_time >= action.start_from && start_time + action.duration <= action.end_before,
             "Start time is out of bounds for the constant action"
@@ -107,7 +107,7 @@ impl AssignedConstantAction {
     }
 
     /// Returns a reference to the underlying constant action.
-    pub fn get_action(&self) -> &Rc<ConstantAction> {
+    pub fn get_action(&self) -> &Arc<ConstantAction> {
         &self.action
     }
 

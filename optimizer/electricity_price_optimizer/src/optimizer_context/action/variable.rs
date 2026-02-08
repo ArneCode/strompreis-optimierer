@@ -2,6 +2,7 @@ use std::{
     ops::{Deref, DerefMut},
     panic,
     rc::Rc,
+    sync::Arc,
 };
 
 use crate::time::Time;
@@ -79,7 +80,7 @@ impl VariableAction {
 #[derive(Debug, Clone)]
 pub struct AssignedVariableAction {
     /// The variable action being assigned.
-    action: Rc<VariableAction>,
+    action: Arc<VariableAction>,
     /// The consumption values for each timestep of the action.
     consumption: Vec<i64>,
 }
@@ -92,7 +93,7 @@ impl AssignedVariableAction {
     /// * `consumption` - The consumption values for each timestep of the action.
     /// # Panics
     /// * Panics if the length of the consumption vector does not match the duration of the action.
-    pub fn new(action: Rc<VariableAction>, consumption: Vec<i64>) -> Self {
+    pub fn new(action: Arc<VariableAction>, consumption: Vec<i64>) -> Self {
         assert_eq!(
             consumption.len() as u32,
             action.end.to_timestep() - action.start.to_timestep(),

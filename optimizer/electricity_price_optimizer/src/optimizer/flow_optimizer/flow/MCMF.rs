@@ -268,7 +268,7 @@ impl MinCostFlow {
     }
 
     pub fn update_flow(&mut self) -> (i64, i64) {
-        println!("Updating flow...");
+        // println!("Updating flow...");
         let n = self.adj.len();
         if self.con.len() < n {
             self.con.resize(n, 0);
@@ -280,10 +280,10 @@ impl MinCostFlow {
         while self.spfa() {
             self.extend();
         }
-        println!(
-            "Flow updated: cost = {}, flow = {}",
-            self.mincost, self.maxflow
-        );
+        // println!(
+        //     "Flow updated: cost = {}, flow = {}",
+        //     self.mincost, self.maxflow
+        // );
         return (self.mincost, self.maxflow);
     }
 }

@@ -8,7 +8,7 @@ pub mod action;
 pub mod battery;
 pub mod prognoses;
 
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::optimizer_context::{
     action::{
@@ -23,26 +23,26 @@ use crate::optimizer_context::{
 /// Holds all data needed for optimization.
 ///
 /// The `OptimizerContext` provides shared access to system components like
-/// batteries, actions, and prognoses. The use of [`Rc`] ensures that cloned
+/// batteries, actions, and prognoses. The use of [`Arc`] ensures that cloned
 /// instances share underlying data rather than duplicating it. This makes
 /// it efficient to pass around as part of various optimization routines.
 
 #[derive(Clone)]
 pub struct OptimizerContext {
     /// Price of electricity at each timestep
-    electricity_price: Rc<Prognoses<i64>>,
+    electricity_price: Arc<Prognoses<i64>>,
     /// Amount of electricity generated at each timestep
-    generated_electricity: Rc<Prognoses<i64>>,
+    generated_electricity: Arc<Prognoses<i64>>,
     /// Consumption that is not controllable by the system
     beyond_control_consumption: Prognoses<i64>,
 
     /// Batteries available in the system
-    batteries: Vec<Rc<Battery>>,
+    batteries: Vec<Arc<Battery>>,
 
     /// Constant actions that can be scheduled
-    constant_actions: Vec<Rc<ConstantAction>>,
+    constant_actions: Vec<Arc<ConstantAction>>,
     /// Variable actions that can be scheduled
-    variable_actions: Vec<Rc<VariableAction>>,
+    variable_actions: Vec<Arc<VariableAction>>,
 
     /// The first timestep might not be a full timestep
     /// This parameter dictates what fraction of a full timestep the first timestep is
@@ -66,14 +66,14 @@ impl OptimizerContext {
         electricity_price: Prognoses<i64>,
         generated_electricity: Prognoses<i64>,
         beyond_control_consumption: Prognoses<i64>,
-        batteries: Vec<Rc<Battery>>,
-        constant_actions: Vec<Rc<ConstantAction>>,
-        variable_actions: Vec<Rc<VariableAction>>,
+        batteries: Vec<Arc<Battery>>,
+        constant_actions: Vec<Arc<ConstantAction>>,
+        variable_actions: Vec<Arc<VariableAction>>,
         first_timestep_fraction: f32,
     ) -> Self {
         Self {
-            electricity_price: Rc::new(electricity_price),
-            generated_electricity: Rc::new(generated_electricity),
+            electricity_price: Arc::new(electricity_price),
+            generated_electricity: Arc::new(generated_electricity),
             beyond_control_consumption,
             batteries: batteries,
             constant_actions,
@@ -83,15 +83,15 @@ impl OptimizerContext {
     }
 
     /// Returns a reference to the list of constant actions.
-    pub fn get_constant_actions(&self) -> &Vec<Rc<ConstantAction>> {
+    pub fn get_constant_actions(&self) -> &Vec<Arc<ConstantAction>> {
         &self.constant_actions
     }
     /// Returns a reference to the list of variable actions.
-    pub fn get_variable_actions(&self) -> &Vec<Rc<VariableAction>> {
+    pub fn get_variable_actions(&self) -> &Vec<Arc<VariableAction>> {
         &self.variable_actions
     }
     /// Returns a reference to the list of batteries.
-    pub fn get_batteries(&self) -> &Vec<Rc<Battery>> {
+    pub fn get_batteries(&self) -> &Vec<Arc<Battery>> {
         &self.batteries
     }
 
@@ -104,12 +104,12 @@ impl OptimizerContext {
     }
 
     /// Returns a reference to the electricity price prognoses.
-    pub fn get_electricity_price(&self) -> &Rc<Prognoses<i64>> {
+    pub fn get_electricity_price(&self) -> &Arc<Prognoses<i64>> {
         &self.electricity_price
     }
 
     /// Returns a reference to the generated electricity prognoses.
-    pub fn get_generated_electricity(&self) -> &Rc<Prognoses<i64>> {
+    pub fn get_generated_electricity(&self) -> &Arc<Prognoses<i64>> {
         &self.generated_electricity
     }
 

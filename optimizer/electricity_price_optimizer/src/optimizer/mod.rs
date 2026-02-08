@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::rc::Rc;
+use std::sync::Arc;
 use std::{collections::HashMap, hash::Hash};
 
 use std::time::Instant;
@@ -17,12 +18,12 @@ use crate::time::{STEPS_PER_DAY, Time, TimeIterator};
 mod flow_optimizer;
 
 pub struct BatteryBlueprint {
-    battery: Rc<Battery>,
+    battery: Arc<Battery>,
     relevant_edges: HashMap<Time, usize>,
 }
 
 impl BatteryBlueprint {
-    pub fn new(battery: Rc<Battery>) -> Self {
+    pub fn new(battery: Arc<Battery>) -> Self {
         Self {
             battery,
             relevant_edges: HashMap::new(),
@@ -49,12 +50,12 @@ impl Blueprint<FlowWrapper, AssignedBattery> for BatteryBlueprint {
 }
 
 pub struct VariableActionBlueprint {
-    variable_action: Rc<VariableAction>,
+    variable_action: Arc<VariableAction>,
     relevant_edges: HashMap<Time, usize>,
 }
 
 impl VariableActionBlueprint {
-    pub fn new(variable_action: Rc<VariableAction>) -> Self {
+    pub fn new(variable_action: Arc<VariableAction>) -> Self {
         Self {
             variable_action,
             relevant_edges: HashMap::new(),
@@ -232,7 +233,7 @@ impl SmartHomeFlowBuilder {
         }
     }
 
-    pub fn add_battery(mut self, battery: &Rc<Battery>) -> Self {
+    pub fn add_battery(mut self, battery: &Arc<Battery>) -> Self {
         let id = battery.get_id();
         let mut battery_blueprint = BatteryBlueprint::new(battery.clone());
 
@@ -290,13 +291,13 @@ impl SmartHomeFlowBuilder {
         self
     }
 
-    pub fn add_batteries(mut self, batteries: &Vec<Rc<Battery>>) -> Self {
+    pub fn add_batteries(mut self, batteries: &Vec<Arc<Battery>>) -> Self {
         for battery in batteries {
             self = self.add_battery(battery);
         }
         self
     }
-    pub fn add_action(mut self, action: &Rc<VariableAction>) -> Self {
+    pub fn add_action(mut self, action: &Arc<VariableAction>) -> Self {
         let mut variable_action_blueprint = VariableActionBlueprint::new(action.clone());
         for t in (action.get_start()..action.get_end()).iter_steps() {
             let max_consumption = if t.to_timestep() == 0 {
@@ -326,7 +327,7 @@ impl SmartHomeFlowBuilder {
             .add_variable_action_blueprint(variable_action_blueprint);
         self
     }
-    pub fn add_actions(mut self, variable_actions: &Vec<Rc<VariableAction>>) -> Self {
+    pub fn add_actions(mut self, variable_actions: &Vec<Arc<VariableAction>>) -> Self {
         for action in variable_actions {
             self = self.add_action(action);
         }
@@ -391,14 +392,14 @@ impl SmartHomeFlow {
                 );
             }
         }
-        println!("start flow");
+        // println!("start flow");
         let (flow_cost, flow_value) = self.flow.mincostflow();
         self.calc_result = Some(flow_cost);
-        println!("Total flow: {}, Total cost: {}", flow_value, flow_cost);
+        // println!("Total flow: {}, Total cost: {}", flow_value, flow_cost);
         let inner_duration = inner_start.elapsed();
-        println!("Flow setup took: {:?}", inner_duration);
+        // println!("Flow setup took: {:?}", inner_duration);
         let duration = start.elapsed();
-        println!("Flow calculation took: {:?}", duration);
+        // println!("Flow calculation took: {:?}", duration);
     }
     pub fn get_cost(&mut self) -> i64 {
         if self.calc_result.is_none() {
