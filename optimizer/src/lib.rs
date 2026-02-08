@@ -386,7 +386,7 @@ impl Battery {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
 /// A battery assignment exposing charge level and instantaneous charge speed at timesteps.
 pub struct AssignedBattery {
     inner: RustAssignedBattery,
@@ -577,7 +577,7 @@ impl OptimizerContext {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
 /// Final schedule returned by the optimizer. Use accessors to retrieve assigned actions and batteries.
 pub struct Schedule {
     inner: RustSchedule,
