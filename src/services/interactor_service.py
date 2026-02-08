@@ -44,6 +44,18 @@ class InteractorService(IInteractorService):
     def get_variable_action_interactor(self, interactor_id: "int") -> "Optional[VariableActionInteractor]":
         return self.variable_action_interactors.get(interactor_id)
 
+    def get_all_battery_interactors(self) -> "list[BatteryInteractor]":
+        return list(self.battery_interactors.values())
+
+    def get_all_generator_interactors(self) -> "list[GeneratorInteractor]":
+        return list(self.generator_interactors.values())
+
+    def get_all_constant_action_interactors(self) -> "list[ConstantActionInteractor]":
+        return list(self.constant_action_interactors.values())
+
+    def get_all_variable_action_interactors(self) -> "list[VariableActionInteractor]":
+        return list(self.variable_action_interactors.values())
+
     def add_battery_interactor(self, interactor: "BatteryInteractor") -> "int":
         self.battery_interactors.set(interactor.device_id, interactor)
         return interactor.device_id

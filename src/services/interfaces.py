@@ -35,6 +35,26 @@ class IInteractorServiceReader(ABC):
         """Retrieve variable action interactor details by ID."""
         ...
 
+    @abstractmethod
+    def get_all_battery_interactors(self) -> "list[BatteryInteractor]":
+        """Retrieve all battery interactors."""
+        ...
+
+    @abstractmethod
+    def get_all_generator_interactors(self) -> "list[GeneratorInteractor]":
+        """Retrieve all generator interactors."""
+        ...
+
+    @abstractmethod
+    def get_all_constant_action_interactors(self) -> "list[ConstantActionInteractor]":
+        """Retrieve all constant action interactors."""
+        ...
+
+    @abstractmethod
+    def get_all_variable_action_interactors(self) -> "list[VariableActionInteractor]":
+        """Retrieve all variable action interactors."""
+        ...
+
 
 class IInteractorService(IInteractorServiceReader):
     """Interactor service API with mutation operations."""
