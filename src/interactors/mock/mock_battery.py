@@ -23,7 +23,7 @@ class MockBatteryInteractor(BatteryInteractor):
         """Set the charge/discharge current in W."""
         battery = device_manager.get_device_service().get_battery(self._id)
 
-        if current > 0:  # Charging: clamp to max_charge_rate
+        if current > units.Watt(0):  # Charging: clamp to max_charge_rate
             self._current = min(battery.max_charge_rate, current)
         else:            # Discharging: clamp to max_discharge_rate (negative)
             self._current = max(-battery.max_discharge_rate, current)
@@ -40,7 +40,7 @@ class MockBatteryInteractor(BatteryInteractor):
         elapsed = (current_time - self._last_update)
         """Update the battery state based on elapsed time."""
         # Use numeric comparison for unit wrapper
-        cur_val = self._current.value
+        cur_val = self._current.get_value()
         if abs(cur_val) < 1e-12:
             return
 
