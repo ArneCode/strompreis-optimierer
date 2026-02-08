@@ -11,73 +11,9 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from controllers import BatteryController, GeneratorController, ConstantActionController, VariableActionController
 from controllers.base import DeviceController
-from uow.rollback_map import RollbackMap
+from services.interfaces import IControllerService
+from rollback_map import RollbackMap
 
-
-class IControllerServiceReader(ABC):
-    """Read-only controller service API."""
-    @abstractmethod
-    def get_battery_controller(self, controller_id: int) -> Optional[BatteryController]:
-        """Retrieve battery controller details by ID."""
-        ...
-
-    @abstractmethod
-    def get_generator_controller(self, controller_id: int) -> Optional[GeneratorController]:
-        """Retrieve generator controller details by ID."""
-        ...
-
-    @abstractmethod
-    def get_constant_action_controller(self, controller_id: int) -> Optional[ConstantActionController]:
-        """Retrieve constant action controller details by ID."""
-        ...
-
-    @abstractmethod
-    def get_variable_action_controller(self, controller_id: int) -> Optional[VariableActionController]:
-        """Retrieve variable action controller details by ID."""
-        ...
-
-    @abstractmethod
-    def get_all_controllers(self) -> list[DeviceController]:
-        """Retrieve all controllers."""
-        ...
-
-
-class IControllerService(IControllerServiceReader):
-    """Controller service API with mutation operations."""
-    @abstractmethod
-    def add_battery_controller(self, controller: BatteryController) -> int:
-        """Add a new battery controller and return its ID."""
-        ...
-
-    @abstractmethod
-    def add_generator_controller(self, controller: GeneratorController) -> int:
-        """Add a new generator controller and return its ID."""
-        ...
-
-    @abstractmethod
-    def add_constant_action_controller(self, controller: ConstantActionController) -> int:
-        """Add a new constant action controller and return its ID."""
-        ...
-
-    @abstractmethod
-    def add_variable_action_controller(self, controller: VariableActionController) -> int:
-        """Add a new variable action controller and return its ID."""
-        ...
-
-    @abstractmethod
-    def remove_controller(self, controller_id: int) -> None:
-        """Remove a controller by ID."""
-        ...
-
-    @abstractmethod
-    def rollback(self) -> None:
-        """Rollback all changes made since the last commit."""
-        ...
-
-    @abstractmethod
-    def commit(self) -> None:
-        """Commit all changes to the database."""
-        ...
 
 # IMPORTANT: Does not work in multiprocessing environments due to shared state in RollbackMap. Consider using a different approach for concurrency.
 

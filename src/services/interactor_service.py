@@ -9,71 +9,11 @@ Caveats:
 from abc import ABC, abstractmethod
 from typing import Optional, TYPE_CHECKING
 
+from services.interfaces import IInteractorService
+
 if TYPE_CHECKING:
     from interactors.interfaces import BatteryInteractor, GeneratorInteractor, ConstantActionInteractor, VariableActionInteractor
-from uow.rollback_map import RollbackMap
-
-
-class IInteractorServiceReader(ABC):
-    """Read-only interactor service API."""
-    @abstractmethod
-    def get_battery_interactor(self, interactor_id: "int") -> "Optional[BatteryInteractor]":
-        """Retrieve battery interactor details by ID."""
-        ...
-
-    @abstractmethod
-    def get_generator_interactor(self, interactor_id: "int") -> "Optional[GeneratorInteractor]":
-        """Retrieve generator interactor details by ID."""
-        ...
-
-    @abstractmethod
-    def get_constant_action_interactor(self, interactor_id: "int") -> "Optional[ConstantActionInteractor]":
-        """Retrieve constant action interactor details by ID."""
-        ...
-
-    @abstractmethod
-    def get_variable_action_interactor(self, interactor_id: "int") -> "Optional[VariableActionInteractor]":
-        """Retrieve variable action interactor details by ID."""
-        ...
-
-
-class IInteractorService(IInteractorServiceReader):
-    """Interactor service API with mutation operations."""
-
-    @abstractmethod
-    def add_battery_interactor(self, interactor: "BatteryInteractor") -> "int":
-        """Add a new battery interactor and return its ID."""
-        ...
-
-    @abstractmethod
-    def add_generator_interactor(self, interactor: "GeneratorInteractor") -> "int":
-        """Add a new generator interactor and return its ID."""
-        ...
-
-    @abstractmethod
-    def add_constant_action_interactor(self, interactor: "ConstantActionInteractor") -> "int":
-        """Add a new constant action interactor and return its ID."""
-        ...
-
-    @abstractmethod
-    def add_variable_action_interactor(self, interactor: "VariableActionInteractor") -> "int":
-        """Add a new variable action interactor and return its ID."""
-        ...
-
-    @abstractmethod
-    def remove_interactor(self, interactor_id: "int") -> "None":
-        """Remove an interactor by ID."""
-        ...
-
-    @abstractmethod
-    def rollback(self) -> "None":
-        """Rollback all changes made since the last commit."""
-        ...
-
-    @abstractmethod
-    def commit(self) -> "None":
-        """Commit all staged changes, making them permanent."""
-        ...
+from rollback_map import RollbackMap
 
 
 class InteractorService(IInteractorService):
