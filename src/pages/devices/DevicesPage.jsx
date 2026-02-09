@@ -122,6 +122,9 @@ function DevicesPage({devices, setDevices}) {
 
       capacity: device.capacity || "",
       maxDischarge: device.maxDischarge || "",
+      maxChargeRate: device.maxChargeRate || "",
+      efficiency: device.efficiency || "",
+      currentCharge: device.currentCharge || "",
     });
   }
 
@@ -155,7 +158,14 @@ function DevicesPage({devices, setDevices}) {
       location: deviceForm.location,
       power: deviceForm.power,
       duration: deviceForm.duration,
-      capacity: deviceForm.capacity
+      capacity: deviceForm.capacity,
+      lat: deviceForm.lat,
+      lng: deviceForm.lng,
+      forecast: deviceForm.forecast,
+      flexibility: deviceForm.flexibility,
+      maxChargeRate: deviceForm.maxChargeRate,
+      currentCharge: deviceForm.currentCharge,
+      efficiency: deviceForm.efficiency,
     }
 
     setDevices(updatedDevices);
