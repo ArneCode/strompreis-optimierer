@@ -49,9 +49,9 @@ function DevicesPage({devices, setDevices}) {
         return;
       }
 
-      if (deviceForm.type === "Erzeuger") {
+      if (deviceForm.type === "generator") {
           newDevice.forecast = deviceForm.forecast;
-      } else if (deviceForm.type === "PVAnlage") {
+      } else if (deviceForm.type === "pvGenerator") {
           newDevice.ratedPower = deviceForm.ratedPower;
           newDevice.angleOfInclination = deviceForm.angleOfInclination;
           newDevice.alignment = deviceForm.alignment;
@@ -59,13 +59,13 @@ function DevicesPage({devices, setDevices}) {
           newDevice.lat = deviceForm.lat;
           newDevice.lng = deviceForm.lng;
 
-      } else if (deviceForm.type === "Verbraucher") {
+      } else if (deviceForm.type === "consumer") {
           newDevice.power = deviceForm.power;
           newDevice.duration = deviceForm.duration;
           newDevice.flexibility = deviceForm.flexibility;
           setOpenCreateDevice(false);
 
-      } else if (deviceForm.type === "Speicher") {
+      } else if (deviceForm.type === "battery") {
           newDevice.capacity = deviceForm.capacity;
           newDevice.maxDischarge = deviceForm.maxDischarge;
           newDevice.maxChargeRate = deviceForm.maxChargeRate;
@@ -107,7 +107,7 @@ function DevicesPage({devices, setDevices}) {
 
     setDeviceForm({
       name: device.name || "",
-      type: device.type || "Erzeuger",
+      type: device.type || "generator",
 
       ratedPower: device.ratedPower || "",
       angleOfInclination: device.angleOfInclination || "",
@@ -118,7 +118,7 @@ function DevicesPage({devices, setDevices}) {
 
       power: device.power || "",
       duration: device.duration || "",
-      flexibility: device.flexibility || "durchlauf",
+      flexibility: device.flexibility || "constant",
 
       capacity: device.capacity || "",
       maxDischarge: device.maxDischarge || "",

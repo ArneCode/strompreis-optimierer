@@ -34,10 +34,10 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
     return (
     <>
       <select name="type" value={deviceForm.type} onChange={onChange} className={errors.type ? "input-error" : ""}>
-        <option value="Erzeuger">Erzeuger</option>
-        <option value="PVAnlage">PVAnlage</option>
-        <option value="Verbraucher">Verbraucher</option>
-        <option value="Speicher">Speicher</option>
+        <option value="generator">Erzeuger</option>
+        <option value="pvGenerator">PVAnlage</option>
+        <option value="consumer">Verbraucher</option>
+        <option value="battery">Speicher</option>
       </select>
 
       <div className="input-label">
@@ -47,7 +47,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
       <input name="name" value={deviceForm.name} onChange={onChange} className={errors.name ? "input-error" : ""}/>
 
 
-        {deviceForm.type === "Erzeuger" && (
+        {deviceForm.type === "generator" && (
             <div className="upload-section">
 
                 <div className="input-label">Prognose</div>
@@ -64,7 +64,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
             </div>
         )}
 
-        {deviceForm.type === "PVAnlage" && (
+        {deviceForm.type === "pvGenerator" && (
             <>
                 <div className="input-label">
                   Nennleistung (kWp)
@@ -104,7 +104,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
             </>
         )}
 
-      {deviceForm.type === "Verbraucher" && (
+      {deviceForm.type === "consumer" && (
         <>
           <div className="input-label">
             Leistung (kW)
@@ -122,13 +122,13 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
             Flexibilität
           </div>
           <select name="flexibility" value={deviceForm.flexibility} onChange={onChange} className={errors.flexibility ? "input-error" : ""}>
-            <option value="durchlauf">durchlaufen</option>
-            <option value="flexibel">flexibel</option>
+            <option value="constant">durchlaufen</option>
+            <option value="variable">flexibel</option>
           </select>
         </>
       )}
 
-      {deviceForm.type === "Speicher" && (
+      {deviceForm.type === "battery" && (
         <>
             <div className="input-label">
               Kapazität (kWh)

@@ -1,6 +1,6 @@
 export const INITIAL_DEVICE_FORM = {
     name: "",
-    type: "Erzeuger",
+    type: "generator",
     ratedPower: "", // nennleitsung
     angleOfInclination: "",
     alignment: "Süd",
@@ -10,7 +10,7 @@ export const INITIAL_DEVICE_FORM = {
     power: "",
     duration: "",
     forecast: "",
-    flexibility: "durchlauf",
+    flexibility: "constant",
     capacity: "",
     maxDischarge: ""
 };
