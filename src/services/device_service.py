@@ -10,7 +10,7 @@ Notes:
 from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from device import Device, Battery, Generator, ConstantActionDevice, VariableActionDevice
+from device import Device, Battery, Generator, ConstantActionDevice, GeneratorPV, VariableActionDevice
 from services.interfaces import IDeviceService
 
 
@@ -42,7 +42,7 @@ class SqlAlchemyDeviceService(IDeviceService):
         return self.session.query(Battery).all()
 
     def get_all_generators(self) -> "list[Generator]":
-        return self.session.query(Generator).all()
+        return self.session.query(GeneratorPV).all()
 
     def get_all_constant_action_devices(self) -> "list[ConstantActionDevice]":
         return self.session.query(ConstantActionDevice).all()

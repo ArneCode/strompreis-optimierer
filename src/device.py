@@ -16,7 +16,7 @@ from sqlalchemy.orm import Mapped, mapped_column, declared_attr
 from database.base import Base
 import enum
 
-from database.mapper import WattHourMapper, WattMapper, EuroMapper, EuroPerWhMapper
+from database.mapper import TimezoneAwareDateMapper, WattHourMapper, WattMapper, EuroMapper, EuroPerWhMapper
 
 
 class DeviceType(enum.Enum):
@@ -92,8 +92,8 @@ class ConstantAction(Base):
         back_populates="actions"
     )
 
-    start_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    end_before: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    start_from: Mapped[datetime] = mapped_column(TimezoneAwareDateMapper)
+    end_before: Mapped[datetime] = mapped_column(TimezoneAwareDateMapper)
     duration: Mapped[timedelta] = mapped_column(Interval)
     consumption: Mapped[Watt] = mapped_column(WattMapper)
 
@@ -131,8 +131,8 @@ class VariableAction(Base):
         back_populates="actions"
     )
 
-    start: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    end: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    start: Mapped[datetime] = mapped_column(TimezoneAwareDateMapper)
+    end: Mapped[datetime] = mapped_column(TimezoneAwareDateMapper)
     total_consumption: Mapped[WattHour] = mapped_column(WattHourMapper)
     max_consumption: Mapped[Watt] = mapped_column(WattMapper)
 

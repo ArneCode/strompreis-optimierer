@@ -1,6 +1,15 @@
+from api.example import router as example_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from sqlalchemy.orm import Session
+from database import engine, init_db
+from device import *
+from electricity_price_optimizer_py import OptimizerContext, run_simulated_annealing
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from contextlib import asynccontextmanager
+
+from tasks import initialize_services_from_db, update_controllers, update_mock_interactors
 
 from database import init_db
 
@@ -10,25 +19,17 @@ from api.actions import router as actions_router
 from api.plan import router as plan_router
 
 init_db()
+initialize_services_from_db()
+
+# create a new session
+
+# main.py
 
 app = FastAPI()
 
-# CORS for local frontend dev (Vite:5173, CRA:3000)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Routers
+# Include the orchestrator router
 app.include_router(orchestrator_router)
+app.include_router(example_router)
 app.include_router(devices_router)
 app.include_router(actions_router)
 app.include_router(plan_router)

@@ -386,7 +386,7 @@ impl Battery {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
 /// A battery assignment exposing charge level and instantaneous charge speed at timesteps.
 pub struct AssignedBattery {
     inner: RustAssignedBattery,
@@ -577,7 +577,7 @@ impl OptimizerContext {
     }
 }
 
-#[pyclass(unsendable)]
+#[pyclass]
 /// Final schedule returned by the optimizer. Use accessors to retrieve assigned actions and batteries.
 pub struct Schedule {
     inner: RustSchedule,
@@ -620,6 +620,12 @@ fn run_simulated_annealing(
     context: &OptimizerContext,
 ) -> PyResult<(Euro, Schedule)> {
     // 2. Release the GIL for the heavy computation
+    println!(
+        "Starting simulated annealing optimization. Num constant actions: {}, variable actions: {}, batteries: {}",
+        context.constant_actions.len(),
+        context.variable_actions.len(),
+        context.batteries.len()
+    );
     let (cost, rust_schedule) = py.detach(|| -> PyResult<(i64, RustSchedule)> {
         // This closure runs WITHOUT the GIL
         let rust_context = context.to_rust()?;
