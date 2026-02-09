@@ -51,7 +51,7 @@ function DevicesPage({devices, setDevices}) {
 
       if (deviceForm.type === "Generator") {
           newDevice.forecast = deviceForm.forecast;
-      } else if (deviceForm.type === "PvGenerator") {
+      } else if (deviceForm.type === "PVGenerator") {
           newDevice.ratedPower = deviceForm.ratedPower;
           newDevice.angleOfInclination = deviceForm.angleOfInclination;
           newDevice.alignment = deviceForm.alignment;

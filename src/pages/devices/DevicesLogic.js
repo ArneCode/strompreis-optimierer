@@ -20,7 +20,7 @@ const deviceTranslations = {
     "Battery": "Speicher",
     "Consumer": "Verbraucher",
     "Generator": "Erzeuger",
-    "PvGenerator": "PV-Anlage",
+    "PVGenerator": "PV-Anlage",
 }
 
 
@@ -43,7 +43,7 @@ export const DEVICE_VALIDATION_SCHEME = {
         forecast: [RULES.required],
     },
 
-    PvGenerator: {
+    PVGenerator: {
         ratedPower: [RULES.required, RULES.number, RULES.positive],
         angleOfInclination: [RULES.required, RULES.number, RULES.positive],
         alignment: [RULES.required],
