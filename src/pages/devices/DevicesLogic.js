@@ -15,6 +15,23 @@ export const INITIAL_DEVICE_FORM = {
     maxDischarge: ""
 };
 
+
+const deviceTranslations = {
+    "battery": "Speicher",
+    "consumer": "Verbraucher",
+    "generator": "Erzeuger",
+    "pvGenerator": "PV-Anlage",
+}
+
+
+const translateDevice = (key) => {
+    const normalizedKey = key ? key.toString() : "";
+    return deviceTranslations[normalizedKey] || deviceTranslations[normalizedKey.toUpperCase()] || key;
+};
+
+export default translateDevice
+
+
 export const RULES = {
     required: value => value ? null : "Pflichtfeld",
     number: value => isNaN(Number(value)) ? "Gib eine Zahl an" : null,
@@ -22,24 +39,24 @@ export const RULES = {
 };
 
 export const DEVICE_VALIDATION_SCHEME = {
-    Erzeuger: {
+    generator: {
         forecast: [RULES.required],
     },
 
-    PVAnlage: {
+    pvGenerator: {
         ratedPower: [RULES.required, RULES.number, RULES.positive],
         angleOfInclination: [RULES.required, RULES.number, RULES.positive],
         alignment: [RULES.required],
         location: [RULES.required],
     },
 
-    Verbraucher: {
+    consumer: {
         power: [RULES.required, RULES.number, RULES.positive],
         duration: [RULES.required, RULES.number, RULES.positive],
         flexibility: [RULES.required],
     },
 
-    Speicher: {
+    battery: {
         capacity: [RULES.required, RULES.number, RULES.positive],
         maxDischarge: [RULES.required, RULES.number, RULES.positive],
     },

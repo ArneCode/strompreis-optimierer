@@ -1,4 +1,5 @@
 import '../../styles/pages/Devices.css';
+import translateDevice from "./DevicesLogic.js";
 
 function Device({type, name}) {
   return (
@@ -7,7 +8,7 @@ function Device({type, name}) {
         {name}
       </p>
       <p className="device-type">
-        {type}
+        {translateDevice(type)}
       </p>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState} from 'react'
 import LocationPickerModal from "../../components/geosearch/LocationPickerModal.jsx";
+import translateDevice from "./DevicesLogic.js";
 
 function DeviceForm({ deviceForm, onChange, errors = {}}) {
     const [isMapOpen, setIsMapOpen] = useState(false);
@@ -34,10 +35,10 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
     return (
     <>
       <select name="type" value={deviceForm.type} onChange={onChange} className={errors.type ? "input-error" : ""}>
-        <option value="generator">Erzeuger</option>
-        <option value="pvGenerator">PVAnlage</option>
-        <option value="consumer">Verbraucher</option>
-        <option value="battery">Speicher</option>
+        <option value="generator">{translateDevice("generator")}</option>
+        <option value="pvGenerator">{translateDevice("pvGenerator")}</option>
+        <option value="consumer">{translateDevice("consumer")}</option>
+        <option value="battery">{translateDevice("battery")}</option>
       </select>
 
       <div className="input-label">
