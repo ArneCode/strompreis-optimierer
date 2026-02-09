@@ -15,6 +15,9 @@ function DevicesPage({devices, setDevices}) {
     const [openEditDevice, setOpenEditDevice] = useState(false);
 
 
+
+
+
   function handleDeviceFormChange(e) {
     const {name, value} = e.target;
 

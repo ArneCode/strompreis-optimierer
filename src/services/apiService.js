@@ -1,7 +1,7 @@
 
 class ApiService {
     constructor() {
-        this.baseURL = "http://127.0.0.1:5000";
+        this.baseURL = "http://127.0.0.1:5000/api"; // Wichtig: /api Prefix
     }
 
     async request(endpoint, method = 'GET', data = null) {
@@ -16,18 +16,30 @@ class ApiService {
         return res.json();
     }
 
-    fetchDevices() { return this.request('devices'); }
-    saveDevice(data) { return this.request('devices', 'POST', data); }
-    updateDevice(id, data) { return this.request(`devices/${id}`, 'PUT', data); }
-    deleteDevice(id) { return this.request(`devices/${id}`, 'DELETE'); }
+    fetchDevices() {
+        return this.request('devices');
+    }
 
-    fetchActions() { return this.request('actions'); }
-    saveAction(data) { return this.request('actions', 'POST', data); }
-    updateAction(id, data) { return this.request(`actions/${id}`, 'PUT', data); }
-    deleteAction(id) { return this.request(`actions/${id}`, 'DELETE'); }
+    saveDevice(data) {
+        return this.request('devices', 'POST', data);
+    }
 
-    getPlan() { return this.request('plan'); }
-    updatePlan(data) { return this.request('plan', 'PUT', data); }
+    resetAllDevices() {
+        return this.request('devices', 'DELETE');
+    }
+
+    deleteDevice(id) {
+        return this.request(`devices/${id}`, 'DELETE');
+    }
+
+    saveAction(deviceId, actionData) {
+        return this.request(`devices/${deviceId}/actions`, 'POST', actionData);
+    }
+
+    deleteAction(deviceId, actionId) {
+        return this.request(`devices/${deviceId}/actions/${actionId}`, 'DELETE');
+    }
+
 }
 
 export default new ApiService();

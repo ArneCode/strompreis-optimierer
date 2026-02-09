@@ -59,6 +59,7 @@ export const DEVICE_VALIDATION_SCHEME = {
     Battery: {
         capacity: [RULES.required, RULES.number, RULES.positive],
         maxDischarge: [RULES.required, RULES.number, RULES.positive],
+
     },
 };
 
