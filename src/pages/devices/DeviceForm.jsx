@@ -142,6 +142,16 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
                 {errors.maxDischarge && <div className="field-error">{errors.maxDischarge}</div>}
             </div>
             <input name="maxDischarge" value={deviceForm.maxDischarge} onChange={onChange} className={errors.maxDischarge ? "input-error" : ""}/>
+
+            <div className="input-label">
+                Max Charge Rate
+            </div>
+            <input name="maxChargeRate" value={deviceForm.maxChargeRate} onChange={onChange} className={""}/>
+
+            <div className="input-label">
+                Efficiency
+            </div>
+            <input name="efficiency" value={deviceForm.efficiency} onChange={onChange} className={""}/>
         </>
       )}
     </>

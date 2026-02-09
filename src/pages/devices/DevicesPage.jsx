@@ -68,6 +68,9 @@ function DevicesPage({devices, setDevices}) {
       } else if (deviceForm.type === "Speicher") {
           newDevice.capacity = deviceForm.capacity;
           newDevice.maxDischarge = deviceForm.maxDischarge;
+          newDevice.maxChargeRate = deviceForm.maxChargeRate;
+          newDevice.currentCharge = deviceForm.currentCharge;
+          newDevice.efficiency = deviceForm.efficiency;
       }
 
       setDevices([...devices, newDevice]);
