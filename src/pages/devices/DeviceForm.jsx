@@ -35,10 +35,10 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
     return (
     <>
       <select name="type" value={deviceForm.type} onChange={onChange} className={errors.type ? "input-error" : ""}>
-        <option value="generator">{translateDevice("generator")}</option>
-        <option value="pvGenerator">{translateDevice("pvGenerator")}</option>
-        <option value="consumer">{translateDevice("consumer")}</option>
-        <option value="battery">{translateDevice("battery")}</option>
+        <option value="Generator">{translateDevice("generator")}</option>
+        <option value="PvGenerator">{translateDevice("pvGenerator")}</option>
+        <option value="Consumer">{translateDevice("consumer")}</option>
+        <option value="Battery">{translateDevice("battery")}</option>
       </select>
 
       <div className="input-label">
@@ -65,7 +65,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
             </div>
         )}
 
-        {deviceForm.type === "pvGenerator" && (
+        {deviceForm.type === "PvGenerator" && (
             <>
                 <div className="input-label">
                   Nennleistung (kWp)
@@ -105,7 +105,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
             </>
         )}
 
-      {deviceForm.type === "consumer" && (
+      {deviceForm.type === "Consumer" && (
         <>
           <div className="input-label">
             Leistung (kW)
@@ -129,7 +129,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
         </>
       )}
 
-      {deviceForm.type === "battery" && (
+      {deviceForm.type === "Battery" && (
         <>
             <div className="input-label">
               Kapazität (kWh)

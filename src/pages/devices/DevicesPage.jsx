@@ -49,9 +49,9 @@ function DevicesPage({devices, setDevices}) {
         return;
       }
 
-      if (deviceForm.type === "generator") {
+      if (deviceForm.type === "Generator") {
           newDevice.forecast = deviceForm.forecast;
-      } else if (deviceForm.type === "pvGenerator") {
+      } else if (deviceForm.type === "PvGenerator") {
           newDevice.ratedPower = deviceForm.ratedPower;
           newDevice.angleOfInclination = deviceForm.angleOfInclination;
           newDevice.alignment = deviceForm.alignment;
@@ -59,13 +59,13 @@ function DevicesPage({devices, setDevices}) {
           newDevice.lat = deviceForm.lat;
           newDevice.lng = deviceForm.lng;
 
-      } else if (deviceForm.type === "consumer") {
+      } else if (deviceForm.type === "Consumer") {
           newDevice.power = deviceForm.power;
           newDevice.duration = deviceForm.duration;
           newDevice.flexibility = deviceForm.flexibility;
           setOpenCreateDevice(false);
 
-      } else if (deviceForm.type === "battery") {
+      } else if (deviceForm.type === "Battery") {
           newDevice.capacity = deviceForm.capacity;
           newDevice.maxDischarge = deviceForm.maxDischarge;
           newDevice.maxChargeRate = deviceForm.maxChargeRate;

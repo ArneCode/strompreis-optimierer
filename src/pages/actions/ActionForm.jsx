@@ -35,7 +35,7 @@ function ActionForm({
                     >
                         <option value="">Verbraucher wählen</option>
                         {devices
-                            .filter(device => device.type === "consumer")
+                            .filter(device => device.type === "Consumer")
                             .map((device, idx) => (
                                 <option key={idx} value={device.name}>
                                     {device.name}

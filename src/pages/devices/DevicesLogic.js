@@ -17,10 +17,10 @@ export const INITIAL_DEVICE_FORM = {
 
 
 const deviceTranslations = {
-    "battery": "Speicher",
-    "consumer": "Verbraucher",
-    "generator": "Erzeuger",
-    "pvGenerator": "PV-Anlage",
+    "Battery": "Speicher",
+    "Consumer": "Verbraucher",
+    "Generator": "Erzeuger",
+    "PvGenerator": "PV-Anlage",
 }
 
 
@@ -39,24 +39,24 @@ export const RULES = {
 };
 
 export const DEVICE_VALIDATION_SCHEME = {
-    generator: {
+    Generator: {
         forecast: [RULES.required],
     },
 
-    pvGenerator: {
+    PvGenerator: {
         ratedPower: [RULES.required, RULES.number, RULES.positive],
         angleOfInclination: [RULES.required, RULES.number, RULES.positive],
         alignment: [RULES.required],
         location: [RULES.required],
     },
 
-    consumer: {
+    Consumer: {
         power: [RULES.required, RULES.number, RULES.positive],
         duration: [RULES.required, RULES.number, RULES.positive],
         flexibility: [RULES.required],
     },
 
-    battery: {
+    Battery: {
         capacity: [RULES.required, RULES.number, RULES.positive],
         maxDischarge: [RULES.required, RULES.number, RULES.positive],
     },
