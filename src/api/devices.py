@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
+from datetime import timedelta
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+
+from electricity_price_optimizer_py.units import WattHour, Watt
 
 from api.dependencies import get_device_manager
 from device_manager import IDeviceManager
@@ -15,6 +18,9 @@ from device import (
     Battery,
 )
 
+
+from electricity_price_optimizer_py.units import WattHour, Watt
+
 router = APIRouter(prefix="/api", tags=["devices"])
 
 
@@ -25,6 +31,13 @@ class DeviceIn(BaseModel):
     id: int | None = None
     name: str
     type: str  # frontend uses e.g. "Verbraucher", "PVAnlage"
+
+    # Batterie spezifische Felder
+    capacity: float | None = None  # Wh
+    current_charge: float | None = None  # Wh (Optional: falls man den Startwert setzen will)
+    max_charge_rate: float | None = None  # W
+    max_discharge_rate: float | None = None  # W
+    efficiency: float | None = Field(default=0.95, ge=0, le=1)  # Standard 95%
 
     # Verbraucher fields (optional, for UI display)
     power: float | int | None = None  # W
@@ -48,14 +61,35 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
     base: dict[str, Any] = {
         "id": d.id,
         "name": d.name,
-        "actions": [],  # keep for frontend compatibility
     }
 
     if isinstance(d, ConstantActionDevice):
         base["type"] = "Verbraucher"
-        # No actions endpoint yet -> we can't reliably infer power/duration
-        base["power"] = None
-        base["duration"] = None
+        base["flexibility"] = "constant"
+        # NEU: Mapping der konkreten Aktionen
+        base["actions"] = [
+            {
+                "id": action.id,
+                "start_from": action.start_from.isoformat(),
+                "end_before": action.end_before.isoformat(),
+                "duration_seconds": action.duration.total_seconds(),
+                "consumption": Watt.get_value(action.consumption)
+            } for action in d.actions
+        ]
+        return base
+
+    if isinstance(d, VariableActionDevice):
+        base["type"] = "Verbraucher"
+        base["flexibility"] = "flexible"
+        base["actions"] = [
+            {
+                "id": action.id,
+                "start": action.start.isoformat(),
+                "end": action.end.isoformat(),
+                "total_consumption": WattHour.get_value(action.total_consumption),
+                "max_consumption": Watt.get_value(action.max_consumption)
+            } for action in d.actions
+        ]
         return base
 
     if isinstance(d, GeneratorPV):
@@ -74,13 +108,16 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
         return base
 
     if isinstance(d, Battery):
-        base["type"] = "BATTERY"
-        # Keep minimal; expand later if your devices page needs these
+        base["type"] = "Battery"
+        base.update({
+            "capacity": WattHour.get_value(d.capacity),
+            "max_charge_rate": Watt.get_value(d.max_charge_rate),
+            "max_discharge_rate": Watt.get_value(d.max_discharge_rate),
+            "efficiency": d.efficiency,
+            "current_charge": WattHour.get_value(d.current_charge),
+        })
         return base
 
-    if isinstance(d, VariableActionDevice):
-        base["type"] = "VariableActionDevice"
-        return base
 
     # Fallback
     base["type"] = getattr(d.type, "value", str(getattr(d, "type", "UNKNOWN")))
