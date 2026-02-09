@@ -12,7 +12,10 @@ export const INITIAL_DEVICE_FORM = {
     forecast: "",
     flexibility: "constant",
     capacity: "",
-    maxDischarge: ""
+    maxDischarge: "",
+    maxChargeRate: "",
+    currentCharge: "",
+    efficiency: "",
 };
 
 
@@ -59,7 +62,9 @@ export const DEVICE_VALIDATION_SCHEME = {
     Battery: {
         capacity: [RULES.required, RULES.number, RULES.positive],
         maxDischarge: [RULES.required, RULES.number, RULES.positive],
-
+        maxChargeRate: [RULES.required, RULES.number, RULES.positive],
+        currentCharge: [RULES.required, RULES.number, RULES.positive],
+        efficiency: [RULES.required, RULES.number, RULES.positive],
     },
 };
 
