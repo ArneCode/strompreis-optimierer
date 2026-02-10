@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from interactors.mock import MockConstantActionInteractor, MockBatteryInteractor, MockGeneratorInteractor, MockVariableActionInteractor
-from controllers import ConstantActionController, VariableActionController, BatteryController, GeneratorController
+from controllers import ConstantActionController, VariableActionController, BatteryController, GeneratorPvController
 
 if TYPE_CHECKING:
     from device import Battery, VariableActionDevice, Generator, ConstantActionDevice
@@ -76,7 +76,7 @@ class DeviceManager(IDeviceManager):
         self._uow.interactor_service.add_generator_interactor(
             MockGeneratorInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
-            GeneratorController(device.id))
+            GeneratorPvController(device.id))
         return id
 
     def add_constant_action_device(self, device: "ConstantActionDevice") -> "int":

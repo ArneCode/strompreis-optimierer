@@ -14,7 +14,7 @@ from interactors.mock import (
 )
 from controllers import (
     BatteryController,
-    GeneratorController,
+    GeneratorPvController,
     ConstantActionController,
     VariableActionController,
 )
@@ -65,7 +65,7 @@ def initialize_services_from_db() -> None:
                 MockGeneratorInteractor(dev.id)
             )
             controller_service_instance.add_generator_controller(
-                GeneratorController(dev.id)
+                GeneratorPvController(dev.id)
             )
         # Constant actions
         for dev in ds.get_all_constant_action_devices():

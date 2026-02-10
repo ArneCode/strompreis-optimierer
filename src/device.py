@@ -155,6 +155,12 @@ class GeneratorPV(Generator):
         primary_key=True
     )
 
+    latitude: Mapped[float] = mapped_column(Float, nullable=False)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    declination: Mapped[float] = mapped_column(Float, nullable=False)
+    azimuth: Mapped[float] = mapped_column(Float, nullable=False)
+    peak_power: Mapped[Watt] = mapped_column(WattMapper, nullable=False)
+
     """
     Todo: Add specific attributes for PV generators, e.g., max output, efficiency, etc.
     """
