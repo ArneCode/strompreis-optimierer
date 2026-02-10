@@ -1,9 +1,49 @@
 from datetime import datetime, timedelta
-from typing import Callable, Optional, Tuple
-from typing import Generic, TypeVar
+from typing import Callable, Optional, Tuple, Generic, TypeVar, List
 from . import units as units
 
 T = TypeVar('T')
+
+
+class DataPoint(Generic[T]):
+    """Represents a single data point in a time series."""
+    timestamp: datetime
+    value: T
+
+    def __init__(self, timestamp: datetime, value: T) -> None:
+        ...
+
+
+class TimeSeries(Generic[T]):
+    """A time series with explicit start and end bounds."""
+    start_time: datetime
+    end_time: datetime
+    points: List[DataPoint[T]]
+
+    def __init__(
+        self,
+        start_time: datetime,
+        end_time: datetime,
+        points: List[DataPoint[T]],
+    ) -> None:
+        """
+        Initialize a TimeSeries.
+
+        Args:
+            start_time: The start of the time series interval (inclusive).
+            end_time: The end of the time series interval (exclusive).
+            points: The data points within the interval.
+        """
+        ...
+
+    def get_value_at(self, time: datetime) -> Optional[T]:
+        """
+        Get the value at a specific time.
+
+        Returns the value of the data point whose timestamp is <= time,
+        or None if time is outside the series bounds.
+        """
+        ...
 
 
 class PrognosesProvider(Generic[T]):
@@ -99,6 +139,10 @@ class AssignedVariableAction:
         """Returns the action's unique identifier."""
         ...
 
+    def get_consumption_time_series(self) -> TimeSeries[units.Watt]:
+        """Returns the consumption of the action as a time series."""
+        ...
+
 
 class Battery:
     """Represents a physical battery for energy storage."""
@@ -139,6 +183,14 @@ class AssignedBattery:
 
     def get_id(self) -> int:
         """Returns the battery's unique identifier."""
+        ...
+
+    def get_charge_level_time_series(self) -> TimeSeries[units.WattHour]:
+        """Returns the battery charge level over the full day as a time series."""
+        ...
+
+    def get_charge_speed_time_series(self) -> TimeSeries[units.Watt]:
+        """Returns the battery charge/discharge speed over the full day as a time series."""
         ...
 
 
@@ -193,6 +245,10 @@ class Schedule:
 
     def get_battery(self, id: int) -> Optional[AssignedBattery]:
         """Retrieve the state of a specific battery by ID."""
+        ...
+
+    def get_network_consumption(self) -> TimeSeries[units.Watt]:
+        """Returns the total network consumption over the schedule as a time series."""
         ...
 
 
