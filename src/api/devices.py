@@ -29,9 +29,9 @@ class DeviceIn(BaseModel):
 
     # Batterie spezifische Felder
     capacity: float | None = None  # Wh
-    current_charge: float | None = None  # Wh (Optional: falls man den Startwert setzen will)
-    max_charge_rate: float | None = None  # W
-    max_discharge_rate: float | None = None  # W
+    currentCharge: float | None = None  # Wh (Optional: falls man den Startwert setzen will)
+    maxChargeRate: float | None = None  # W
+    maxDischarge: float | None = None  # W
     efficiency: float | None = Field(default=0.95, ge=0, le=1)  # Standard 95%
 
     # Verbraucher fields (optional, for UI display)
@@ -59,7 +59,7 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
     }
 
     if isinstance(d, ConstantActionDevice):
-        base["type"] = "Verbraucher"
+        base["type"] = "Consumer"
         base["flexibility"] = "constant"
         # NEU: Mapping der konkreten Aktionen
         base["actions"] = [
@@ -74,8 +74,8 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
         return base
 
     if isinstance(d, VariableActionDevice):
-        base["type"] = "Verbraucher"
-        base["flexibility"] = "flexible"
+        base["type"] = "Consumer"
+        base["flexibility"] = "variable"
         base["actions"] = [
             {
                 "id": action.id,
@@ -88,7 +88,7 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
         return base
 
     if isinstance(d, GeneratorPV):
-        base["type"] = "PVAnlage"
+        base["type"] = "PVGenerator"
         # Not persisted yet; return nulls so UI has the keys
         base.update(
             {
@@ -106,10 +106,10 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
         base["type"] = "Battery"
         base.update({
             "capacity": WattHour.get_value(d.capacity),
-            "max_charge_rate": Watt.get_value(d.max_charge_rate),
-            "max_discharge_rate": Watt.get_value(d.max_discharge_rate),
+            "maxChargeRate": Watt.get_value(d.max_charge_rate),
+            "maxDischarge": Watt.get_value(d.max_discharge_rate),
             "efficiency": d.efficiency,
-            "current_charge": WattHour.get_value(d.current_charge),
+            "currentCharge": WattHour.get_value(d.current_charge),
         })
         return base
 
@@ -129,10 +129,20 @@ def _payload_to_device_model(payload: DeviceIn) -> ConstantActionDevice | Variab
     if t in {"PVAnlage", "PV", "GeneratorPV", "GENERATOR_PV"}:
         return GeneratorPV(name=payload.name)
 
-    if t in {"BATTERY", "Battery"}:
-        # If Battery requires constructor args in your project, adapt here.
-        # Keeping it simple: create only if your Battery has defaults.
-        return Battery(name=payload.name)  # type: ignore[call-arg]
+    if t == "Battery":
+        b = Battery(name=payload.name)
+        if payload.capacity is not None:
+            b.capacity = WattHour(payload.capacity)
+        if payload.currentCharge is not None:
+            b.current_charge = WattHour(payload.currentCharge)
+        if payload.maxChargeRate is not None:
+            b.max_charge_rate = Watt(payload.maxChargeRate)
+        if payload.maxDischarge is not None:
+            b.max_discharge_rate = Watt(payload.maxDischarge)
+        if payload.efficiency is not None:
+            b.efficiency = payload.efficiency
+        return b
+
 
     # Default fallback
     return ConstantActionDevice(name=payload.name)

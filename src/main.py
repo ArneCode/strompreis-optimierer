@@ -17,6 +17,7 @@ from api.orchestrator import router as orchestrator_router
 from api.devices import router as devices_router
 from api.actions import router as actions_router
 from api.plan import router as plan_router
+from fastapi.middleware.cors import CORSMiddleware
 
 init_db()
 initialize_services_from_db()
@@ -26,6 +27,14 @@ initialize_services_from_db()
 # main.py
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include the orchestrator router
 app.include_router(orchestrator_router)
