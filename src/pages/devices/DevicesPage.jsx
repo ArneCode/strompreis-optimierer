@@ -167,47 +167,32 @@ function DevicesPage() {
 
 
 
-  function editDevice() {
-    if (editIndex === null) return;
+    async function editDevice() {
+        if (editIndex === null) return;
 
-    const errors = validateDevice(deviceForm);
+        const errors = validateDevice(deviceForm);
+        if (Object.keys(errors).length > 0) {
+            setDeviceErrors(errors);
+            setErrorMessage("Bitte fülle alle Felder aus!");
+            setTimeout(() => setErrorMessage(""), 3000);
+            return;
+        }
 
-    if (Object.keys(errors).length > 0) {
-      setDeviceErrors(errors);
-      setErrorMessage("Bitte fülle alle Felder aus!");
-      setTimeout(() => {
-        setErrorMessage("");
-      }, 3000);
-      return;
+        try {
+            const deviceToDelete = devices[editIndex];
+            await apiService.deleteDevice(deviceToDelete.id);
+
+            await apiService.saveDevice(deviceForm);
+
+            await refreshDevices();
+
+            resetAll();
+            setOpenEditDevice(false);
+        } catch (error) {
+            console.error("Fehler beim Ersetzen des Geräts:", error);
+            setErrorMessage("Änderung fehlgeschlagen.");
+        }
     }
-
-    const updatedDevices = [...devices];
-
-    updatedDevices[editIndex] = {
-      ...updatedDevices[editIndex],
-      name: deviceForm.name,
-      type: deviceForm.type,
-      ratedPower: deviceForm.ratedPower,
-      angleOfInclination: deviceForm.angleOfInclination,
-      alignment: deviceForm.alignment,
-      location: deviceForm.location,
-      power: deviceForm.power,
-      duration: deviceForm.duration,
-      capacity: deviceForm.capacity,
-      lat: deviceForm.lat,
-      lng: deviceForm.lng,
-      forecast: deviceForm.forecast,
-      flexibility: deviceForm.flexibility,
-      maxChargeRate: deviceForm.maxChargeRate,
-      maxDischarge: deviceForm.maxDischarge,
-      currentCharge: deviceForm.currentCharge,
-      efficiency: deviceForm.efficiency,
-    }
-
-    setDevices(updatedDevices);
-    resetAll();
-    setOpenEditDevice(false);
-  }
 
   return (
     <>
