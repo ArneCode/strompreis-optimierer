@@ -50,7 +50,7 @@ function ActionsPage() {
             const endMins = timeToSlider(updated.endTime, timeOffset);
             let newErrors = { ...actionErrors };
             if (endMins <= startMins) newErrors.startTime = "Ungültig"; else delete newErrors.startTime;
-            if (!isVariable && updated.duration && (endMins - startMins) < Number(updated.duration)) newErrors.duration = "Zu kurz"; else delete newErrors.duration;
+            if (!isVariable && updated.duration && (endMins - startMins) < Number(updated.duration)) newErrors.duration = "Zeitfenster zu klein"; else delete newErrors.duration;
             setActionErrors(newErrors);
             return updated;
         });
@@ -84,7 +84,7 @@ function ActionsPage() {
 
             if (isVariable) {
                 payload.total_consumption = Number(actionForm.totalConsumption);
-                payload.consumption = Number(actionForm.maxConsumption);
+                payload.consumption = Number(actionForm.consumption);
             } else {
                 payload.duration_minutes = Number(actionForm.duration);
                 payload.consumption = Number(actionForm.consumption);
@@ -126,8 +126,6 @@ function ActionsPage() {
                 onEdit={(dIdx, aIdx) => {
                     const device = devices[dIdx];
                     const action = device.actions[aIdx];
-                    const isVar = device.flexibility === "variable";
-
                     setEditIndex({ deviceIndex: dIdx, actionIndex: aIdx });
 
                     setActionForm({
@@ -137,8 +135,7 @@ function ActionsPage() {
 
                         duration: action.duration || "",
 
-                        consumption: isVar ? "" : action.consumption,
-                        maxConsumption: isVar ? action.maxConsumption : "",
+                        consumption: action.consumption || "",
                         totalConsumption: action.totalConsumption || ""
                     });
                     setActionErrors({});
