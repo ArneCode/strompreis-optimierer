@@ -1,0 +1,190 @@
+use std::sync::Arc;
+
+use chrono::{DateTime, Utc};
+use electricity_price_optimizer::{
+    optimizer_context::{
+        OptimizerContext as RustOptimizerContext,
+        action::{
+            constant::{
+                AssignedConstantAction as RustAssignedConstantAction,
+                ConstantAction as RustConstantAction,
+            },
+            variable::VariableAction as RustVariableAction,
+        },
+        battery::Battery as RustBattery,
+        prognoses::Prognoses,
+    },
+    time::{MINUTES_PER_TIMESTEP, Time},
+};
+use pyo3::{PyErr, PyResult, Python, pyclass, pymethods};
+
+use crate::{
+    action::{AssignedConstantAction, ConstantAction, VariableAction},
+    battery::Battery,
+    prognoses::PrognosesProvider,
+    time_utils::{datetime_to_time, time_to_datetime},
+    units::{EuroPerWh, WattHour},
+};
+
+#[pyclass]
+/// Builder holding prognoses and assets before solving.
+/// Add actions/batteries/prognoses, then convert to RustOptimizerContext for solving.
+pub struct OptimizerContext {
+    /// Electricity price prognoses: micro-euro per Wh (i64) internally.
+    electricity_price: Prognoses<i64>,
+    /// Generated electricity prognoses: Wh/timestep (i64). Defaults to 0.
+    generated_electricity: Prognoses<i64>,
+    /// Uncontrollable consumption prognoses: Wh/timestep (i64). Defaults to 0.
+    beyond_control_consumption: Prognoses<i64>,
+    /// Batteries.
+    batteries: Vec<Arc<RustBattery>>,
+    /// Constant actions.
+    constant_actions: Vec<Arc<RustConstantAction>>,
+    /// Variable actions.
+    variable_actions: Vec<Arc<RustVariableAction>>,
+    /// Reference start timestamp for conversions and first timestep fraction.
+    start_time: DateTime<Utc>,
+}
+
+#[pymethods]
+impl OptimizerContext {
+    #[new]
+    /// Create an OptimizerContext with electricity price prognoses provider.
+    /// Time is the reference start DateTime<Utc>. Other prognoses default to 0.
+    fn new(
+        py: Python<'_>,
+        time: DateTime<Utc>,
+        electricity_price: &PrognosesProvider,
+    ) -> Result<Self, PyErr> {
+        let electricity_price = electricity_price.get_prognoses::<EuroPerWh>(py, time)?;
+        let electricity_price = Prognoses::from_closure(|t: Time| {
+            let price = electricity_price.get(t).expect("Electricity price missing");
+            // convert to i64 in micro Euro per Wh
+            price.to_micro_euro_per_wh() as i64
+        });
+        let generated_electricity = Prognoses::from_closure(|_| 0);
+        let beyond_control_consumption = Prognoses::from_closure(|_| 0);
+        let batteries = vec![];
+        let constant_actions = vec![];
+        let variable_actions = vec![];
+        let start_time = time;
+
+        Ok(OptimizerContext {
+            electricity_price,
+            generated_electricity,
+            beyond_control_consumption,
+            batteries,
+            constant_actions,
+            variable_actions,
+            start_time,
+        })
+    }
+
+    /// Add a constant action. Validates duration and timestep alignment.
+    fn add_constant_action<'py>(
+        &mut self,
+        py: Python<'py>,
+        action: &ConstantAction,
+    ) -> PyResult<()> {
+        self.constant_actions
+            .push(Arc::new(action.to_rust(py, self.start_time)?));
+        Ok(())
+    }
+
+    /// Add a variable action. Validates timestep alignment.
+    fn add_variable_action<'py>(
+        &mut self,
+        _py: Python<'py>,
+        action: &VariableAction,
+    ) -> PyResult<()> {
+        self.variable_actions
+            .push(Arc::new(action.to_rust(self.start_time)?));
+        Ok(())
+    }
+
+    /// Add a battery.
+    fn add_battery(&mut self, battery: &Battery) -> PyResult<()> {
+        self.batteries.push(Arc::new(battery.to_rust()));
+        Ok(())
+    }
+
+    /// Add a constant action that already started before the context start_time.
+    /// Its remaining consumption is added to beyond_control_consumption until its end.
+    fn add_past_constant_action<'py>(
+        &mut self,
+        _py: Python<'py>,
+        action: &AssignedConstantAction,
+    ) -> PyResult<()> {
+        // find out how much time has passed since action start
+        let end_time = action.get_end_time()?;
+        let end_time = datetime_to_time(end_time, self.start_time)?;
+        self.beyond_control_consumption += Prognoses::from_closure(|t: Time| {
+            if t >= end_time {
+                0
+            } else {
+                action.get_inner().get_action().get_consumption()
+            }
+        });
+        Ok(())
+    }
+
+    /// Add generated electricity prognoses via a provider. Values are summed with existing prognoses.
+    fn add_generated_electricity_prognoses<'py>(
+        &mut self,
+        py: Python<'py>,
+        provider: &PrognosesProvider,
+    ) -> PyResult<()> {
+        let prognoses = provider.get_prognoses::<WattHour>(py, self.start_time)?;
+        self.generated_electricity += Prognoses::from_closure(|t| -> i64 {
+            prognoses.get(t).expect("internal error").to_milli_wh() as i64
+        });
+        Ok(())
+    }
+}
+impl OptimizerContext {
+    /// Convert to RustOptimizerContext. Computes first_timestep_fraction from start_time alignment.
+    pub fn to_rust(&self) -> PyResult<RustOptimizerContext> {
+        // first_timestep fraction is the length of the first timestep that is remaining divided by full timestep length
+        let first_timestep_fraction = {
+            let start_time = self.start_time;
+            let next_timestep = time_to_datetime(Time::from_timestep(1), start_time)?;
+            let remaining_duration = next_timestep.signed_duration_since(start_time);
+            // calculate as precise as possible
+            let remaining_nanos = remaining_duration.num_nanoseconds().unwrap() as f64;
+            let full_timestep_nanos = (MINUTES_PER_TIMESTEP as i64 * 60 * 1_000_000_000) as f64;
+            remaining_nanos / full_timestep_nanos
+        };
+        Ok(RustOptimizerContext::new(
+            self.electricity_price.clone(),
+            self.generated_electricity.clone(),
+            self.beyond_control_consumption.clone(),
+            self.batteries.clone(),
+            self.constant_actions.clone(),
+            self.variable_actions.clone(),
+            first_timestep_fraction as f32,
+        ))
+    }
+
+    // getters
+    pub fn get_constant_actions(&self) -> &Vec<Arc<RustConstantAction>> {
+        &self.constant_actions
+    }
+    pub fn get_variable_actions(&self) -> &Vec<Arc<RustVariableAction>> {
+        &self.variable_actions
+    }
+    pub fn get_batteries(&self) -> &Vec<Arc<RustBattery>> {
+        &self.batteries
+    }
+    pub fn get_electricity_price(&self) -> &Prognoses<i64> {
+        &self.electricity_price
+    }
+    pub fn get_generated_electricity(&self) -> &Prognoses<i64> {
+        &self.generated_electricity
+    }
+    pub fn get_beyond_control_consumption(&self) -> &Prognoses<i64> {
+        &self.beyond_control_consumption
+    }
+    pub fn get_start_time(&self) -> DateTime<Utc> {
+        self.start_time
+    }
+}
