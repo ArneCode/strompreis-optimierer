@@ -22,20 +22,22 @@ router = APIRouter(prefix="/api", tags=["actions"])
 
 
 
-class ActionIn(BaseModel):
+class ActionBase(BaseModel):
     start: datetime
     end: datetime
+    consumption: float
 
-    duration_minutes: float | None = None
-    total_consumption: float | None = None
+class ConstantActionIn(ActionBase):
+    duration_minutes: float
 
-    consumption: float | int
+class VariableActionIn(ActionBase):
+    total_consumption: float
 
 
 @router.post("/devices/{device_id}/actions", status_code=status.HTTP_201_CREATED)
 def create_action(
         device_id: int,
-        payload: ActionIn,
+        payload: dict[str, Any],
         manager: IDeviceManager = Depends(get_device_manager)
 ) -> dict[str, Any]:
     svc = manager.get_device_service()
@@ -45,28 +47,32 @@ def create_action(
         raise HTTPException(status_code=404, detail="Gerät nicht gefunden")
 
     if isinstance(device, ConstantActionDevice):
-        if payload.duration_minutes is None:
-            raise HTTPException(status_code=400, detail="Konstante Geräte benötigen 'duration_minutes'")
+        try:
+            data = ConstantActionIn(**payload)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         new_action = ConstantAction(
             device_id=device.id,
-            start_from=payload.start,
-            end_before=payload.end,
-            duration=timedelta(minutes=payload.duration_minutes),
-            consumption=Watt(payload.consumption)
+            start_from=data.start,
+            end_before=data.end,
+            duration=timedelta(minutes=data.duration_minutes),
+            consumption=Watt(data.consumption)
         )
         device.actions.append(new_action)
 
     elif isinstance(device, VariableActionDevice):
-        if payload.total_consumption is None:
-            raise HTTPException(status_code=400, detail="Flexible Geräte benötigen 'total_consumption' (Wh)")
+        try:
+            data = VariableActionIn(**payload)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         new_action = VariableAction(
             device_id=device.id,
-            start=payload.start,
-            end=payload.end,
-            total_consumption=WattHour(payload.total_consumption),
-            max_consumption=Watt(payload.consumption)
+            start=data.start,
+            end=data.end,
+            total_consumption=WattHour(data.total_consumption),
+            max_consumption=Watt(data.consumption)
         )
         device.actions.append(new_action)
 
