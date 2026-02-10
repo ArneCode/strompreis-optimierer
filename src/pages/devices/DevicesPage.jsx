@@ -1,19 +1,38 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import '../../styles/pages/Devices.css';
 import Device from './Device.jsx';
 import DeviceForm from './DeviceForm.jsx';
 import {INITIAL_DEVICE_FORM, validateDevice} from './DevicesLogic.js'
+import apiService from "../../services/apiService.js";
 
 
 
-function DevicesPage({devices, setDevices}) {
+function DevicesPage() {
     const [deviceErrors, setDeviceErrors] = useState({});
     const [deviceForm, setDeviceForm] = useState(INITIAL_DEVICE_FORM);
     const[errorMessage, setErrorMessage] = useState("");
     const [editIndex, setEditIndex] = useState(null);
     const [openCreateDevice, setOpenCreateDevice] = useState(false);
     const [openEditDevice, setOpenEditDevice] = useState(false);
+    const [devices, setDevices] = useState([]);
 
+
+
+
+
+    const refreshDevices = async () => {
+        try {
+            const data = await apiService.fetchDevices();
+            setDevices(data);
+        } catch (error) {
+            console.error("Fehler beim Laden:", error);
+            setErrorMessage("Geräte konnten nicht aktualisiert werden.");
+        }
+    };
+
+    useEffect(() => {
+        refreshDevices();
+    }, []);
 
 
 
@@ -35,21 +54,21 @@ function DevicesPage({devices, setDevices}) {
     resetAll();
   }
 
-  function addDevice() {
+  async function addDevice() {
       let newDevice = {
-        type: deviceForm.type,
-        name: deviceForm.name
+          type: deviceForm.type,
+          name: deviceForm.name
       }
 
       const errors = validateDevice(deviceForm);
 
       if (Object.keys(errors).length > 0) {
-        setDeviceErrors(errors);
-        setErrorMessage("Bitte fülle alle Felder aus!");
-        setTimeout(() => {
-          setErrorMessage("");
-        }, 3000);
-        return;
+          setDeviceErrors(errors);
+          setErrorMessage("Bitte fülle alle Felder aus!");
+          setTimeout(() => {
+              setErrorMessage("");
+          }, 3000);
+          return;
       }
 
       if (deviceForm.type === "Generator") {
@@ -76,11 +95,14 @@ function DevicesPage({devices, setDevices}) {
           newDevice.efficiency = deviceForm.efficiency;
       }
 
-      setDevices([...devices, newDevice]);
-      setDeviceErrors({});
+      try {
+          await apiService.saveDevice(deviceForm);
+          await refreshDevices();
+          setOpenCreateDevice(false);
+      } catch (error) {
+          setErrorMessage("Speichern fehlgeschlagen.");
+      }
 
-      resetDeviceForm();
-      setOpenCreateDevice(false);
   }
 
 
@@ -167,6 +189,7 @@ function DevicesPage({devices, setDevices}) {
       forecast: deviceForm.forecast,
       flexibility: deviceForm.flexibility,
       maxChargeRate: deviceForm.maxChargeRate,
+      maxDischarge: deviceForm.maxDischarge,
       currentCharge: deviceForm.currentCharge,
       efficiency: deviceForm.efficiency,
     }

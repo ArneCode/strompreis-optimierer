@@ -1,3 +1,4 @@
+
 export const INITIAL_DEVICE_FORM = {
     name: "",
     type: "generator",
@@ -25,6 +26,7 @@ const deviceTranslations = {
     "Generator": "Erzeuger",
     "PVGenerator": "PV-Anlage",
 }
+
 
 
 const translateDevice = (key) => {

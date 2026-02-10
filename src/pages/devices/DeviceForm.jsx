@@ -48,7 +48,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
       <input name="name" value={deviceForm.name} onChange={onChange} className={errors.name ? "input-error" : ""}/>
 
 
-        {deviceForm.type === "generator" && (
+        {deviceForm.type === "Generator" && (
             <div className="upload-section">
 
                 <div className="input-label">Prognose</div>
@@ -153,6 +153,11 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
                 Efficiency
             </div>
             <input name="efficiency" value={deviceForm.efficiency} onChange={onChange} className={""}/>
+
+            <div className="input-label">
+                LadeZustand
+            </div>
+            <input name="currentCharge" value={deviceForm.currentCharge} onChange={onChange} className={""}/>
         </>
       )}
     </>
