@@ -23,7 +23,6 @@ def _create_timeline(hours: int):
 
     return timeline
 
-# doesn't work yet because I don't have start and end of AssignedVariableAction
 def _collect_power_values(action, assigned_action, step_minutes):
     power_values = []
 
@@ -100,7 +99,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                     {
                         "id": str(i),
                         "name": device.name,
-                        "powerW": [] #_collect_power_values(action, assigned_action, 30) should go here when it works
+                        "powerW": _collect_power_values(action, assigned_action, 30) 
                     }
                 )          
                 i += 1

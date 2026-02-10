@@ -44,7 +44,7 @@ def test_orchestrator(manager: IDeviceManager = Depends(get_device_manager), orc
     vad = VariableActionDevice(name="EV Charger")
     vad.actions.append(
         VariableAction(
-            start=now,
+            start=now + timedelta(hours=1),
             end=now + timedelta(hours=8),
             total_consumption=WattHour(7000.0),
             max_consumption=Watt(2000.0),
