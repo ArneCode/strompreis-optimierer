@@ -36,7 +36,6 @@ class ApiService {
             cleanData.maxChargeRate = parseFloat(rawForm.maxChargeRate) || 0;
             cleanData.maxDischarge = parseFloat(rawForm.maxDischarge) || 0;
 
-            // Efficiency Logik: 3 -> 0.03, aber 0.95 bleibt 0.95
             let eff = parseFloat(rawForm.efficiency) || 0.95;
             cleanData.efficiency = eff > 1 ? eff / 100 : eff;
         }
