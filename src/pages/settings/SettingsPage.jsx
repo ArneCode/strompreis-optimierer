@@ -1,16 +1,24 @@
 import { useState } from "react";
 import '../../styles/pages/Settings.css';
+import apiService from "../../services/apiService.js";
 
-function SettingsPage({devices, setDevices}) {
+function SettingsPage() {
     const [openReset, setOpenReset] = useState(false);
 
     function toggleResetPopUp() {
         setOpenReset(!openReset);
     }
 
-    function handleReset() {
-        setDevices([]);
-        setOpenReset(false);
+    async function handleReset() {
+        try {
+            await apiService.resetAllDevices();
+
+            setOpenReset(false);
+            console.log("Haushalt erfolgreich zurückgesetzt");
+        } catch (error) {
+            console.error("Fehler beim Zurücksetzen des Haushalts:", error);
+            alert("Fehler beim Löschen der Daten auf dem Server.");
+        }
     }
 
     return (

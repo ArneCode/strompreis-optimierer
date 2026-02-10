@@ -1,15 +1,30 @@
 import "../../styles/pages/Actions.css";
 import "../../styles/components/Slider.css";
-import { useState, useMemo } from "react";
+import {useState, useMemo, useEffect} from "react";
 import ActionGrid from "./ActionGrid.jsx";
 import ActionForm from "./ActionForm.jsx";
 import {roundToNext5Min, validateActionForm, timeToSlider, sliderToTime, getCurrentTimeStr, getDateLabel} from "./Actionslogic.js"
+import apiService from "../../services/apiService.js";
 
-function ActionsPage({ devices, setDevices }) {
+function ActionsPage() {
     const [referenceTime] = useState(roundToNext5Min(new Date()));
-
     const timeOffset = useMemo(() => referenceTime.getHours() * 60 + referenceTime.getMinutes(), [referenceTime]);
+    const [devices, setDevices] = useState([]);
 
+
+
+    const refreshDevices = async () => {
+        try {
+            const data = await apiService.fetchDevices();
+            setDevices(data);
+        } catch (error) {
+            console.error("Fehler beim Laden:", error);
+        }
+    };
+
+    useEffect(() => {
+        refreshDevices();
+    }, []);
 
     const [actionForm, setActionForm] = useState({
         deviceName: "",

@@ -46,13 +46,23 @@ function DevicesPage() {
 
 
 
-  function deleteDevice() {
-    if (editIndex === null) return;
-    const newDevices = devices.filter((_, idx) => idx !== editIndex);
-    setDevices(newDevices);
-    toggleEditDevicePopUp();
-    resetAll();
-  }
+    async function deleteDevice() {
+        if (editIndex === null) return;
+        const deviceToDelete = devices[editIndex];
+
+        try {
+            await apiService.deleteDevice(deviceToDelete.id);
+
+            const newDevices = devices.filter((_, idx) => idx !== editIndex);
+            setDevices(newDevices);
+            toggleEditDevicePopUp();
+            resetAll();
+        } catch (error) {
+            console.error("Fehler beim Löschen:", error);
+            setErrorMessage("Gerät konnte nicht gelöscht werden.");
+            setTimeout(() => setErrorMessage(""), 3000);
+        }
+    }
 
   async function addDevice() {
       let newDevice = {
