@@ -1,7 +1,6 @@
 import React from 'react';
 import TimeRangeSlider from "../../components/TimeRangeSlider.jsx";
 
-
 function ActionForm({
                         actionForm,
                         onChange,
@@ -15,9 +14,10 @@ function ActionForm({
                         currentTimeStr
                     }) {
 
+    const selectedDevice = devices.find(d => d.name === actionForm.deviceName);
+    const isVariable = selectedDevice?.flexibility === "variable";
 
-
-    const hasError = errors.startTime || errors.endTime || errors.duration;
+    const hasError = !!(errors.startTime || errors.endTime || errors.duration);
 
     return (
         <div className="action-popup-inputs">
@@ -38,7 +38,7 @@ function ActionForm({
                             .filter(device => device.type === "Consumer")
                             .map((device, idx) => (
                                 <option key={idx} value={device.name}>
-                                    {device.name}
+                                    {device.name} ({device.flexibility === "variable" ? "Flexibel" : "Konstant"})
                                 </option>
                             ))}
                     </select>
@@ -70,7 +70,6 @@ function ActionForm({
             />
 
             <div className="action-slider">
-
                 <TimeRangeSlider
                     startTime={actionForm.startTime}
                     endTime={actionForm.endTime}
@@ -85,17 +84,50 @@ function ActionForm({
                 />
             </div>
 
-            <div className="input-label">
-                Dauer (min)
-                {errors.duration && <span className="field-error">{errors.duration}</span>}
-            </div>
-            <input
-                type="number"
-                name="duration"
-                value={actionForm.duration}
-                onChange={onChange}
-                className={errors.duration ? "input-error" : ""}
-            />
+            {selectedDevice && (
+                <>
+                    {isVariable ? (
+                        <div className="input-group-dynamic">
+                            <div className="input-label">
+                                Gesamtverbrauch (Wh)
+                                {errors.totalConsumption && <span className="field-error">{errors.totalConsumption}</span>}
+                            </div>
+                            <input
+                                type="number"
+                                name="totalConsumption"
+                                value={actionForm.totalConsumption || ""}
+                                onChange={onChange}
+                                className={errors.totalConsumption ? "input-error" : ""}
+                            />
+                        </div>
+                    ) : (
+                        <div className="input-group-dynamic">
+                            <div className="input-label">
+                                Dauer (min)
+                                {errors.duration && <span className="field-error">{errors.duration}</span>}
+                            </div>
+                            <input
+                                type="number"
+                                name="duration"
+                                value={actionForm.duration || ""}
+                                onChange={onChange}
+                                className={errors.duration ? "input-error" : ""}
+                            />
+                        </div>
+                    )}
+                    <div className="input-label">
+                        {isVariable ? "Max. Leistung (W)" : "Leistung (W)"}
+                        {errors.consumption && <span className="field-error">{errors.consumption}</span>}
+                    </div>
+                    <input
+                        type="number"
+                        name="consumption"
+                        value={actionForm.consumption || ""}
+                        onChange={onChange}
+                        className={errors.consumption ? "input-error" : ""}
+                    />
+                </>
+            )}
         </div>
     );
 }

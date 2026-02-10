@@ -3,7 +3,16 @@ import "../../styles/components/Slider.css";
 import {useState, useMemo, useEffect} from "react";
 import ActionGrid from "./ActionGrid.jsx";
 import ActionForm from "./ActionForm.jsx";
-import {roundToNext5Min, validateActionForm, timeToSlider, sliderToTime, getCurrentTimeStr, getDateLabel} from "./Actionslogic.js"
+import {
+    roundToNext5Min,
+    validateActionForm,
+    timeToSlider,
+    sliderToTime,
+    getCurrentTimeStr,
+    getDateLabel,
+    combineToISO,
+    extractTimeFromISO
+} from "./Actionslogic.js"
 import apiService from "../../services/apiService.js";
 
 function ActionsPage() {
@@ -11,9 +20,7 @@ function ActionsPage() {
     const timeOffset = useMemo(() => referenceTime.getHours() * 60 + referenceTime.getMinutes(), [referenceTime]);
     const [devices, setDevices] = useState([]);
 
-
-
-    const refreshDevices = async () => {
+    const refreshData = async () => {
         try {
             const data = await apiService.fetchDevices();
             setDevices(data);
@@ -22,16 +29,12 @@ function ActionsPage() {
         }
     };
 
-    useEffect(() => {
-        refreshDevices();
-    }, []);
+    useEffect(() => { refreshData(); }, []);
 
     const [actionForm, setActionForm] = useState({
-        deviceName: "",
-        startTime: "",
-        endTime: "",
-        duration: ""
+        deviceName: "", startTime: "", endTime: "", duration: "", consumption: "", totalConsumption: ""
     });
+
     const [actionErrors, setActionErrors] = useState({});
     const [openCreateAction, setOpenCreateAction] = useState(false);
     const [openEditAction, setOpenEditAction] = useState(false);
@@ -39,107 +42,106 @@ function ActionsPage() {
 
     const handleActionChange = (e) => {
         const { name, value } = e.target;
-
-        const newStartTime = name === 'startTime' ? value : actionForm.startTime;
-        const newEndTime = name === 'endTime' ? value : actionForm.endTime;
-        const newDuration = name === 'duration' ? Number(value) : Number(actionForm.duration);
-
-        const startMins = timeToSlider(newStartTime, timeOffset);
-        const endMins = timeToSlider(newEndTime, timeOffset);
-        const windowSize = endMins - startMins;
-
-        if ((name === 'startTime' || name === 'endTime') && endMins <= startMins) {
-            setActionErrors(prev => ({ ...prev, [name]: "Überschreitung!" }));
-            return;
-        }
-
-        setActionForm(prev => ({ ...prev, [name]: value }));
-
-        if (windowSize < newDuration) {
-            setActionErrors({
-                duration: "Dauer passt nicht ins Zeitfenster!",
-            });
-        } else {
-            setActionErrors({
-                startTime: undefined,
-                endTime: undefined,
-                duration: undefined
-            });
-        }
+        setActionForm(prev => {
+            const updated = { ...prev, [name]: value };
+            const selectedDevice = devices.find(d => d.name === updated.deviceName);
+            const isVariable = selectedDevice?.flexibility === "variable";
+            const startMins = timeToSlider(updated.startTime, timeOffset);
+            const endMins = timeToSlider(updated.endTime, timeOffset);
+            let newErrors = { ...actionErrors };
+            if (endMins <= startMins) newErrors.startTime = "Ungültig"; else delete newErrors.startTime;
+            if (!isVariable && updated.duration && (endMins - startMins) < Number(updated.duration)) newErrors.duration = "Zu kurz"; else delete newErrors.duration;
+            setActionErrors(newErrors);
+            return updated;
+        });
     };
 
     const toggleCreateActionPopup = () => {
         if (!openCreateAction) {
-            const start = getCurrentTimeStr();
-            const end = sliderToTime(1435, timeOffset);
-            setActionForm({ deviceName: "", startTime: start, endTime: end, duration: "" });
+            setActionForm({
+                deviceName: "",
+                startTime: getCurrentTimeStr(),
+                endTime: sliderToTime(1435, timeOffset),
+                duration: "", consumption: "", totalConsumption: ""
+            });
             setActionErrors({});
         }
         setOpenCreateAction(!openCreateAction);
     };
 
-    const saveAction = (isEdit = false) => {
+    const saveAction = async (isEdit = false) => {
+        const errors = validateActionForm(actionForm, devices, timeOffset, isEdit);
+        if (Object.keys(errors).length > 0) { setActionErrors(errors); return; }
 
-        const errors = validateActionForm(actionForm, timeOffset, isEdit);
-        if (Object.keys(errors).length > 0) {
-            setActionErrors(errors);
-            return;
-        }
+        try {
+            const selectedDevice = devices.find(d => d.name === actionForm.deviceName);
+            const isVariable = selectedDevice?.flexibility === "variable";
 
-        if (isEdit) {
-            const { deviceIndex, actionIndex } = editIndex;
-            setDevices(prev => prev.map((d, di) =>
-                di === deviceIndex
-                    ? { ...d, actions: d.actions.map((a, ai) => ai === actionIndex ? { ...actionForm } : a) }
-                    : d
-            ));
-            setOpenEditAction(false);
-        } else {
-        setDevices(prev => prev.map(d =>
-            d.name === actionForm.deviceName
-                ? {
-                    ...d,
-                    actions: [...(d.actions || []), { ...actionForm }]
-                }
-                : d
-        ));
-        toggleCreateActionPopup();
+            const payload = {
+                start: combineToISO(actionForm.startTime, timeOffset),
+                end: combineToISO(actionForm.endTime, timeOffset),
+            };
 
+            if (isVariable) {
+                payload.total_consumption = Number(actionForm.totalConsumption);
+                payload.consumption = Number(actionForm.maxConsumption);
+            } else {
+                payload.duration_minutes = Number(actionForm.duration);
+                payload.consumption = Number(actionForm.consumption);
+            }
 
-    }
+            if (isEdit) {
+                const device = devices[editIndex.deviceIndex];
+                const oldAction = device.actions[editIndex.actionIndex];
+                await apiService.deleteAction(device.id, oldAction.id);
+                await apiService.createAction(device.id, payload);
+                setOpenEditAction(false);
+            } else {
+                await apiService.createAction(selectedDevice.id, payload);
+                toggleCreateActionPopup();
+            }
+            await refreshData();
+        } catch (error) { console.error("API Fehler:", error); }
     };
 
-    const removeAction = () => {
-        const { deviceIndex, actionIndex } = editIndex;
-        setDevices(prev => prev.map((d, di) => {
-            if (di === deviceIndex) {
-                const currentActions = d.actions || [];
-                return {
-                    ...d,
-                    actions: currentActions.filter((_, ai) => ai !== actionIndex)
-                };
-            }
-            return d;
-        }));
+    const removeAction = async () => {
+        const device = devices[editIndex.deviceIndex];
+        const action = device.actions[editIndex.actionIndex];
+        await apiService.deleteAction(device.id, action.id);
         setOpenEditAction(false);
+        await refreshData();
     };
 
     return (
-
         <div className="action">
-            <div className="action-head"><h1>Aktionen</h1>
-            
+            <div className="action-head">
+                <h1>Aktionen</h1>
                 <button className="new-action-button" onClick={toggleCreateActionPopup}>
-                    <img className="new-device-plus-image" src="./src/assets/plus.png"/>
-                    Neue Aktion
+                    <img className="new-device-plus-image" src="./src/assets/plus.png" alt="plus"/> Neue Aktion
                 </button>
             </div>
 
             <ActionGrid
                 devices={devices}
                 onEdit={(dIdx, aIdx) => {
+                    const device = devices[dIdx];
+                    const action = device.actions[aIdx];
+                    const isVar = device.flexibility === "variable";
+
                     setEditIndex({ deviceIndex: dIdx, actionIndex: aIdx });
-                    setActionForm(devices[dIdx].actions[aIdx]);
+
+                    setActionForm({
+                        deviceName: device.name,
+                        startTime: extractTimeFromISO(action.start),
+                        endTime: extractTimeFromISO(action.end),
+
+                        duration: action.duration || "",
+
+                        consumption: isVar ? "" : action.consumption,
+                        maxConsumption: isVar ? action.maxConsumption : "",
+                        totalConsumption: action.totalConsumption || ""
+                    });
+                    setActionErrors({});
                     setOpenEditAction(true);
                 }}
             />
@@ -149,14 +151,9 @@ function ActionsPage() {
                     <div className="action-popup-window">
                         <p className="action-popup-header">Aktion erstellen</p>
                         <ActionForm
-                            actionForm={actionForm}
-                            onChange={handleActionChange}
-                            devices={devices}
-                            errors={actionErrors}
-                            sliderToTime={(val) => sliderToTime(val, timeOffset)}
-                            timeToSlider={(val) => timeToSlider(val, timeOffset)}
-                            startLabel={getDateLabel(actionForm.startTime)}
-                            endLabel={getDateLabel(actionForm.endTime)}
+                            actionForm={actionForm} onChange={handleActionChange} devices={devices} errors={actionErrors}
+                            sliderToTime={(val) => sliderToTime(val, timeOffset)} timeToSlider={(val) => timeToSlider(val, timeOffset)}
+                            startLabel={getDateLabel(actionForm.startTime, timeOffset)} endLabel={getDateLabel(actionForm.endTime, timeOffset)}
                             currentTimeStr={getCurrentTimeStr()}
                         />
                         <div className="action-popup-buttons">
@@ -172,22 +169,14 @@ function ActionsPage() {
                     <div className="edit-action-popup-window">
                         <p className="action-popup-header">Aktion bearbeiten</p>
                         <ActionForm
-                            actionForm={actionForm}
-                            onChange={handleActionChange}
-                            devices={devices}
-                            isEdit={true}
-                            errors={actionErrors}
-                            sliderToTime={(val) => sliderToTime(val, timeOffset)}
-                            timeToSlider={(val) => timeToSlider(val, timeOffset)}
-                            startLabel={getDateLabel(actionForm.startTime)}
-                            endLabel={getDateLabel(actionForm.endTime)}
+                            actionForm={actionForm} onChange={handleActionChange} devices={devices} isEdit={true} errors={actionErrors}
+                            sliderToTime={(val) => sliderToTime(val, timeOffset)} timeToSlider={(val) => timeToSlider(val, timeOffset)}
+                            startLabel={getDateLabel(actionForm.startTime, timeOffset)} endLabel={getDateLabel(actionForm.endTime, timeOffset)}
                             currentTimeStr={getCurrentTimeStr()}
                         />
                         <div className="action-popup-buttons">
                             <button className="actions-edit-delete-button" onClick={removeAction}>Löschen</button>
-                            <button onClick={() => {
-                                setOpenEditAction(false);
-                            }}>Abbrechen</button>
+                            <button onClick={() => setOpenEditAction(false)}>Abbrechen</button>
                             <button className="actions-save-button" onClick={() => saveAction(true)}>Speichern</button>
                         </div>
                     </div>

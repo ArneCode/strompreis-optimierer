@@ -64,7 +64,7 @@ class ApiService {
         return this.request(`devices/${id}`, 'DELETE');
     }
 
-    saveAction(deviceId, actionData) {
+    createAction(deviceId, actionData) {
         return this.request(`devices/${deviceId}/actions`, 'POST', actionData);
     }
 
