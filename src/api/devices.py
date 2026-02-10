@@ -65,9 +65,9 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
         base["actions"] = [
             {
                 "id": action.id,
-                "start_from": action.start_from.isoformat(),
-                "end_before": action.end_before.isoformat(),
-                "duration_seconds": action.duration.total_seconds(),
+                "start": action.start_from.isoformat(),
+                "end": action.end_before.isoformat(),
+                "duration": action.duration.total_seconds() / 60,
                 "consumption": Watt.get_value(action.consumption)
             } for action in d.actions
         ]
@@ -81,8 +81,8 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
                 "id": action.id,
                 "start": action.start.isoformat(),
                 "end": action.end.isoformat(),
-                "total_consumption": WattHour.get_value(action.total_consumption),
-                "max_consumption": Watt.get_value(action.max_consumption)
+                "totalConsumption": WattHour.get_value(action.total_consumption),
+                "maxConsumption": Watt.get_value(action.max_consumption)
             } for action in d.actions
         ]
         return base
@@ -123,10 +123,10 @@ def _payload_to_device_model(payload: DeviceIn) -> ConstantActionDevice | Variab
     """Map frontend 'type' to internal model instance."""
     t = (payload.type or "").strip()
 
-    if t in {"Verbraucher", "Consumer", "CONSUMER"}:
+    if t in {"Consumer", "CONSUMER"}:
         return ConstantActionDevice(name=payload.name)
 
-    if t in {"PVAnlage", "PV", "GeneratorPV", "GENERATOR_PV"}:
+    if t in {"PV", "GeneratorPV", "GENERATOR_PV"}:
         return GeneratorPV(name=payload.name)
 
     if t == "Battery":
