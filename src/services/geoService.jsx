@@ -5,11 +5,11 @@ export const geoService = {
                 `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
             );
             if (!response.ok) throw new Error('Netzwerk-Fehler');
+
             const data = await response.json();
-            return data.display_name || `Lat: ${lat}, Lng: ${lng}`;
+            return data;
         } catch (error) {
-            console.error("Geocoding Fehler:", error);
-            return `Lat: ${lat}, Lng: ${lng}`;
+            throw error;
         }
     }
 };
