@@ -1,11 +1,15 @@
 use chrono::{DateTime, Utc};
 use electricity_price_optimizer::{
-    optimizer_context::battery::{AssignedBattery as RustAssignedBattery, Battery as RustBattery},
-    time::Time,
+    optimizer_context::{
+        battery::{AssignedBattery as RustAssignedBattery, Battery as RustBattery},
+        prognoses::Prognoses,
+    },
+    time::{Time, TimeIterator},
 };
 use pyo3::{PyResult, Python, exceptions::PyValueError, pyclass, pymethods};
 
-use crate::time_utils::datetime_to_time;
+use crate::time_utils::{datetime_to_time, time_to_datetime};
+use crate::timeseries::{DataPoint, TimeSeries};
 use crate::units::{Watt, WattHour};
 
 #[pyclass]
@@ -104,6 +108,34 @@ impl AssignedBattery {
     /// Get battery ID.
     fn get_id(&self) -> u32 {
         self.inner.get_battery().get_id()
+    }
+
+    /// Get the charge level over the full day as a time series.
+    fn get_charge_level_time_series<'py>(&self, py: Python<'py>) -> PyResult<TimeSeries> {
+        let prognoses = Prognoses::from_closure(|t| {
+            self.inner
+                .get_charge_level(t)
+                .map(|level| WattHour::from_milli_wh(*level as f64))
+        });
+        TimeSeries::from_prognoses(py, &prognoses, self.start_timestamp)
+    }
+
+    /// Get the charge speed over the full day as a time series.
+    fn get_charge_speed_time_series<'py>(&self, py: Python<'py>) -> PyResult<TimeSeries> {
+        let prognoses = Prognoses::from_closure(|time| {
+            let curr_level = *self.inner.get_charge_level(time)?;
+            let next_time = time.get_next_timestep();
+            let next_level = if let Some(level) = self.inner.get_charge_level(next_time) {
+                *level
+            } else if next_time == Time::get_day_end() {
+                0
+            } else {
+                return None;
+            };
+            let delta = next_level - curr_level;
+            Some(Watt::from_milli_watt_hour_per_timestep(delta as f64))
+        });
+        TimeSeries::from_prognoses(py, &prognoses, self.start_timestamp)
     }
 }
 impl AssignedBattery {

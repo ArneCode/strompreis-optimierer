@@ -185,6 +185,14 @@ class AssignedBattery:
         """Returns the battery's unique identifier."""
         ...
 
+    def get_charge_level_time_series(self) -> TimeSeries[units.WattHour]:
+        """Returns the battery charge level over the full day as a time series."""
+        ...
+
+    def get_charge_speed_time_series(self) -> TimeSeries[units.Watt]:
+        """Returns the battery charge/discharge speed over the full day as a time series."""
+        ...
+
 
 class OptimizerContext:
     """The environment and constraints used to run the price optimization."""
