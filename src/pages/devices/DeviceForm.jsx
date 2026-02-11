@@ -111,17 +111,6 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
             Leistung (kW)
             {errors.power && <div className="field-error">{errors.power}</div>}
           </div>
-          <input name="power" value={deviceForm.power} onChange={onChange} className={errors.power ? "input-error" : ""}/>
-
-          <div className="input-label">
-            Dauer (min)
-            {errors.duration && <div className="field-error">{errors.duration}</div>}
-          </div>
-          <input name="duration" value={deviceForm.duration} onChange={onChange} className={errors.duration ? "input-error" : ""}/>
-
-          <div className="input-label">
-            Flexibilität
-          </div>
           <select name="flexibility" value={deviceForm.flexibility} onChange={onChange} className={errors.flexibility ? "input-error" : ""}>
             <option value="constant">durchlaufen</option>
             <option value="variable">flexibel</option>

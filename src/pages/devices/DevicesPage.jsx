@@ -92,8 +92,6 @@ function DevicesPage() {
           newDevice.lng = deviceForm.lng;
 
       } else if (deviceForm.type === "Consumer") {
-          newDevice.power = deviceForm.power;
-          newDevice.duration = deviceForm.duration;
           newDevice.flexibility = deviceForm.flexibility;
           setOpenCreateDevice(false);
 
@@ -151,8 +149,6 @@ function DevicesPage() {
 
       forecast: device.forecast || "",
 
-      power: device.power || "",
-      duration: device.duration || "",
       flexibility: device.flexibility || "constant",
 
       capacity: device.capacity || "",

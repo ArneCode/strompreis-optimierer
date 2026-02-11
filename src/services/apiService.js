@@ -40,17 +40,21 @@ class ApiService {
             cleanData.efficiency = eff > 1 ? eff / 100 : eff;
         }
         else if (rawForm.type === "Consumer") {
-            cleanData.power = parseFloat(rawForm.power) || 0;
-            cleanData.duration = parseInt(rawForm.duration) || 0;
             cleanData.flexibility = rawForm.flexibility || "constant";
         }
         else if (rawForm.type === "PVGenerator") {
-            cleanData.ratedPower = parseFloat(rawForm.ratedPower) || 0;
-            cleanData.angleOfInclination = parseFloat(rawForm.angleOfInclination) || 0;
-            cleanData.alignment = rawForm.alignment;
-            cleanData.location = rawForm.location;
-            cleanData.lat = rawForm.lat ? parseFloat(rawForm.lat) : null;
-            cleanData.lng = rawForm.lng ? parseFloat(rawForm.lng) : null;
+            cleanData.peakPower = parseFloat(rawForm.ratedPower) || 0;
+            cleanData.declination = parseFloat(rawForm.angleOfInclination) || 0;
+            cleanData.location = rawForm.location || "Unbekannt";
+
+            const azimuthMapping = {
+                "Nord": 0, "Nordost": 45, "Ost": 90, "Südost": 135,
+                "Süd": 180, "Südwest": 225, "West": 270, "Nordwest": 315
+            };
+            cleanData.azimuth = azimuthMapping[rawForm.alignment] || 180;
+
+            cleanData.latitude = parseFloat(rawForm.lat) || 0;
+            cleanData.longitude = parseFloat(rawForm.lng) || 0;
         }
 
         return this.request('devices', 'POST', cleanData);

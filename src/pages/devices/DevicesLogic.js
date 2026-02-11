@@ -1,15 +1,13 @@
 
 export const INITIAL_DEVICE_FORM = {
     name: "",
-    type: "generator",
+    type: "Generator",
     ratedPower: "", // nennleitsung
     angleOfInclination: "",
     alignment: "Süd",
     location: "",
     lat: null,
     lng: null,
-    power: "",
-    duration: "",
     forecast: "",
     flexibility: "constant",
     capacity: "",
@@ -56,8 +54,6 @@ export const DEVICE_VALIDATION_SCHEME = {
     },
 
     Consumer: {
-        power: [RULES.required, RULES.number, RULES.positive],
-        duration: [RULES.required, RULES.number, RULES.positive],
         flexibility: [RULES.required],
     },
 
