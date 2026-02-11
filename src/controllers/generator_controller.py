@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
 
-class GeneratorController(DeviceController):
+class GeneratorPvController(DeviceController):
     """Controller for generator devices (e.g., PV panels).
 
     Generators are passive: they don't receive commands but their
@@ -25,6 +25,7 @@ class GeneratorController(DeviceController):
     def __init__(self, id: "int"):
         self._id = id
         self._schedule: "Optional[Schedule]" = None
+        self.forecast_service = ...
 
     @property
     def device_id(self) -> "int":
@@ -36,6 +37,8 @@ class GeneratorController(DeviceController):
 
     def add_to_optimizer_context(self, context: "OptimizerContext", current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Add generator prognoses to the optimizer context."""
+        device = device_manager.get_device_service().get_generator_pv(
+            self._id)
         prognoses = PrognosesProvider(
             # Mock prognosis: constant 5W generation; replace with real data access
             lambda t1, t2: WattHour(5)

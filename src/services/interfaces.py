@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Generator, Optional
+from typing import TYPE_CHECKING, Optional
+
+from device import GeneratorPV
 if TYPE_CHECKING:
     from electricity_price_optimizer_py import Schedule
     from controllers.base import DeviceController
     from controllers.battery_controller import BatteryController
     from controllers.constant_action_controller import ConstantActionController
-    from controllers.generator_controller import GeneratorController
+    from controllers.generator_controller import GeneratorPvController
     from controllers.variable_action_controller import VariableActionController
     from device import Battery, ConstantActionDevice, Device, VariableActionDevice
     from device_manager import IDeviceManager
@@ -103,7 +105,7 @@ class IControllerServiceReader(ABC):
         ...
 
     @abstractmethod
-    def get_generator_controller(self, controller_id: int) -> Optional["GeneratorController"]:
+    def get_generator_controller(self, controller_id: int) -> Optional["GeneratorPvController"]:
         """Retrieve generator controller details by ID."""
         ...
 
@@ -131,7 +133,7 @@ class IControllerService(IControllerServiceReader):
         ...
 
     @abstractmethod
-    def add_generator_controller(self, controller: "GeneratorController") -> int:
+    def add_generator_controller(self, controller: "GeneratorPvController") -> int:
         """Add a new generator controller and return its ID."""
         ...
 
@@ -174,7 +176,7 @@ class IDeviceServiceReader(ABC):
         ...
 
     @abstractmethod
-    def get_generator(self, device_id: "int") -> "Generator | None":
+    def get_generator_pv(self, device_id: "int") -> "GeneratorPV | None":
         """Retrieve generator details by ID."""
         ...
 

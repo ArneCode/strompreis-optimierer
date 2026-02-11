@@ -9,7 +9,7 @@ Caveats:
 """
 from abc import ABC, abstractmethod
 from typing import Optional
-from controllers import BatteryController, GeneratorController, ConstantActionController, VariableActionController
+from controllers import BatteryController, GeneratorPvController, ConstantActionController, VariableActionController
 from controllers.base import DeviceController
 from services.interfaces import IControllerService
 from rollback_map import RollbackMap
@@ -21,7 +21,7 @@ from rollback_map import RollbackMap
 class ControllerService(IControllerService):
     """In-memory controller store using RollbackMap for transactional changes."""
     battery_controllers: RollbackMap[BatteryController]
-    generator_controllers: RollbackMap[GeneratorController]
+    generator_controllers: RollbackMap[GeneratorPvController]
     constant_action_controllers: RollbackMap[ConstantActionController]
     variable_action_controllers: RollbackMap[VariableActionController]
 
@@ -34,7 +34,7 @@ class ControllerService(IControllerService):
     def get_battery_controller(self, controller_id: int) -> Optional[BatteryController]:
         return self.battery_controllers.get(controller_id)
 
-    def get_generator_controller(self, controller_id: int) -> Optional[GeneratorController]:
+    def get_generator_controller(self, controller_id: int) -> Optional[GeneratorPvController]:
         return self.generator_controllers.get(controller_id)
 
     def get_constant_action_controller(self, controller_id: int) -> Optional[ConstantActionController]:
@@ -52,7 +52,7 @@ class ControllerService(IControllerService):
     def add_battery_controller(self, controller: BatteryController) -> int:
         return self.battery_controllers.set(controller.device_id, controller)
 
-    def add_generator_controller(self, controller: GeneratorController) -> int:
+    def add_generator_controller(self, controller: GeneratorPvController) -> int:
         return self.generator_controllers.set(controller.device_id, controller)
 
     def add_constant_action_controller(self, controller: ConstantActionController) -> int:
