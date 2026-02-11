@@ -1,7 +1,7 @@
 import {Gantt, Willow} from '@svar-ui/react-gantt';
 import {downloadCSV, downloadPDF} from "./exportHelper.js";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
-import {useState, useEffect, useMemo} from 'react';
+import { CartesianGrid, Line, LineChart, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import {useState, useEffect, useMemo, useRef} from 'react';
 import '@svar-ui/react-gantt/all.css'
 import '../../styles/pages/Plan.css';
 import apiService from '../../services/apiService.js';
@@ -9,6 +9,13 @@ import apiService from '../../services/apiService.js';
 
 
 function PlanPage() {
+  const [openDataWindow, setOpenDataWindow] = useState(false);
+  const [api, setApi] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const batteriesRef = useRef([]);
+  const timelineRef = useRef([]);
+  const tasksRef = useRef([]);
+
   const [tasks, setTasks] = useState ([]);
   const [priceData, setPriceData] = useState([
     { hour: '00:00', price: 22.4 },
@@ -93,44 +100,150 @@ function PlanPage() {
   const priceTicks = Array.from({length: 12}, (_,i) => 20 + i * 1);
   const generationTicks = [0, 1, 2, 3, 4, 5];
 
-
+  
+  useEffect(() => {
+    tasksRef.current = tasks; 
+  }, [tasks]);
+  
+  useEffect(() => {
+    batteriesRef.current = batteries;
+  }, [batteries]);
+  
+  useEffect(() => {
+    timelineRef.current = timeline;
+  }, [timeline]);
+  
   function handleUpdate() {
     loadPlan();
   }
-
+  
+  function handleInit(apiInstance) {
+    setApi(apiInstance);
     
-
-    function mapTasks(rawTasks) {
-      return rawTasks.map((t) => ({
-        ...t,
-        start: new Date(t.start),
-        end: new Date(t.end),
-        type: "task",
-        lazy: false,
-      }));
-    }
-
-    async function loadPlan() {
-      setError("");
-      try {
-        const plan = await apiService.fetchPlan();
-        setTasks(mapTasks(plan.tasks || []));
-
-        const data = await apiService.fetchPlanData();
-        setTimeline(data.timeline || []);
-        setBatteries(data.batteries || []);
-        setVariableActions(data.variableActions || []);
-      } catch (e) {
-        setError(e.message || "Error loading the plan");
+    apiInstance.on("select-task", (ev) => {
+      const sel = Array.isArray(ev) ? ev[0] : ev;
+      const selectedId = sel?.id;
+      
+      if (selectedId == null) return;
+      
+      const task = tasksRef.current.find(t => String(t.id) === String(selectedId));
+      if (!task) return;
+      
+      const battery = batteriesRef.current.find(b => b.name === task.name);
+      if (!battery) return;
+      
+      if (battery) {
+        setSelectedTask(task);
+        setOpenDataWindow(true);
       }
+    });
+  }
+  
+  
+  
+  function mapTasks(rawTasks) {
+    return rawTasks.map((t) => ({
+      ...t,
+      start: new Date(t.start),
+      end: new Date(t.end),
+      type: "task",
+      lazy: false,
+    }));
+  }
+  
+  async function loadPlan() {
+    setError("");
+    try {
+      const plan = await apiService.fetchPlan();
+      setTasks(mapTasks(plan.tasks || []));
+      
+      const data = await apiService.fetchPlanData();
+      setTimeline(data.timeline || []);
+      setBatteries(data.batteries || []);
+      setVariableActions(data.variableActions || []);
+    } catch (e) {
+      setError(e.message || "Error loading the plan");
     }
+  }
+  
+  useEffect(() => {
+    loadPlan();
+  }, []);
+  
+  
+  const selectedBattery = useMemo(() => {
+    if (!selectedTask) return null;
 
-    useEffect(() => {
-      loadPlan();
-    }, []);
+    return batteries.find(b => b.name === selectedTask.name) || null;
+  }, [selectedTask, batteries]);
+
+  const batteryChartData = useMemo(() => {
+    if (!selectedBattery || !timeline.length) return [];
+
+    return timeline.map((t, i) => ({
+      time: t,
+      socWh: selectedBattery.socWh?.[i] ?? null,
+    }))
+  });
+
+  const socTicks = useMemo(() => {
+    if (!selectedBattery?.socWh?.length) return undefined;
+    
+    const vals = selectedBattery.socWh.filter((v) => typeof v === "number");
+    if (!vals.length) return undefined;
+
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const steps = 5;
+    const step = (max - min) / steps || 1;
+
+    return Array.from({ length: steps + 1 }, (_, i) => Math.round(min + i * step)); 
+  }, [selectedBattery]);
 
   return (
     <>
+      {openDataWindow && 
+        <div className="data-popup">
+          <div className="data-popup-window">
+            <div className="data-popup-head">
+              <p>
+                {selectedBattery ? `Batterie: ${selectedBattery.name}` : "Batterie-Daten"}
+              </p>
+              <button onClick={() => setOpenDataWindow(false)}>
+                ✕
+              </button>
+            </div>
+            {!selectedBattery ? (
+          <p>Keine Battery-Daten gefunden.</p>
+            ) : batteryChartData.length === 0 ? (
+              <p>Keine Timeline/SoC-Daten verfügbar.</p>
+            ) : (
+              <div style={{ width: "100%", height: 280 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={batteryChartData} margin={{ top: 10, right: 10, left: 0, bottom: 30 }}>
+                    <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
+                    <Line dataKey="socWh" name="SoC (Wh)" strokeWidth={2} dot={false} />
+                    <XAxis
+                      dataKey="time"
+                      tickFormatter={(iso) =>
+                        new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
+                      }
+                      interval={3}
+                      label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+                    />
+                    <YAxis
+                      label={{ value: "SoC (Wh)", position: "Left", angle: -90 }}
+                      domain={["auto", "auto"]}
+                      ticks={socTicks}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+      }
+
       <div className="plan-header">
         <p>Ablaufplan</p>
         <button
@@ -154,6 +267,7 @@ function PlanPage() {
               cellWidth={45}
               durationUnit="hour"
               readonly={true}
+              init={handleInit}
               columns={[
                 {
                   id: "name",
