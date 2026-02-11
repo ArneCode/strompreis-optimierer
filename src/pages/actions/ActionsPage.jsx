@@ -32,7 +32,12 @@ function ActionsPage() {
     useEffect(() => { refreshData(); }, []);
 
     const [actionForm, setActionForm] = useState({
-        deviceName: "", startTime: "", endTime: "", duration: "", consumption: "", totalConsumption: ""
+        deviceId: "",
+        startTime: "",
+        endTime: "",
+        duration: "",
+        consumption: "",
+        totalConsumption: ""
     });
 
     const [actionErrors, setActionErrors] = useState({});
@@ -44,13 +49,18 @@ function ActionsPage() {
         const { name, value } = e.target;
         setActionForm(prev => {
             const updated = { ...prev, [name]: value };
-            const selectedDevice = devices.find(d => d.name === updated.deviceName);
+            const selectedDevice = devices.find(d => String(d.id) === String(updated.deviceId));
             const isVariable = selectedDevice?.flexibility === "variable";
             const startMins = timeToSlider(updated.startTime, timeOffset);
             const endMins = timeToSlider(updated.endTime, timeOffset);
             let newErrors = { ...actionErrors };
             if (endMins <= startMins) newErrors.startTime = "Ungültig"; else delete newErrors.startTime;
-            if (!isVariable && updated.duration && (endMins - startMins) < Number(updated.duration)) newErrors.duration = "Zeitfenster zu klein"; else delete newErrors.duration;
+            if (!isVariable && updated.duration && (endMins - startMins) < Number(updated.duration)) {
+                newErrors.duration = "Zeitfenster zu klein";
+            } else {
+                delete newErrors.duration;
+            }
+
             setActionErrors(newErrors);
             return updated;
         });
@@ -59,7 +69,7 @@ function ActionsPage() {
     const toggleCreateActionPopup = () => {
         if (!openCreateAction) {
             setActionForm({
-                deviceName: "",
+                deviceId: "",
                 startTime: getCurrentTimeStr(),
                 endTime: sliderToTime(1435, timeOffset),
                 duration: "", consumption: "", totalConsumption: ""
@@ -74,20 +84,19 @@ function ActionsPage() {
         if (Object.keys(errors).length > 0) { setActionErrors(errors); return; }
 
         try {
-            const selectedDevice = devices.find(d => d.name === actionForm.deviceName);
+            const selectedDevice = devices.find(d => String(d.id) === String(actionForm.deviceId));
             const isVariable = selectedDevice?.flexibility === "variable";
 
             const payload = {
                 start: combineToISO(actionForm.startTime, timeOffset),
                 end: combineToISO(actionForm.endTime, timeOffset),
+                consumption: Number(actionForm.consumption)
             };
 
             if (isVariable) {
                 payload.total_consumption = Number(actionForm.totalConsumption);
-                payload.consumption = Number(actionForm.consumption);
             } else {
                 payload.duration_minutes = Number(actionForm.duration);
-                payload.consumption = Number(actionForm.consumption);
             }
 
             if (isEdit) {
@@ -129,14 +138,12 @@ function ActionsPage() {
                     setEditIndex({ deviceIndex: dIdx, actionIndex: aIdx });
 
                     setActionForm({
-                        deviceName: device.name,
+                        deviceId: device.id,
                         startTime: extractTimeFromISO(action.start),
                         endTime: extractTimeFromISO(action.end),
-
-                        duration: action.duration || "",
-
+                        duration: action.duration_minutes || "",
                         consumption: action.consumption || "",
-                        totalConsumption: action.totalConsumption || ""
+                        totalConsumption: action.total_consumption || ""
                     });
                     setActionErrors({});
                     setOpenEditAction(true);

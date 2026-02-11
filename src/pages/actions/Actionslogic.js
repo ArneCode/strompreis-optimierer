@@ -25,10 +25,10 @@ export const timeToSlider = (timeStr, timeOffset) => {
 
 export const validateActionForm = (form, devices, timeOffset, isEdit = false) => {
     const errors = {};
-    const selectedDevice = devices.find(d => d.name === form.deviceName);
+    const selectedDevice = devices.find(d => String(d.id) === String(form.deviceId));
     const isVariable = selectedDevice?.flexibility === "variable";
 
-    if (!form.deviceName && !isEdit) errors.deviceName = "Pflichtfeld";
+    if (!form.deviceId && !isEdit) errors.deviceId = "Pflichtfeld";
 
     const startMins = timeToSlider(form.startTime, timeOffset);
     const endMins = timeToSlider(form.endTime, timeOffset);

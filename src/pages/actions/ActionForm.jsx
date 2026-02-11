@@ -14,7 +14,7 @@ function ActionForm({
                         currentTimeStr
                     }) {
 
-    const selectedDevice = devices.find(d => d.name === actionForm.deviceName);
+    const selectedDevice = devices.find(d => String(d.id) === String(actionForm.deviceId));
     const isVariable = selectedDevice?.flexibility === "variable";
 
     const hasError = !!(errors.startTime || errors.endTime || errors.duration);
@@ -25,19 +25,19 @@ function ActionForm({
                 <div className="input-group">
                     <div className="input-label">
                         Gerät auswählen
-                        {errors.deviceName && <span className="field-error">{errors.deviceName}</span>}
+                        {errors.deviceId && <span className="field-error">{errors.deviceId}</span>}
                     </div>
                     <select
-                        name="deviceName"
-                        value={actionForm.deviceName}
+                        name="deviceId"
+                        value={actionForm.deviceId || ""}
                         onChange={onChange}
-                        className={`action-device-select ${errors.deviceName ? "input-error" : ""}`}
+                        className={`action-device-select ${errors.deviceId ? "input-error" : ""}`}
                     >
                         <option value="">Verbraucher wählen</option>
                         {devices
                             .filter(device => device.type === "Consumer")
-                            .map((device, idx) => (
-                                <option key={idx} value={device.name}>
+                            .map((device) => (
+                                <option key={device.id} value={device.id}>
                                     {device.name} ({device.flexibility === "variable" ? "Flexibel" : "Konstant"})
                                 </option>
                             ))}
