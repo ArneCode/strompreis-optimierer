@@ -118,37 +118,40 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
         </>
       )}
 
-      {deviceForm.type === "Battery" && (
-        <>
-            <div className="input-label">
-              Kapazität (kWh)
-              {errors.capacity && <div className="field-error">{errors.capacity}</div>}
-            </div>
-            <input name="capacity" value={deviceForm.capacity} onChange={onChange} className={errors.capacity ? "input-error" : ""}/>
+        {deviceForm.type === "Battery" && (
+            <>
+                <div className="input-label">
+                    Kapazität (kWh)
+                    {errors.capacity && <div className="field-error">{errors.capacity}</div>}
+                </div>
+                <input name="capacity" value={deviceForm.capacity} onChange={onChange} className={errors.capacity ? "input-error" : ""}/>
 
+                <div className="input-label">
+                    Max. Entladung (kW)
+                    {errors.maxDischarge && <div className="field-error">{errors.maxDischarge}</div>}
+                </div>
+                <input name="maxDischarge" value={deviceForm.maxDischarge} onChange={onChange} className={errors.maxDischarge ? "input-error" : ""}/>
 
-            <div className="input-label">
-                Max. Entladung (kW)
-                {errors.maxDischarge && <div className="field-error">{errors.maxDischarge}</div>}
-            </div>
-            <input name="maxDischarge" value={deviceForm.maxDischarge} onChange={onChange} className={errors.maxDischarge ? "input-error" : ""}/>
+                <div className="input-label">
+                    Max Charge Rate (kW)
+                    {errors.maxChargeRate && <div className="field-error">{errors.maxChargeRate}</div>}
+                </div>
+                <input name="maxChargeRate" value={deviceForm.maxChargeRate} onChange={onChange} className={errors.maxChargeRate ? "input-error" : ""}/>
 
-            <div className="input-label">
-                Max Charge Rate
-            </div>
-            <input name="maxChargeRate" value={deviceForm.maxChargeRate} onChange={onChange} className={""}/>
+                <div className="input-label">
+                    Efficiency in %
+                    {errors.efficiency && <div className="field-error">{errors.efficiency}</div>}
+                </div>
+                <input name="efficiency" value={deviceForm.efficiency} onChange={onChange} className={errors.efficiency ? "input-error" : ""}/>
 
-            <div className="input-label">
-                Efficiency
-            </div>
-            <input name="efficiency" value={deviceForm.efficiency} onChange={onChange} className={""}/>
+                <div className="input-label">
+                    Ladezustand (kWh)
+                    {errors.currentCharge && <div className="field-error">{errors.currentCharge}</div>}
+                </div>
+                <input name="currentCharge" value={deviceForm.currentCharge} onChange={onChange} className={errors.currentCharge ? "input-error" : ""}/>
+            </>
+        )}
 
-            <div className="input-label">
-                LadeZustand
-            </div>
-            <input name="currentCharge" value={deviceForm.currentCharge} onChange={onChange} className={""}/>
-        </>
-      )}
     </>
   );
 }

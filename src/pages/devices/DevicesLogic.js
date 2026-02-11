@@ -39,6 +39,17 @@ export const RULES = {
     required: value => value ? null : "Pflichtfeld",
     number: value => isNaN(Number(value)) ? "Gib eine Zahl an" : null,
     positive: value => Number(value) > 0 ? null : "Muss > 0 sein",
+    efficiencyRange: value => {
+        const num = Number(value);
+        if (num <= 0 || num > 100) return "Muss zwischen 0 und 100% liegen";
+        return null;
+    },
+    angleRange: value => {
+        const num = Number(value);
+        if (num < 0 || num > 90) return "Winkel muss zwischen 0° und 90° liegen";
+        return null;
+    }
+
 };
 
 export const DEVICE_VALIDATION_SCHEME = {
@@ -48,7 +59,7 @@ export const DEVICE_VALIDATION_SCHEME = {
 
     PVGenerator: {
         ratedPower: [RULES.required, RULES.number, RULES.positive],
-        angleOfInclination: [RULES.required, RULES.number, RULES.positive],
+        angleOfInclination: [RULES.required, RULES.number, RULES.angleRange],
         alignment: [RULES.required],
         location: [RULES.required],
     },
@@ -62,7 +73,7 @@ export const DEVICE_VALIDATION_SCHEME = {
         maxDischarge: [RULES.required, RULES.number, RULES.positive],
         maxChargeRate: [RULES.required, RULES.number, RULES.positive],
         currentCharge: [RULES.required, RULES.number, RULES.positive],
-        efficiency: [RULES.required, RULES.number, RULES.positive],
+        efficiency: [RULES.required, RULES.number, RULES.efficiencyRange],
     },
 };
 
