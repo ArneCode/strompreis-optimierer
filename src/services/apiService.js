@@ -71,6 +71,14 @@ class ApiService {
     deleteAction(deviceId, actionId) {
         return this.request(`devices/${deviceId}/actions/${actionId}`, 'DELETE');
     }
+
+    fetchPlan() {
+        return this.request('plan', 'GET');
+    }
+
+    fetchPlanData() {
+        return this.request('plan/data', 'GET')
+    }
 }
 
 export default new ApiService();
