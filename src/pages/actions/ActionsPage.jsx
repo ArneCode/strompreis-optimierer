@@ -139,11 +139,11 @@ function ActionsPage() {
 
                     setActionForm({
                         deviceId: device.id,
-                        startTime: extractTimeFromISO(action.start),
-                        endTime: extractTimeFromISO(action.end),
-                        duration: action.duration_minutes || "",
-                        consumption: action.consumption || "",
-                        totalConsumption: action.total_consumption || ""
+                        startTime: extractTimeFromISO(action.start || action.start_from),
+                        endTime: extractTimeFromISO(action.end || action.end_before),
+                        duration: action.duration || "",
+                        totalConsumption: action.totalConsumption || action.total_consumption || "",
+                        consumption: action.consumption || action.maxConsumption || ""
                     });
                     setActionErrors({});
                     setOpenEditAction(true);
