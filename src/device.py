@@ -157,6 +157,7 @@ class GeneratorPV(Generator):
 
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    location: Mapped[String] = mapped_column(String, nullable=False)
     declination: Mapped[float] = mapped_column(Float, nullable=False)
     azimuth: Mapped[float] = mapped_column(Float, nullable=False)
     peak_power: Mapped[Watt] = mapped_column(WattMapper, nullable=False)

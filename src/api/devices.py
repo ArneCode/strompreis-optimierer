@@ -40,14 +40,12 @@ class BatteryIn(DeviceBaseIn):
 
 class PVGeneratorIn(DeviceBaseIn):
     type: Literal["PVGenerator"]
-    ratedPower: float | None = None
-    angleOfInclination: float | None = None
-    alignment: str | None = None
-    location: str | None = None
-    lat: float | None = None
-    lng: float | None = None
-
-
+    location: str
+    peakPower: float
+    latitude: float
+    longitude: float
+    declination: float
+    azimuth: float
 
 DevicePayload = Union[ConsumerIn, BatteryIn, PVGeneratorIn]
 
@@ -92,12 +90,12 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
     if isinstance(d, GeneratorPV):
         base.update({
             "type": "PVGenerator",
-            "ratedPower": Watt.get_value(d.rated_power) if hasattr(d, 'rated_power') and d.rated_power else None,
-            "angleOfInclination": getattr(d, 'angle_of_inclination', None),
-            "alignment": getattr(d, 'alignment', None),
-            "location": getattr(d, 'location', None),
-            "lat": getattr(d, 'latitude', None),
-            "lng": getattr(d, 'longitude', None),
+            "ratedPower": Watt.get_value(d.peak_power),
+            "angleOfInclination": d.declination,
+            "alignment": d.azimuth,
+            "lat": d.latitude,
+            "lng": d.longitude,
+            "location": d.location,
         })
         return base
 
@@ -147,15 +145,19 @@ def create_device(
         )
         manager.add_battery(model)
 
+
     elif isinstance(payload, PVGeneratorIn):
         model = GeneratorPV(
-            name=payload.name
+            name=payload.name,
+            location=payload.location,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+            declination=payload.declination,
+            azimuth=payload.azimuth,
+            peak_power=Watt(payload.peakPower)
         )
-
         manager.add_generator(model)
 
-
-    #TODO Generator
     else:
         raise HTTPException(status_code=400, detail="Ungültiger Gerätetyp")
 
