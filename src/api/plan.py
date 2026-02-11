@@ -57,6 +57,9 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     variable_actions = []
     timeline = _create_timeline(24)
 
+    plan_start = timeline[0]
+    plan_end = timeline[-1] + timedelta(hours = 1)
+
     i = 1
     for device in manager.get_device_service().get_all_devices():
         if isinstance(device, ConstantActionDevice):
@@ -110,8 +113,8 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                     "id": str(i),
                     "name": device.name,
                     "text": device.name,
-                    "start": "",
-                    "end": ""
+                    "start": plan_start.isoformat(),
+                    "end": plan_end.isoformat(),
                 }
             )
 
