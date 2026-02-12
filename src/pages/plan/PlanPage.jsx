@@ -365,11 +365,17 @@ function PlanPage() {
           </Willow>
         </div>
         <div className="plan-options">
-            <button className="plan-export-button" onClick={() => downloadCSV(tasks)}>
+            <button
+                className="plan-export-button"
+                onClick={() => downloadCSV(tasks, "ablaufplan.csv", setError)}
+            >
                 Exportieren als CSV
             </button>
 
-            <button className="plan-export-button" onClick={() => downloadPDF(tasks)}>
+            <button
+                className="plan-export-button"
+                onClick={() => downloadPDF(tasks, "ablaufplan.pdf", setError)}
+            >
                 Exportieren als PDF
             </button>
         </div>
