@@ -15,6 +15,8 @@ function PlanPage() {
   const batteriesRef = useRef([]);
   const timelineRef = useRef([]);
   const tasksRef = useRef([]);
+  const [popupType, setPopupType] = useState(null);
+  const variableActionsRef = useRef([]);
 
   const [tasks, setTasks] = useState ([]);
   const [priceData, setPriceData] = useState([
@@ -112,6 +114,10 @@ function PlanPage() {
   useEffect(() => {
     timelineRef.current = timeline;
   }, [timeline]);
+
+  useEffect(() => {
+    variableActionsRef.current = variableActions;
+  }, [variableActions]);
   
   function handleUpdate() {
     loadPlan();
@@ -123,19 +129,28 @@ function PlanPage() {
     apiInstance.on("select-task", (ev) => {
       const sel = Array.isArray(ev) ? ev[0] : ev;
       const selectedId = sel?.id;
-      
       if (selectedId == null) return;
       
       const task = tasksRef.current.find(t => String(t.id) === String(selectedId));
       if (!task) return;
+
+      setSelectedTask(task);
       
       const battery = batteriesRef.current.find(b => b.name === task.name);
-      if (!battery) return;
-      
       if (battery) {
-        setSelectedTask(task);
+        setPopupType("battery");
         setOpenDataWindow(true);
+        return;
       }
+      
+      const va = variableActionsRef.current.find(a => a.name == task.name);
+      if (va) {
+        setPopupType("variable");
+        setOpenDataWindow(true);
+        return;
+      }
+
+      setPopupType(null);
     });
   }
   
@@ -184,7 +199,7 @@ function PlanPage() {
       time: t,
       socWh: selectedBattery.socWh?.[i] ?? null,
     }))
-  });
+  }, [selectedBattery, timeline]);
 
   const socTicks = useMemo(() => {
     if (!selectedBattery?.socWh?.length) return undefined;
@@ -200,6 +215,23 @@ function PlanPage() {
     return Array.from({ length: steps + 1 }, (_, i) => Math.round(min + i * step)); 
   }, [selectedBattery]);
 
+  const selectedVariableAction = useMemo(() => {
+    if (!selectedTask) return null;
+    return variableActions.find(a => a.name === selectedTask.name) || null;
+  }, [selectedTask, variableActions]);
+
+  const variableActionChartData = useMemo(() => {
+    if (!selectedVariableAction) return [];
+
+    const start = new Date(selectedVariableAction.start);
+    const stepMs = (selectedVariableAction.stepMinutes || 30) * 60 * 1000;
+
+    return (selectedVariableAction.powerW || []).map((p, idx) => ({
+      time: new Date(start.getTime() + idx * stepMs).toISOString(),
+      powerW: p,
+    }));
+  }, [selectedVariableAction]);
+
   return (
     <>
       {openDataWindow && 
@@ -207,39 +239,73 @@ function PlanPage() {
           <div className="data-popup-window">
             <div className="data-popup-head">
               <p>
-                {selectedBattery ? `Batterie: ${selectedBattery.name}` : "Batterie-Daten"}
+                {popupType === "battery" && selectedBattery && `Batterie: ${selectedBattery.name}`}
+                {popupType === "variable" && selectedVariableAction && `Verbrauch: ${selectedVariableAction.name}`}
+                {!popupType && "Daten"}
               </p>
               <button onClick={() => setOpenDataWindow(false)}>
                 ✕
               </button>
             </div>
-            {!selectedBattery ? (
-          <p>Keine Battery-Daten gefunden.</p>
-            ) : batteryChartData.length === 0 ? (
-              <p>Keine Timeline/SoC-Daten verfügbar.</p>
-            ) : (
-              <div style={{ width: "100%", height: 280 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={batteryChartData} margin={{ top: 10, right: 10, left: 0, bottom: 30 }}>
-                    <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-                    <Line dataKey="socWh" name="SoC (Wh)" strokeWidth={2} dot={false} />
-                    <XAxis
-                      dataKey="time"
-                      tickFormatter={(iso) =>
-                        new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
-                      }
-                      interval={3}
-                      label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-                    />
-                    <YAxis
-                      label={{ value: "SoC (Wh)", position: "Left", angle: -90 }}
-                      domain={["auto", "auto"]}
-                      ticks={socTicks}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+            {popupType === "battery" && (
+              !selectedBattery ? (
+                <p>Keine Battery-Daten gefunden.</p>
+              ) : batteryChartData.length === 0 ? (
+                <p>Keine Timeline/SoC-Daten verfügbar.</p>
+              ) : (
+                <div style={{ width: "100%", height: 280 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={batteryChartData} margin={{ top: 10, right: 10, left: 0, bottom: 30 }}>
+                      <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
+                      <Line dataKey="socWh" name="SoC (Wh)" strokeWidth={2} dot={false} />
+                      <XAxis
+                        dataKey="time"
+                        tickFormatter={(iso) =>
+                          new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
+                        }
+                        interval={3}
+                        label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+                      />
+                      <YAxis
+                        label={{ value: "SoC (Wh)", position: "insideLeft", angle: -90 }}
+                        domain={["auto", "auto"]}
+                        ticks={socTicks}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )
             )}
+            {popupType === "variable" && (
+              !selectedVariableAction ? (
+                <p>Keine VariableAction-Daten gefunden.</p>
+              ) : variableActionChartData.length === 0 ? (
+                <p>Keine Verbrauchsdaten verfügbar.</p>
+              ) : (
+                <div style={{ width: "100%", height: 280 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={variableActionChartData} margin={{ top: 10, right: 10, left: 0, bottom: 30 }}>
+                      <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
+                      <Line dataKey="powerW" name="Leistung (W)" strokeWidth={2} dot={false} />
+                      <XAxis
+                        dataKey="time"
+                        tickFormatter={(iso) =>
+                          new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
+                        }
+                        interval={3}
+                        label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+                      />
+                      <YAxis
+                        label={{ value: "W", position: "insideLeft", angle: -90 }}
+                        domain={[0, "auto"]}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )
+            )}
+
+
           </div>
         </div>
       }
