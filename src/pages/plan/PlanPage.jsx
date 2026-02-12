@@ -8,6 +8,15 @@ import apiService from "../../services/apiService.js";
 
 function PlanPage() {
   const pollRef = useRef(null);
+
+  const tasksRef = useRef([]);
+  const [tasks, setTasks] = useState ([]);
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
   
   const scales = [
     { unit: "day", step: 1, format: "d" },
@@ -16,7 +25,6 @@ function PlanPage() {
   const priceTicks = Array.from({length: 12}, (_,i) => 20 + i * 1);
   const generationTicks = [0, 1, 2, 3, 4, 5];
   
-  const [tasks, setTasks] = useState ([]);
   const [planData, setPlanData] = useState({
     timeline: [],
     batteries: [],
@@ -81,6 +89,62 @@ function PlanPage() {
     { hour: '22:00', generation: 0 },
     { hour: '23:00', generation: 0 },
   ]);
+
+  const variableActionById = useMemo(() => {
+    const m = new Map();
+    for (const va of planData.variableActions ?? []) {
+      m.set(String(va.id), va);
+    }
+    return m;
+  }, [planData.variableActions]);
+
+  const batteryById = useMemo(() => {
+    const m = new Map();
+    for (const b of planData.batteries ?? []) {
+      m.set(String(b.id), b);
+    }
+    return m;
+  }, [planData.batteries]);
+
+  const openTaskModal = (task) => {
+    setSelectedTask(task);
+    setModalOpen(true);
+  };
+
+  const closeTaskModal = () => {
+    setModalOpen(false);
+    setSelectedTask(null);
+  };
+
+  const buildBatterySeries = (battery) => {
+    const t = planData.timeline ?? [];
+    const y = battery?.socWh ?? [];
+    return t.map((iso, i) => ({
+      time: iso,
+      value: y[i] ?? null,
+    }));
+  };
+
+  const buildVariableActionSeries = (va) => {
+    if (!va) return [];
+    const start = new Date(va.start);
+    const stepMs = (va.stepMinutes ?? 30) * 60 * 1000;
+
+    return (va.powerW ?? []).map((p, i) => ({
+      time: new Date(start.getTime() + i * stepMs).toISOString(),
+      value: p,
+    }));
+  };
+
+  const initGantt = (api) => {
+    api.on("select-task", (task) => {
+      const clicked = tasksRef.current.find((t) => String(t.id) === String(task.id));
+      if (clicked) {
+        openTaskModal(clicked);
+      }
+    });
+  };
+
 
   const stopPolling = () => {
     if (pollRef.current) {
@@ -184,8 +248,64 @@ function PlanPage() {
     return () => stopPolling();
   }, []);
 
+  const selectedId = selectedTask ? String(selectedTask.id) : null;
+  const selectedBattery = selectedId ? batteryById.get(selectedId) : null;
+  const selectedVA = selectedId ? variableActionById.get(selectedId) : null;
+
   return (
     <>
+      {modalOpen && (
+        <div className="data-popup">
+          <div className="data-popup-window">
+            <div className="data-popup-head">
+              <p>{selectedTask?.name}</p>
+              <button onClick={closeTaskModal}>✕</button>
+            </div>
+            {selectedBattery && (
+              <>
+                <p>Battery SOC (Wh)</p>
+                <LineChart width={600} height={300} data={buildBatterySeries(selectedBattery)} margin={{ bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="1 1" />
+                  <XAxis
+                    dataKey="time"
+                    tickFormatter={(iso) => {
+                      const d = new Date(iso);
+                      return String(d.getHours()).padStart(2, "0") + ":00";
+                    }}
+                    label={{value: "Uhrzeit", position: "insideBottom", offset: -15}}
+                  />
+                  <YAxis />
+                  <Line dataKey="value" strokeWidth={2} dot={false} />
+                </LineChart>
+              </>
+            )}
+
+            {!selectedBattery && selectedVA && (
+              <>
+                <p>Power (W)</p>
+                <LineChart width={600} height={300} data={buildVariableActionSeries(selectedVA)} margin={{ bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="1 1" />
+                  <XAxis
+                    dataKey="time"
+                    tickFormatter={(iso) => {
+                      const d = new Date(iso);
+                      return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+                    }}
+                    label={{value: "Uhrzeit", position: "insideBottom", offset: -15}}
+                  />
+                  <YAxis />
+                  <Line dataKey="value" strokeWidth={2} dot={false} />
+                </LineChart>
+              </>
+            )}
+
+            {!selectedBattery && !selectedVA && (
+              <div>Für diese Aufgabe sind keine Detaildaten verfügbar.</div>
+            )}
+                </div>
+              </div>
+            )}
+
       <div className="plan-header">
         <p>Ablaufplan</p>
         {!status.hasSchedule && !status.currentlyRunning && (
@@ -202,8 +322,8 @@ function PlanPage() {
             onClick={refreshAll}
             disabled={status.currentlyRunning}
         >
-          {isOptimizing ? "Optimierung läuft..." : "Aktualisieren"}
-          <img src="./src/assets/images/refresh.png" />
+          Aktualisieren
+          <img src="./src/assets/refresh.png" />
         </button>
         <button
           onClick={handleGeneratePlan}
@@ -225,6 +345,7 @@ function PlanPage() {
               cellWidth={45}
               durationUnit="hour"
               readonly={true}
+              init={initGantt}
               columns={[
                 {
                   id: "name",
