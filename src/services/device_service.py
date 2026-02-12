@@ -69,7 +69,7 @@ class SqlAlchemyDeviceService(IDeviceService):
         return [row[0] for row in self.session.execute(stmt).all()]
 
     def get_all_generator_ids(self) -> "list[int]":
-        stmt = select(GeneratorPV.id)
+        stmt = select(Generator.id)
         return [row[0] for row in self.session.execute(stmt).all()]
 
     def get_all_constant_action_device_ids(self) -> "list[int]":
