@@ -4,6 +4,7 @@ from typing import Optional, TYPE_CHECKING
 from electricity_price_optimizer_py.units import Watt, WattHour
 
 from external_api_services.api_services import api_services
+from external_api_services.forecast_service.forecast_cache import PVConfiguration
 from .base import DeviceController
 
 from electricity_price_optimizer_py import (
@@ -15,8 +16,8 @@ from electricity_price_optimizer_py import (
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
-def get_pv_configuration(generator) -> tuple:
-    return (
+def get_pv_configuration(generator) -> PVConfiguration:
+    return PVConfiguration(
         float(generator.latitude),
         float(generator.longitude),
         float(generator.declination),
@@ -55,7 +56,7 @@ class GeneratorPvController(DeviceController):
         prognoses = PrognosesProvider(
             # Mock prognosis: constant 5W generation; replace with real data access
             # lambda t1, t2: WattHour(5)
-            lambda t1, t2: service.get_total_production(t1, t2)
+            lambda t1, t2: WattHour(service.get_total_production(t1, t2))
         )
         context.add_generated_electricity_prognoses(prognoses)
 

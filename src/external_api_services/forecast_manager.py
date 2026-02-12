@@ -114,13 +114,13 @@ from external_api_services.forecast_service.forecast_client import ForecastClien
 from external_api_services.forecast_service.forecast_service import ForecastService
 
 
-def _pv_fingerprint(cfg: PVConfiguration) -> Tuple[float, float, float, float, float]:
+def _pv_fingerprint(configuration: PVConfiguration) -> Tuple[float, float, float, float, float]:
     return (
-        float(cfg.latitude),
-        float(cfg.longitude),
-        float(cfg.declination),
-        float(cfg.azimuth),
-        float(cfg.peak_power),
+        float(configuration.latitude),
+        float(configuration.longitude),
+        float(configuration.declination),
+        float(configuration.azimuth),
+        float(configuration.peak_power)
     )
 
 
