@@ -76,7 +76,7 @@ class MockGeneratorInteractor(GeneratorInteractor):
             max_p = self._max_power.value
         else:
             try:
-                gen = device_manager.get_device_service().get_generator_pv(self.id)
+                gen = device_manager.get_device_service().get_generator(self.id)
                 if gen is not None and hasattr(gen, "max_power"):
                     gp = getattr(gen, "max_power")
                     try:

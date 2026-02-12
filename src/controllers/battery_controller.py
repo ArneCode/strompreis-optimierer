@@ -16,19 +16,28 @@ from electricity_price_optimizer_py import (
 
 class BatteryController(DeviceController):
     """
-    Controller for battery devices.
+    Controller for a battery device.
 
-    Acts as a Facade that hides:
-    - Interactor communication
-    - Schedule data conversion
-    - Device control logic
+    Responsibilities:
+        - Stores a Schedule assigned by the optimizer (use_schedule()).
+        - Exposes the battery to the optimizer by adding an OptimizerBattery to an
+          OptimizerContext (add_to_optimizer_context()).
+        - Applies the schedule to the real/simulated battery through a BatteryInteractor
+          (update_device()).
+
+    This controller intentionally separates:
+        - Optimizer domain objects (OptimizerBattery, OptimizerContext, Schedule)
+        - Device management / IO (device_manager + BatteryInteractor)
     """
 
     def __init__(
         self,
         id: "int",
     ):
-
+        """
+        Args:
+            id: Device identifier of the battery being controlled.
+        """
         self._id = id
         self._schedule: "Optional[Schedule]" = None
 
@@ -37,15 +46,31 @@ class BatteryController(DeviceController):
         return self._id
 
     def use_schedule(self, schedule: "Schedule", device_manager: "IDeviceManager") -> None:
-        """Store the schedule for later use when updating the device."""
+        """
+        Store a schedule for later application.
+
+        Args:
+            schedule: Schedule produced by the optimizer.
+            device_manager: Present for interface compatibility (not used here).
+        """
         self._schedule = schedule
 
     def add_to_optimizer_context(self, context: "OptimizerContext", current_time: "datetime", device_manager: "IDeviceManager") -> None:
         """
-        Add battery information to the optimizer context.
+        Add this battery to the optimizer context.
 
-        Updates the battery's initial level from the actual current charge
-        before adding to context.
+        Reads the current battery charge from the BatteryInteractor and uses it as the
+        initial_charge for the optimizer model. This keeps the optimizer's model aligned
+        with the actual device state at planning time.
+
+        Args:
+            context: OptimizerContext to which the battery model will be added.
+            current_time: Timestamp for when the context is built (currently unused).
+            device_manager: Used to access the battery definition (capacity, rates) and
+                current device state (charge via interactor).
+
+        Side effects:
+            Adds an OptimizerBattery instance to context.
         """
 
         # Update initial level from actual device state
@@ -86,7 +111,4 @@ class BatteryController(DeviceController):
             interactor = device_manager.get_interactor_service().get_battery_interactor(self._id)
             interactor.set_current(charge_rate, device_manager)
         except ValueError:
-            # Time is outside schedule range, do nothing
-            print(
-                f"Current time {current_time} is outside the schedule range for battery {self._id}. No update applied.")
-            pass
+            return
