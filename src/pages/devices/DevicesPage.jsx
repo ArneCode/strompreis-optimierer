@@ -90,7 +90,9 @@ function DevicesPage() {
             }
 
             try {
-                await apiService.saveDevice(deviceForm);
+                // ID entfernen beim Speichern, damit Backend neue ID generiert
+                const { id, ...deviceDataWithoutId } = deviceForm;
+                await apiService.saveDevice(deviceDataWithoutId);
                 await refreshDevices();
                 closeModal();
             } catch (error) {
