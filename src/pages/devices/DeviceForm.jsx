@@ -114,7 +114,10 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit= false}) {
                     <option value="Nord">Nord</option>
                 </select>
 
-                <div className="input-label">Standort</div>
+                <div className="input-label">
+                    Standort
+                    {errors.location && <div className="field-error">{errors.location}</div>}
+                </div>
                 <button type="button" className="device-popup-inputs-button" onClick={() => setIsMapOpen(true)}>
                     📍 {deviceForm.location || "Standort wählen"}
                 </button>
