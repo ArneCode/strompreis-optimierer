@@ -323,7 +323,7 @@ function PlanPage() {
             disabled={status.currentlyRunning}
         >
           Aktualisieren
-          <img src="./src/assets/refresh.png" />
+          <img src="./src/assets/images/refresh.png" />
         </button>
         <button
           onClick={handleGeneratePlan}
