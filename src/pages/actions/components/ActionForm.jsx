@@ -22,6 +22,7 @@ function ActionForm({
                         devices = [],
                         isEdit = false,
                         errors = {},
+                        disabled = false,
                         sliderToTime,
                         timeToSlider,
                         startLabel,
@@ -42,6 +43,7 @@ function ActionForm({
                         name="deviceId"
                         value={actionForm.deviceId || ""}
                         onChange={onChange}
+                        disabled={disabled}
                         className={`action-device-select ${errors.deviceId ? "input-error" : ""}`}
                     >
                         <option value="">Verbraucher wählen</option>
@@ -62,6 +64,7 @@ function ActionForm({
                     name="startTime"
                     value={actionForm.startTime}
                     onChange={onChange}
+                    disabled={disabled}
                     className={errors.startTime ? "input-error" : ""}
                 />
             </FormField>
@@ -72,6 +75,7 @@ function ActionForm({
                     name="endTime"
                     value={actionForm.endTime}
                     onChange={onChange}
+                    disabled={disabled}
                     className={errors.endTime ? "input-error" : ""}
                 />
             </FormField>
@@ -89,6 +93,7 @@ function ActionForm({
                     sliderToTime={sliderToTime}
                     hasError={hasError}
                     currentTimeStr={currentTimeStr}
+                    disabled={disabled}
                 />
             </div>
 
@@ -102,6 +107,7 @@ function ActionForm({
                                 name="totalConsumption"
                                 value={actionForm.totalConsumption || ""}
                                 onChange={onChange}
+                                disabled={disabled}
                                 className={errors.totalConsumption ? "input-error" : ""}
                                 placeholder="z.B. 2500"
                             />
@@ -113,6 +119,7 @@ function ActionForm({
                                 name="duration"
                                 value={actionForm.duration || ""}
                                 onChange={onChange}
+                                disabled={disabled}
                                 className={errors.duration ? "input-error" : ""}
                                 placeholder="z.B. 60"
                             />
@@ -128,6 +135,7 @@ function ActionForm({
                             name="consumption"
                             value={actionForm.consumption || ""}
                             onChange={onChange}
+                            disabled={disabled}
                             className={errors.consumption ? "input-error" : ""}
                             placeholder="z.B. 1000"
                         />
