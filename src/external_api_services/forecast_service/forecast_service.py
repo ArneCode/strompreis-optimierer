@@ -18,8 +18,8 @@ def _ceil_hour(dt: datetime) -> datetime:
         return floored_hour + timedelta(hours = 1)
 
 class ForecastService(ForecastServicePort):
-    def __init__(self, cache: ForecastCache | None = None):
-        self._cache = cache or ForecastCache()
+    def __init__(self, cache: ForecastCache):
+        self._cache = cache
 
     def get_total_production(self, start: datetime, end: datetime) -> float:
         """

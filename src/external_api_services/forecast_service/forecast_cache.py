@@ -49,6 +49,14 @@ class ForecastBlock:
     end: datetime # exklusiv
     production: float
 
+@dataclass(frozen=True)
+class PVConfiguration:
+    latitude: float
+    longitude: float
+    declination: float
+    azimuth: float
+    peak_power: float
+
 class ForecastCache:
     """
     Caches hourly energy (Wh) per hour_start (Berlin).
@@ -57,13 +65,13 @@ class ForecastCache:
         self,
         *,
         client: ForecastClient,
-        generator: GeneratorPV,
+        pv_configuration: PVConfiguration,
         refresh_interval_s: int = 15 * 60,
         future_hours: int = 30,
         series_key: str = "watt_hours_period",
     ) -> None:
         self._client = client
-        self._generator = generator
+        self._pv_configuration = pv_configuration
         self._refresh_interval_s = refresh_interval_s
         self._future_hours = future_hours
         self._series_key = series_key
@@ -71,14 +79,11 @@ class ForecastCache:
         self._last_fetch_s: float = 0.0
         self._blocks: Dict[datetime, float] = {}
         self._cached_until: Optional[datetime] = None
-        self._generator_has_changed: bool = False
 
     def _refresh_needed(self) -> bool:
         if not self._blocks:
             return True
         if (time.time() - self._last_fetch_s) > self._refresh_interval_s:
-            return True
-        if self._generator_has_changed:
             return True
         now = floor_hour(datetime.now(BERLIN))
         needed_end = now + timedelta(hours = 24) #Vielleicht nur 24h anstelle von 48h hier
@@ -91,11 +96,11 @@ class ForecastCache:
 
             try:
                 payload = self._client.fetch_estimate(
-                    latitude = self._generator.latitude,
-                    longitude = self._generator.longitude,
-                    declination = self._generator.declination,
-                    azimuth = self._generator.azimuth,
-                    kilowatt_peak = self._generator.peak_power.get_value(),
+                    latitude = self._pv_configuration.latitude,
+                    longitude = self._pv_configuration.longitude,
+                    declination = self._pv_configuration.declination,
+                    azimuth = self._pv_configuration.azimuth,
+                    kilowatt_peak = self._pv_configuration.peak_power,
                     time_mode = "utc",
                 )
             except Exception as exception:
@@ -180,8 +185,3 @@ class ForecastCache:
     def get_blocks(self):
         self.refresh()
         return self._blocks.copy()
-
-    def set_generator(self, generator: GeneratorPV):
-        self._generator = generator
-        self._generator_has_changed = True
-        self.refresh()

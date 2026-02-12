@@ -3,12 +3,7 @@ from typing import Optional, TYPE_CHECKING
 
 from electricity_price_optimizer_py.units import Watt, WattHour
 
-import device
-#import instances
-from external_api_services import forecast_service
-from external_api_services.forecast_service.forecast_cache import ForecastCache
-from external_api_services.forecast_service.forecast_client import ForecastClient
-from external_api_services.forecast_service.forecast_service import ForecastService
+from external_api_services.api_services import api_services
 from .base import DeviceController
 
 from electricity_price_optimizer_py import (
@@ -20,7 +15,7 @@ from electricity_price_optimizer_py import (
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
-def generator_fingerprint(generator) -> tuple:
+def get_pv_configuration(generator) -> tuple:
     return (
         float(generator.latitude),
         float(generator.longitude),
@@ -40,10 +35,6 @@ class GeneratorPvController(DeviceController):
         self._id = id
         self._schedule: "Optional[Schedule]" = None
 
-        self._forecast_cache: Optional[ForecastCache] = None
-        self._forecast_service: Optional[ForecastService] = None
-        self._generator_fingerprint: Optional[tuple] = None
-
     @property
     def device_id(self) -> "int":
         return self._id
@@ -52,48 +43,25 @@ class GeneratorPvController(DeviceController):
         """Store the schedule (generators typically don't act on it)."""
         self._schedule = schedule
 
-    def _ensure_forecast_is_ready(self, device_manager: "IDeviceManager") -> None:
+    def _forecast_service(self, device_manager: "IDeviceManager"):
         generator = device_manager.get_device_service().get_generator_pv(self._id)
-        fingerprint = generator_fingerprint(generator)
+        pv_configuration = get_pv_configuration(generator)
+        return api_services.forecast_manager.get_service(pv_configuration)
 
-        if self._forecast_cache is None or self._forecast_cache is None or self._generator_fingerprint is None:
-            self._forecast_cache = ForecastCache(
-                #client = instances.forecast_client,
-                client = ForecastClient(),
-                generator = generator
-            )
-            self._forecast_service = ForecastService(cache = self._forecast_cache)
-            self._generator_fingerprint = fingerprint
-            return
-
-        if fingerprint != self._generator_fingerprint:
-            try:
-                self._forecast_cache.set_generator(generator)
-            except Exception:
-                self._forecast_cache = ForecastCache(
-                    #client = instances.forecast_client,
-                    client=ForecastClient(),
-                    generator = generator
-                )
-                self._forecast_service = ForecastService(cache = self._forecast_cache)
-
-            self._generator_fingerprint = fingerprint
 
     def add_to_optimizer_context(self, context: "OptimizerContext", current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Add generator prognoses to the optimizer context."""
-        device = device_manager.get_device_service().get_generator_pv(
-            self._id)
-        self._ensure_forecast_is_ready(device_manager)
+        service = self._forecast_service(device_manager)
         prognoses = PrognosesProvider(
             # Mock prognosis: constant 5W generation; replace with real data access
             # lambda t1, t2: WattHour(5)
-            lambda t1, t2: WattHour(self._forecast_service.get_total_production(t1, t2))
+            lambda t1, t2: service.get_total_production(t1, t2)
         )
         context.add_generated_electricity_prognoses(prognoses)
 
     def get_prognoses(self, device_manager: "IDeviceManager") -> dict[datetime, float]:
-        self._ensure_forecast_is_ready(device_manager)
-        return self._forecast_service.get_hourly_production(datetime.now())
+        service = self._forecast_service(device_manager)
+        return service.get_hourly_production(datetime.now())
 
     def update_device(self, current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Optional periodic update; for generators we generally don't actuate devices."""
