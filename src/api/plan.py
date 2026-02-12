@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from electricity_price_optimizer_py.units import WattHour, Watt
 from api.dependencies import get_device_manager, get_orchestrator_service
 from device_manager import IDeviceManager
@@ -11,9 +11,28 @@ from services.interfaces import IOrchestratorService
 from device import ConstantActionDevice
 from device import VariableActionDevice
 from device import Battery
-
+from electricity_price_optimizer_py import Schedule
 
 router = APIRouter(prefix="/api", tags=["plan"])
+
+def _require_schedule(orchestrator: IOrchestratorService) -> Schedule:
+    if not orchestrator.has_schedule:
+        if orchestrator.currently_running:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="schedule not available yet (optimization running)",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="schedule not available",
+        )
+    try:
+        return orchestrator.get_schedule()
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="schedule not available",
+        )
 
 def _create_timeline(hours: int):
     timeline = []
@@ -148,14 +167,7 @@ def get_plan(
     manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
 ) -> dict[str, Any]:
-
-    schedule = orchestrator.get_schedule()
-    
-    if schedule is None:
-        raise HTTPException(status_code=404, detail="schedule not available")
-
-    tasks: list[dict[str, Any]] = []
-
+    schedule = _require_schedule(orchestrator)
     data = _collect_plan_data(manager, schedule)
 
     return {
@@ -167,11 +179,7 @@ def get_plan_data(
     manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
 ):
-    schedule = orchestrator.get_schedule()
-
-    if schedule is None:
-        raise HTTPException(status_code=404, detail="schedule not available")
-    
+    schedule = _require_schedule(orchestrator)
     data = _collect_plan_data(manager, schedule)
 
     return {
@@ -180,21 +188,30 @@ def get_plan_data(
         "variableActions": data["variableActions"],
     }
 
-def _run_opt(orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
-    manager: IDeviceManager = Depends(get_device_manager)
-):
-    orchestrator.run_optimization(manager)
-    
-
-@router.post("/plan/optimize")
-def optimize(
-    background: BackgroundTasks,
+@router.post("/plan/generate", status_code=status.HTTP_202_ACCEPTED)
+def generate_plan(
+    device_manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
-    manager: IDeviceManager = Depends(get_device_manager),
-) -> dict:
-    try:
-        background.add_task(_run_opt, orchestrator, manager)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+):
+    if orchestrator.currently_running:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="optimization already running",
+        )
     
-    return {"success": True, "status": "started"}
+    try:
+        orchestrator.run_optimization(device_manager)
+    except RuntimeError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, 
+            detail="optimization already running"
+        )
+
+    return {"status": "started"}
+
+@router.get("/plan/status")
+def get_plan_status(orchestrator: IOrchestratorService = Depends(get_orchestrator_service)):
+    return {
+        "currentlyRunning": orchestrator.currently_running,
+        "hasSchedule": orchestrator.has_schedule,
+    }

@@ -27,7 +27,7 @@ class SqlAlchemyDeviceService(IDeviceService):
         return self.session.get(Battery, device_id)
 
     def get_generator_pv(self, device_id: "int") -> "Generator | None":
-        return self.session.get(Generator, device_id)
+        return self.session.get(GeneratorPV, device_id)
 
     def get_constant_action_device(self, device_id: "int") -> "ConstantActionDevice | None":
         return self.session.get(ConstantActionDevice, device_id)
@@ -69,7 +69,7 @@ class SqlAlchemyDeviceService(IDeviceService):
         return [row[0] for row in self.session.execute(stmt).all()]
 
     def get_all_generator_ids(self) -> "list[int]":
-        stmt = select(Generator.id)
+        stmt = select(GeneratorPV.id)
         return [row[0] for row in self.session.execute(stmt).all()]
 
     def get_all_constant_action_device_ids(self) -> "list[int]":
