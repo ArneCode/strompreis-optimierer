@@ -19,12 +19,10 @@ def uow_scope(
     global uow_id
     uow = SqlAlchemyUnitOfWork(SessionLocal, interactor, controller)
 
-    print("UoW with id :", uow_id, " started.")
     ownid = uow_id
     uow_id += 1
     with uow:
         yield uow
-    print("UoW scope with id :", ownid, " ended.")
 
 
 @contextmanager
@@ -33,4 +31,3 @@ def device_manager_scope() -> Generator[IDeviceManager, None, None]:
     # We nest the uow_scope here because DeviceManager needs an active UoW
     with uow_scope() as uow:
         yield DeviceManager(uow=uow)
-    print("DeviceManager scope ended, UoW should be committed/rolled back.")

@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from typing import Dict
 from zoneinfo import ZoneInfo
 
-from forecast_cache import ForecastCache
-from forecast_service_port import ForecastServicePort
+from external_api_services.forecast_service.forecast_cache import ForecastCache
+from external_api_services.forecast_service.forecast_service_port import ForecastServicePort
 
 BERLIN = ZoneInfo("Europe/Berlin")
 

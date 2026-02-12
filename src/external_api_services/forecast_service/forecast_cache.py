@@ -8,7 +8,7 @@ from typing import Optional, Dict
 from zoneinfo import ZoneInfo
 
 from device import GeneratorPV
-from forecast_client import ForecastClient
+from external_api_services.forecast_service.forecast_client import ForecastClient
 
 BERLIN = ZoneInfo("Europe/Berlin")
 
@@ -95,7 +95,7 @@ class ForecastCache:
                     longitude = self._generator.longitude,
                     declination = self._generator.declination,
                     azimuth = self._generator.azimuth,
-                    kilowatt_peak = self._generator.peak_power,
+                    kilowatt_peak = self._generator.peak_power.get_value(),
                     time_mode = "utc",
                 )
             except Exception as exception:
