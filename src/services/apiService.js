@@ -79,6 +79,10 @@ class ApiService {
     fetchPlanData() {
         return this.request('plan/data', 'GET')
     }
+
+    runOptimization() {
+        return this.request("plan/optimize", 'POST');
+    }
 }
 
 export default new ApiService();

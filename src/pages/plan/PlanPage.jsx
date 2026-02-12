@@ -17,6 +17,7 @@ function PlanPage() {
   const tasksRef = useRef([]);
   const [popupType, setPopupType] = useState(null);
   const variableActionsRef = useRef([]);
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   const [tasks, setTasks] = useState ([]);
   const [priceData, setPriceData] = useState([
@@ -119,9 +120,34 @@ function PlanPage() {
     variableActionsRef.current = variableActions;
   }, [variableActions]);
   
-  function handleUpdate() {
-    loadPlan();
+  async function handleUpdate() {
+    setError("");
+    setIsOptimizing(true);
+
+    try {
+      await apiService.runOptimization();
+
+      const timeoutMs = 20000;
+      const start = Date.now();
+
+      while (true) {
+        try {
+          await loadPlan(); 
+          break; 
+        } catch (e) {
+          if (Date.now() - start > timeoutMs) {
+            throw new Error("Optimierung dauert zu lange (Timeout).");
+          }
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
+    } catch (e) {
+      setError(e.message || "Optimierung fehlgeschlagen");
+    } finally {
+      setIsOptimizing(false);
+    }
   }
+
   
   function handleInit(apiInstance) {
     setApi(apiInstance);
@@ -315,8 +341,9 @@ function PlanPage() {
         <button
             className="plan-refresh-button"
             onClick={handleUpdate}
+            disabled={isOptimizing}
         >
-          Aktualisieren
+          {isOptimizing ? "Optimierung läuft..." : "Aktualisieren"}
           <img src="./src/assets/refresh.png" />
         </button>
       </div>
