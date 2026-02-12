@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from concurrent.futures import Future, ThreadPoolExecutor
 from enum import Enum
 
+from external_api_services.price_service.price_cache import PriceCache
+from external_api_services.price_service.price_service import PriceService
 from services.interfaces import IOrchestratorService
 
 if TYPE_CHECKING:
@@ -20,6 +22,8 @@ class OrchestratorService(IOrchestratorService):
     def __init__(self):
         self._schedule = None
         self.executor = ThreadPoolExecutor(max_workers=1)
+        self._price_service: PriceService = PriceService(PriceCache())
+        # Erstelle hier neuen price cache, frag ob Orchestrator service nur einmal instanziiert wird
 
     @property
     def has_schedule(self) -> bool:
@@ -51,9 +55,11 @@ class OrchestratorService(IOrchestratorService):
 
         now = datetime.now(timezone.utc)
 
+
         # Create a simple context with mock price data for demonstration
         price_provider = PrognosesProvider(
-            lambda t1, t2: EuroPerWh(0.20)  # Mock constant price of 0.20 €/Wh
+            #lambda t1, t2: EuroPerWh()  # Mock constant price of 0.20 €/Wh
+            lambda t1, t2: EuroPerWh(self._price_service.get_average_price(t1, t2))
         )
         context = OptimizerContext(
             time=now,
