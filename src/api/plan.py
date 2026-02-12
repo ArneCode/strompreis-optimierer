@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
 from electricity_price_optimizer_py.units import WattHour, Watt
 from api.dependencies import get_device_manager, get_orchestrator_service
 from device_manager import IDeviceManager
@@ -102,7 +102,9 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                     {
                         "id": str(i),
                         "name": device.name,
-                        "powerW": _collect_power_values(action, assigned_action, 30) 
+                        "powerW": _collect_power_values(action, assigned_action, 30),
+                        "start": action.start.isoformat(),
+                        "stepMinutes": 30,
                     }
                 )          
                 i += 1
@@ -146,7 +148,7 @@ def get_plan(
     manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
 ) -> dict[str, Any]:
-    
+
     schedule = orchestrator.get_schedule()
     
     if schedule is None:
@@ -178,4 +180,21 @@ def get_plan_data(
         "variableActions": data["variableActions"],
     }
 
+def _run_opt(orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
+    manager: IDeviceManager = Depends(get_device_manager)
+):
+    orchestrator.run_optimization(manager)
+    
 
+@router.post("/plan/optimize")
+def optimize(
+    background: BackgroundTasks,
+    orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
+    manager: IDeviceManager = Depends(get_device_manager),
+) -> dict:
+    try:
+        background.add_task(_run_opt, orchestrator, manager)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    return {"success": True, "status": "started"}
