@@ -1,3 +1,9 @@
+/**
+ * Map raw device form values to API-ready device objects.
+ * Returns different shapes depending on device type.
+ * @param {object} rawForm - Form values from the UI
+ * @returns {object} Cleaned device payload
+ */
 export const mapDeviceData = (rawForm) => {
     const cleanData = {
         name: rawForm.name,

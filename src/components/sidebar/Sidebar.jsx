@@ -6,7 +6,10 @@ import collapseIcon from '../../assets/icons/sidebar/sidebar-collapse.png';
 import uncollapseIcon from '../../assets/icons/sidebar/sidebar-uncollapse.png';
 import '../../styles/components/Sidebar.css';
 
-
+/**
+ * Small presentational component for a sidebar entry.
+ * @param {{item: object, isCollapsed: boolean}} props
+ */
 const SidebarRow = ({ item, isCollapsed }) => (
     <NavLink
         to={item.link}
@@ -19,6 +22,9 @@ const SidebarRow = ({ item, isCollapsed }) => (
     </NavLink>
 );
 
+/**
+ * Collapsible navigation sidebar used across the app.
+ */
 function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
 

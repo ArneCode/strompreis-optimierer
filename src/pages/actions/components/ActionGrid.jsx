@@ -1,6 +1,10 @@
 import Action from "./Action.jsx";
 import { extractTimeFromISO } from "../Actionslogic.js";
 
+/**
+ * Grid that renders action cards for all devices.
+ * Calls onEdit(deviceIndex, actionIndex) when a card is clicked.
+ */
 function ActionGrid({ devices, onEdit }) {
     return (
         <div className="actions-grid">

@@ -1,3 +1,7 @@
+/**
+ * Modal wrapper that shows a device form for creating or editing devices.
+ * Props include control flags and form handlers passed to `DeviceForm`.
+ */
 import React from 'react';
 import DeviceForm from './components/DeviceForm.jsx';
 

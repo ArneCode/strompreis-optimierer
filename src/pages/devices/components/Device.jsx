@@ -2,6 +2,9 @@ import React from 'react';
 import '../../../styles/pages/Devices.css';
 import { translateDevice } from "../DevicesLogic.js";
 
+/**
+ * Simple presentational component for showing a device name and type.
+ */
 function Device({type, name}) {
     return (
         <div className="device">

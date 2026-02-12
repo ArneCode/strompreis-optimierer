@@ -1,3 +1,6 @@
+/**
+ * Modal wrapper for creating or editing actions. Passes form props to `ActionForm`.
+ */
 import React from 'react';
 import ActionForm from "./components/ActionForm.jsx";
 

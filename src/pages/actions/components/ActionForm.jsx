@@ -14,8 +14,10 @@ const FormField = ({ label, error, children }) => (
     </div>
 );
 
-
-
+/**
+ * ActionForm
+ * Renders a form for creating or editing an action. Supports time slider and dynamic fields.
+ */
 function ActionForm({
                         actionForm,
                         onChange,

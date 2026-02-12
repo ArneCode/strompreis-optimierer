@@ -1,3 +1,6 @@
+/**
+ * Export helpers for the Plan page (CSV and PDF exports).
+ */
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -47,6 +50,12 @@ const transformTaskData = (data) => {
     ]);
 };
 
+/**
+ * Download an array of tasks as CSV file.
+ * @param {Array} data - Task objects
+ * @param {string} [fileName="ablaufplan.csv"] - Output filename
+ * @param {function|null} [onError=null] - Optional error callback (message)
+ */
 export const downloadCSV = (data, fileName = "ablaufplan.csv", onError = null) => {
     try {
         const validation = validateExportData(data);
@@ -75,7 +84,12 @@ export const downloadCSV = (data, fileName = "ablaufplan.csv", onError = null) =
     }
 };
 
-
+/**
+ * Download an array of tasks as a PDF file.
+ * @param {Array} data - Task objects
+ * @param {string} [fileName="ablaufplan.pdf"] - Output filename
+ * @param {function|null} [onError=null] - Optional error callback (message)
+ */
 export const downloadPDF = (data, fileName = "ablaufplan.pdf", onError = null) => {
     try {
         const validation = validateExportData(data);
@@ -110,7 +124,6 @@ export const downloadPDF = (data, fileName = "ablaufplan.pdf", onError = null) =
             },
             margin: { top: 30 },
             didDrawPage: (data) => {
-                // Footer mit Seitennummer
                 const pageCount = doc.internal.pages.length - 1;
                 doc.setFontSize(10);
                 doc.text(

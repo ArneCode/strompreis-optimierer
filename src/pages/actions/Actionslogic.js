@@ -1,3 +1,6 @@
+/**
+ * Helper utilities for actions page: time conversions, validation and formatting.
+ */
 export const roundToNext5Min = (date) => {
     const rounded = new Date(date);
     const mins = rounded.getMinutes();
@@ -8,6 +11,9 @@ export const roundToNext5Min = (date) => {
     return rounded;
 };
 
+/**
+ * Convert slider minutes to HH:MM string considering a time offset.
+ */
 export const sliderToTime = (sliderMins, timeOffset) => {
     const totalMins = (sliderMins + timeOffset) % 1440;
     const h = Math.floor(totalMins / 60);
@@ -15,6 +21,9 @@ export const sliderToTime = (sliderMins, timeOffset) => {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 };
 
+/**
+ * Convert HH:MM string to slider minute position considering time offset.
+ */
 export const timeToSlider = (timeStr, timeOffset) => {
     if (!timeStr) return 0;
     const [h, m] = timeStr.split(':').map(Number);
@@ -23,6 +32,9 @@ export const timeToSlider = (timeStr, timeOffset) => {
     return diff;
 };
 
+/**
+ * Validate an action form; returns field->error map.
+ */
 export const validateActionForm = (form, devices, timeOffset, isEdit = false) => {
     const errors = {};
     const selectedDevice = devices.find(d => String(d.id) === String(form.deviceId));
@@ -54,8 +66,14 @@ export const validateActionForm = (form, devices, timeOffset, isEdit = false) =>
     return errors;
 };
 
+/**
+ * Get current time string rounded to next 5 minutes.
+ */
 export const getCurrentTimeStr = () => roundToNext5Min(new Date()).toTimeString().slice(0, 5);
 
+/**
+ * Return label (Today/Tomorrow) based on time and offset.
+ */
 export const getDateLabel = (timeStr, timeOffset) => {
     if (!timeStr) return "";
     const sliderPos = timeToSlider(timeStr, timeOffset);
@@ -63,6 +81,9 @@ export const getDateLabel = (timeStr, timeOffset) => {
     return sliderPos >= minsUntilMidnight ? "(Morgen)" : "(Heute)";
 };
 
+/**
+ * Combine HH:MM + offset into an ISO timestamp (possibly next day).
+ */
 export const combineToISO = (timeStr, timeOffset) => {
     if (!timeStr) return null;
 
@@ -80,6 +101,9 @@ export const combineToISO = (timeStr, timeOffset) => {
     return combined.toISOString();
 };
 
+/**
+ * Extract HH:MM from ISO timestamp.
+ */
 export const extractTimeFromISO = (isoString) => {
     if (!isoString) return "";
     const date = new Date(isoString);

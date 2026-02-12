@@ -1,3 +1,6 @@
+/**
+ * Main application component that sets up routing and global layout.
+ */
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 

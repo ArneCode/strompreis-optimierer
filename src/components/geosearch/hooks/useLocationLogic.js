@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react';
 import { geoService } from '../../../services/geoService';
 
+/**
+ * Hook that manages temporary selected location and reverse geocoding state.
+ * Returns { tempLocation, updateLocation, isLoading }.
+ */
 export function useLocationLogic() {
     const [tempLocation, setTempLocation] = useState(null);
     const [isLoading, setIsLoading] = useState(false);

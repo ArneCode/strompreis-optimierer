@@ -2,6 +2,10 @@ import { useEffect } from 'react';
 import { useMap, useMapEvents } from 'react-leaflet';
 import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
 
+/**
+ * Add a geosearch control to the map that calls onLocationSelected(lat, lng, label).
+ * @param {{onLocationSelected:function}} props
+ */
 export function SearchControl({ onLocationSelected }) {
     const map = useMap();
 
@@ -36,6 +40,9 @@ export function SearchControl({ onLocationSelected }) {
     return null;
 }
 
+/**
+ * Attach click handler to the map and propagate coordinates via onLocationSelected(lat, lng).
+ */
 export function MapEvents({ onLocationSelected }) {
     useMapEvents({
         click: (e) => {

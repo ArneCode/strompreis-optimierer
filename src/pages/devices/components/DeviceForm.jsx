@@ -1,9 +1,13 @@
+/**
+ * DeviceForm
+ * Render fields for different device types (Generator, PV, Consumer, Battery).
+ */
 import React, { useState } from 'react'
 import LocationPickerModal from "../../../components/geosearch/LocationPickerModal.jsx";
 import { translateDevice } from "../DevicesLogic.js";
 
 /**
- * Interne Hilfskomponente für Labels und Fehlermeldungen
+ * Small helper to render a labelled input and an optional error.
  */
 const FormField = ({ label, error, children, className = "" }) => (
     <div className={`input-group ${className}`}>
@@ -18,6 +22,10 @@ const FormField = ({ label, error, children, className = "" }) => (
 function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disabled = false }) {
     const [isMapOpen, setIsMapOpen] = useState(false);
 
+    /**
+     * Receive a selected location and push values into the form via onChange.
+     * @param {object|null} location - {label, lat, lng}
+     */
     const handleLocationConfirm = (location) => {
         if (!location) return;
         onChange({

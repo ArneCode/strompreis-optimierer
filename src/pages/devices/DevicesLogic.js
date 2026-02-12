@@ -1,3 +1,6 @@
+/**
+ * Default device form values used by the device modal.
+ */
 export const INITIAL_DEVICE_FORM = {
     name: "", type: "Generator", ratedPower: "", angleOfInclination: "",
     alignment: "Süd", location: "", lat: null, lng: null, forecast: "",
@@ -12,6 +15,11 @@ const deviceTranslations = {
     "PVGenerator": "PV-Anlage",
 };
 
+/**
+ * Translate device type keys to display strings (falls vorhanden).
+ * @param {string} key
+ * @returns {string}
+ */
 export const translateDevice = (key) => {
     const normalizedKey = key ? key.toString() : "";
     return deviceTranslations[normalizedKey] || deviceTranslations[normalizedKey.toUpperCase()] || key;
@@ -43,6 +51,12 @@ export const DEVICE_VALIDATION_SCHEME = {
     },
 };
 
+/**
+ * Validate a device form according to the scheme for its type.
+ * Returns an object with field errors.
+ * @param {object} form
+ * @returns {object} field->error
+ */
 export function validateDevice(form) {
     const errors = {};
     const scheme = { name: [RULES.required], ...DEVICE_VALIDATION_SCHEME[form.type] };
@@ -55,4 +69,3 @@ export function validateDevice(form) {
     });
     return errors;
 }
-

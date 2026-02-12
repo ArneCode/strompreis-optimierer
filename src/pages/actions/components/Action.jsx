@@ -1,5 +1,8 @@
 import "../../../styles/pages/Actions.css";
 
+/**
+ * Small card component showing action name and time range.
+ */
 function Action({ name, startTime, endTime }) {
     return (
         <div className="action-card">

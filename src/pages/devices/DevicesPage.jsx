@@ -1,3 +1,7 @@
+/**
+ * DevicesPage
+ * List and manage household devices. Supports create/edit/delete via modal.
+ */
 import React, { useEffect, useState, useCallback } from 'react';
 import Device from './components/Device.jsx';
 import DeviceModal from './DeviceModal';
@@ -30,12 +34,15 @@ function DevicesPage() {
         return () => clearTimeout(timer);
     }, [errorMessage]);
 
+    /**
+     * Fetch device list from backend and update state.
+     */
     const refreshDevices = useCallback(async () => {
         setIsLoading(true);
         try {
             const data = await apiService.fetchDevices();
             setDevices(data);
-        } catch (error) {
+        } catch {
             setErrorMessage("Fehler beim Laden.");
         } finally {
             setIsLoading(false);
@@ -69,6 +76,10 @@ function DevicesPage() {
         setErrorMessage("");
     };
 
+    /**
+     * Validate and save device. If editing, replace old device.
+     * @param {boolean} isEdit
+     */
     const saveDevice = async (isEdit) => {
         const errors = validateDevice(deviceForm);
         if (Object.keys(errors).length > 0) {
@@ -82,7 +93,7 @@ function DevicesPage() {
             if (isEdit) {
                 try {
                     await apiService.deleteDevice(devices[editIndex].id);
-                } catch (error) {
+                } catch {
                     setErrorMessage("Löschen des alten Gerätes fehlgeschlagen.");
                     setIsLoading(false);
                     return;
@@ -90,12 +101,11 @@ function DevicesPage() {
             }
 
             try {
-                // ID entfernen beim Speichern, damit Backend neue ID generiert
-                const { id, ...deviceDataWithoutId } = deviceForm;
+                const { id: _id, ...deviceDataWithoutId } = deviceForm;
                 await apiService.saveDevice(deviceDataWithoutId);
                 await refreshDevices();
                 closeModal();
-            } catch (error) {
+            } catch {
                 setErrorMessage("Speichern fehlgeschlagen.");
             }
         } finally {
@@ -103,6 +113,9 @@ function DevicesPage() {
         }
     };
 
+    /**
+     * Delete currently edited device.
+     */
     const deleteDevice = async () => {
         if (isDeleting) return;
 
@@ -118,7 +131,7 @@ function DevicesPage() {
             await apiService.deleteDevice(deviceId);
             await refreshDevices();
             closeModal();
-        } catch (error) {
+        } catch {
             setErrorMessage("Löschen fehlgeschlagen.");
         } finally {
             setIsDeleting(false);
@@ -161,3 +174,4 @@ function DevicesPage() {
 }
 
 export default DevicesPage;
+

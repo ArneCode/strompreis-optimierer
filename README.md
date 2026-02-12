@@ -1,17 +1,42 @@
-<h1 align="center">Welcome to strompreis-optimierer 👋</h1>
-<p>
-  <img alt="Version" src="https://img.shields.io/badge/version-0.0.0-blue.svg?cacheSeconds=2592000" />
-</p>
+# Strompreis-Optimierer — Frontend
 
-## Install
 
-```sh
+
+Voraussetzungen
+
+- Node.js (empfohlen v18 oder neuer)
+- npm (wird mit Node ausgeliefert)
+
+Installation
+
+Im Projekt-Root ausführen:
+
+```powershell
 npm install
 ```
 
-## Show your support
+Development (lokal)
 
-Give a ⭐️ if this project helped you!
+```powershell
+npm run dev
+```
 
-***
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+Standardmäßig startet Vite den Dev-Server auf http://localhost:5173; Vite wählt ggf. einen alternativen freien Port.
+
+
+Build erstellen:
+
+```powershell
+npm run dev
+```
+
+Kurzer Projektüberblick (Auszug)
+
+- `index.html` — HTML-Einstieg
+- `src/main.jsx`, `src/App.jsx` — Einstieg und Hauptkomponente
+- `src/pages/` — Seiten (Plan, Actions, Devices, Settings)
+- `src/components/` — wiederverwendbare UI-Komponenten
+- `src/services/` — API-Wrapper und Hilfsfunktionen
+- `src/styles/` — CSS-Dateien
+
+Mehr Details findest du im Quellcode unter `src/`.
