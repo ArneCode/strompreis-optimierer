@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class OrchestratorService(IOrchestratorService):
     _schedule: "Schedule | None"
-    currently_running: bool = False
+    _currently_running: bool = False
     executor: "ThreadPoolExecutor"
 
     def __init__(self):
@@ -25,6 +25,11 @@ class OrchestratorService(IOrchestratorService):
     def has_schedule(self) -> bool:
         """Check if a schedule has been generated."""
         return self._schedule is not None
+
+    @property
+    def currently_running(self) -> bool:
+        """Check if optimization is currently running."""
+        return self._currently_running
 
     def get_schedule(self) -> "Schedule":
         """Get the current schedule."""
@@ -42,11 +47,11 @@ class OrchestratorService(IOrchestratorService):
                 for controller in dm.get_controller_service().get_all_controllers():
                     controller.use_schedule(schedule, dm)
         finally:
-            self.currently_running = False
+            self._currently_running = False
 
     def run_optimization(self, device_manager: "IDeviceManager") -> "None":
         """Run the optimization algorithm."""
-        if self.currently_running:
+        if self._currently_running:
             raise RuntimeError("Optimization is already running.")
 
         now = datetime.now(timezone.utc)
@@ -66,7 +71,7 @@ class OrchestratorService(IOrchestratorService):
 
         print("Starting optimization...")
         future = self.executor.submit(run_simulated_annealing, context)
-        self.currently_running = True
+        self._currently_running = True
 
         print("Optimization task submitted...")
         future.add_done_callback(self._process_result)
