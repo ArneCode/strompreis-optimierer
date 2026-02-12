@@ -16,8 +16,31 @@ if TYPE_CHECKING:
 
 
 class ConstantActionController(DeviceController):
+    """
+    Controller for a constant-action device (fixed duration + fixed consumption).
+
+    Responsibilities:
+        - Decide whether the action is currently controllable based on the device's
+          runtime state (is_controllable()).
+        - Provide the optimizer with an OptimizerConstantAction representing the action
+          constraints when the action can still be scheduled (add_to_optimizer_context()).
+        - If the action is not controllable (already running or otherwise locked),
+          provide the optimizer with the already-assigned/past action so it can account
+          for it (add_past_constant_action()).
+        - Apply an assigned schedule by starting the action when current_time reaches
+          the scheduled start time (update_device()).
+
+    Key concept:
+        A constant action is typically a one-shot operation (e.g. run a dishwasher cycle)
+        that must start within a window [start_from, end_before) and then runs for a
+        fixed duration with fixed power consumption.
+    """
 
     def __init__(self, id: "int"):
+        """
+        Args:
+            id: Device identifier for the constant-action device being controlled.
+        """
         self._id = id
         self._schedule: "Optional[Schedule]" = None
 
@@ -27,6 +50,16 @@ class ConstantActionController(DeviceController):
 
     @property
     def assigned_start_time(self) -> "Optional[datetime]":
+        """
+        Scheduled start time for this device from the currently stored schedule.
+
+        Returns:
+            The scheduled start timestamp if a schedule exists and contains an
+            assignment for this device; otherwise None.
+
+        Notes:
+            This reads from the schedule only. It does not query the interactor.
+        """
         if self._schedule is None:
             return None
         assigned = self._schedule.get_constant_action(self._id)
@@ -36,20 +69,66 @@ class ConstantActionController(DeviceController):
         return assigned.get_start_time()
 
     def is_controllable(self, device_manager: "IDeviceManager") -> "bool":
+        """
+        Determine whether the action can be (re)scheduled/started by the controller.
+
+        A device is considered controllable when its interactor reports a state where
+        starting a new action is allowed.
+
+        Args:
+            device_manager: Used to obtain the ConstantActionInteractor.
+
+        Returns:
+            True if the device is in IDLE or COMPLETED state, otherwise False.
+        """
         interactor = device_manager.get_interactor_service(
         ).get_constant_action_interactor(self._id)
         state = interactor.get_action_state(device_manager)
         return state in (ActionState.IDLE, ActionState.COMPLETED)
 
     def use_schedule(self, schedule: "Schedule", device_manager: "IDeviceManager") -> "None":
+        """
+        Store a schedule for later execution, if the device is controllable.
+
+        Args:
+            schedule: Schedule produced by the optimizer.
+            device_manager: Used to check controllability.
+
+        Side effects:
+            Updates the internal stored schedule when controllable; otherwise keeps the
+            previous schedule unchanged.
+        """
         if self.is_controllable(device_manager):
             self._schedule = schedule
 
     def add_to_optimizer_context(self, context: "OptimizerContext", current_time: "datetime", device_manager: "IDeviceManager") -> "None":
-        action = device_manager.get_device_service(
-        ).get_constant_action_device(self._id).actions[0]
-        if action is None:
+        """
+        Add this constant action to the optimizer context.
+
+        If the device is controllable:
+            Adds a schedulable OptimizerConstantAction with the allowed start window,
+            duration, and consumption.
+
+        If the device is not controllable:
+            Adds the already-assigned constant action from the existing schedule (if any)
+            as a past action so the optimizer can account for it.
+
+        Args:
+            context: OptimizerContext being built.
+            current_time: Time used to clamp the earliest possible start (horizon start).
+            device_manager: Used to read device constraints (start_from, end_before,
+                duration, consumption) and to determine controllability.
+
+        Notes:
+            - The earliest start is clamped to max(action.start_from, current_time) so the
+              optimizer does not schedule in the past.
+            - If the scheduling window is invalid (missing end_before or start >= end),
+              nothing is added.
+        """
+        device = device_manager.get_device_service().get_constant_action_device(self._id)
+        if not device or not getattr(device, "actions", None):
             return
+        action = device.actions[0]
 
         if self.is_controllable(device_manager):
 
@@ -78,6 +157,20 @@ class ConstantActionController(DeviceController):
                 context.add_past_constant_action(assigned)
 
     def update_device(self, current_time: "datetime", device_manager: "IDeviceManager") -> "None":
+        """
+        Apply the stored schedule at the given time.
+
+        If the interactor is currently IDLE and a schedule assignment exists whose
+        start time is <= current_time, the controller starts the action.
+
+        Args:
+            current_time: Time used to decide whether to start the action.
+            device_manager: Used to obtain the ConstantActionInteractor.
+
+        Notes:
+            This controller only triggers start. Stopping/completion is expected to be
+            handled by the device/interactor implementation (e.g., by duration tracking).
+        """
         interactor = device_manager.get_interactor_service(
         ).get_constant_action_interactor(self._id)
         state = interactor.get_action_state(device_manager)

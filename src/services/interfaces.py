@@ -267,3 +267,15 @@ class IOrchestratorService(ABC):
     def run_optimization(self, device_manager: "IDeviceManager") -> "None":
         """Run the optimization algorithm."""
         ...
+
+    @property
+    @abstractmethod
+    def has_schedule(self) -> bool:
+        """Check if a schedule has been generated."""
+        ...
+
+    @property
+    @abstractmethod
+    def currently_running(self) -> bool:
+        """Check if optimization is currently running."""
+        ...
