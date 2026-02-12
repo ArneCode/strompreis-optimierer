@@ -125,10 +125,12 @@ class ConstantActionController(DeviceController):
             - If the scheduling window is invalid (missing end_before or start >= end),
               nothing is added.
         """
-        action = device_manager.get_device_service(
-        ).get_constant_action_device(self._id).actions[0]
-        if action is None:
+        device = device_manager.get_device_service(
+        ).get_constant_action_device(self._id)
+        if device is None or device.actions is None or len(device.actions) == 0:
             return
+        action = device.actions[0]
+ 
 
         if self.is_controllable(device_manager):
 
