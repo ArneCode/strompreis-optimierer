@@ -2,7 +2,7 @@ import React, { useState} from 'react'
 import LocationPickerModal from "../../components/geosearch/LocationPickerModal.jsx";
 import translateDevice from "./DevicesLogic.js";
 
-function DeviceForm({ deviceForm, onChange, errors = {}}) {
+function DeviceForm({ deviceForm, onChange, errors = {}, isEdit= false}) {
     const [isMapOpen, setIsMapOpen] = useState(false);
 
     const handleLocationConfirm = (location) => {
@@ -34,19 +34,42 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
 
     return (
     <>
-      <select name="type" value={deviceForm.type} onChange={onChange} className={errors.type ? "input-error" : ""}>
-        <option value="Generator">{translateDevice("Generator")}</option>
-        <option value="PVGenerator">{translateDevice("PVGenerator")}</option>
-        <option value="Consumer">{translateDevice("Consumer")}</option>
-        <option value="Battery">{translateDevice("Battery")}</option>
-      </select>
+        {isEdit === false ? (
+            <>
+                <div className="input-label">Gerätetyp</div>
+                <select
+                    name="type"
+                    value={deviceForm.type}
+                    onChange={onChange}
+                    className={errors.type ? "input-error" : ""}
+                >
+                    <option value="Generator">{translateDevice("Generator")}</option>
+                    <option value="PVGenerator">{translateDevice("PVGenerator")}</option>
+                    <option value="Consumer">{translateDevice("Consumer")}</option>
+                    <option value="Battery">{translateDevice("Battery")}</option>
+                </select>
+            </>
+        ) : (
+            <div className="device-type-readonly">
+                <strong>Typ:</strong> {translateDevice(deviceForm.type)}
+            </div>
+        )}
 
       <div className="input-label">
         Name
         {errors.name && <div className="field-error">{errors.name}</div>}
       </div>
-      <input name="name" value={deviceForm.name} onChange={onChange} className={errors.name ? "input-error" : ""}/>
 
+        <input
+            name="name"
+            value={deviceForm.name}
+            onChange={onChange}
+            readOnly={isEdit && deviceForm.type === "Consumer"}
+            className={`
+    ${errors.name ? "input-error" : ""} 
+    ${(isEdit && deviceForm.type === "Consumer") ? "device-type-readonly" : ""}
+  `}
+        />
 
         {deviceForm.type === "Generator" && (
             <div className="upload-section">
@@ -105,18 +128,30 @@ function DeviceForm({ deviceForm, onChange, errors = {}}) {
             </>
         )}
 
-      {deviceForm.type === "Consumer" && (
-        <>
-          <div className="input-label">
-            Leistung (kW)
-            {errors.power && <div className="field-error">{errors.power}</div>}
-          </div>
-          <select name="flexibility" value={deviceForm.flexibility} onChange={onChange} className={errors.flexibility ? "input-error" : ""}>
-            <option value="constant">durchlaufen</option>
-            <option value="variable">flexibel</option>
-          </select>
-        </>
-      )}
+        {deviceForm.type === "Consumer" && (
+            <>
+                <div className="input-label">
+                    Flexibilität
+                    {errors.flexibility && <div className="field-error">{errors.flexibility}</div>}
+                </div>
+
+                {!isEdit ? (
+                    <select
+                        name="flexibility"
+                        value={deviceForm.flexibility}
+                        onChange={onChange}
+                        className={errors.flexibility ? "input-error" : ""}
+                    >
+                        <option value="constant">durchlaufen</option>
+                        <option value="variable">flexibel</option>
+                    </select>
+                ) : (
+                    <div className="device-type-readonly">
+                        {deviceForm.flexibility === "variable" ? "flexibel" : "durchlaufen"}
+                    </div>
+                )}
+            </>
+        )}
 
         {deviceForm.type === "Battery" && (
             <>

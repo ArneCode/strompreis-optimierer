@@ -202,7 +202,7 @@ function DevicesPage() {
             <div
               className="device-popup-inputs"
             >
-                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} errors={deviceErrors} />
+                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} errors={deviceErrors} isEdit={true} />
           </div>
             <div className="device-popup-buttons">
               <button className="devices-edit-delete-button"
@@ -218,12 +218,15 @@ function DevicesPage() {
               >
                 Abbrechen
               </button>
-              <button
-                className="devices-save-button"
-                onClick={editDevice}
-              >
-                Speichern
-              </button>
+
+                {deviceForm.type !== "Consumer" && (
+                    <button
+                        className="devices-save-button"
+                        onClick={editDevice}
+                    >
+                        Speichern
+                    </button>
+                )}
             </div>
           </div>
         </div>
