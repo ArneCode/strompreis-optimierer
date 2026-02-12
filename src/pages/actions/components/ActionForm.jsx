@@ -1,10 +1,25 @@
 import React from 'react';
-import TimeRangeSlider from "../../components/slider/TimeRangeSlider.jsx";
+import TimeRangeSlider from "../../../components/slider/TimeRangeSlider.jsx";
+
+/**
+ * Helper component for consistent label and error rendering
+ */
+const FormField = ({ label, error, children }) => (
+    <div className="input-group">
+        <label className="input-label">
+            {label}
+            {error && <span className="field-error"> {error}</span>}
+        </label>
+        {children}
+    </div>
+);
+
+
 
 function ActionForm({
                         actionForm,
                         onChange,
-                        devices,
+                        devices = [],
                         isEdit = false,
                         errors = {},
                         sliderToTime,
@@ -14,19 +29,15 @@ function ActionForm({
                         currentTimeStr
                     }) {
 
-    const selectedDevice = devices.find(d => String(d.id) === String(actionForm.deviceId));
+    const selectedDevice = devices?.find(d => String(d.id) === String(actionForm.deviceId));
     const isVariable = selectedDevice?.flexibility === "variable";
-
     const hasError = !!(errors.startTime || errors.endTime || errors.duration);
 
     return (
         <div className="action-popup-inputs">
+
             {!isEdit && (
-                <div className="input-group">
-                    <div className="input-label">
-                        Gerät auswählen
-                        {errors.deviceId && <span className="field-error">{errors.deviceId}</span>}
-                    </div>
+                <FormField label="Gerät auswählen" error={errors.deviceId}>
                     <select
                         name="deviceId"
                         value={actionForm.deviceId || ""}
@@ -35,40 +46,37 @@ function ActionForm({
                     >
                         <option value="">Verbraucher wählen</option>
                         {devices
-                            .filter(device => device.type === "Consumer")
+                            ?.filter(device => device.type === "Consumer")
                             .map((device) => (
                                 <option key={device.id} value={device.id}>
                                     {device.name} ({device.flexibility === "variable" ? "Flexibel" : "Konstant"})
                                 </option>
                             ))}
                     </select>
-                </div>
+                </FormField>
             )}
 
-            <div className="input-label">
-                Frühester Start {startLabel}
-                {errors.startTime && <span className="field-error">{errors.startTime}</span>}
-            </div>
-            <input
-                type="time"
-                name="startTime"
-                value={actionForm.startTime}
-                onChange={onChange}
-                className={errors.startTime ? "input-error" : ""}
-            />
+            <FormField label={`Frühester Start ${startLabel}`} error={errors.startTime}>
+                <input
+                    type="time"
+                    name="startTime"
+                    value={actionForm.startTime}
+                    onChange={onChange}
+                    className={errors.startTime ? "input-error" : ""}
+                />
+            </FormField>
 
-            <div className="input-label">
-                Spätestes Ende {endLabel}
-                {errors.endTime && <span className="field-error">{errors.endTime}</span>}
-            </div>
-            <input
-                type="time"
-                name="endTime"
-                value={actionForm.endTime}
-                onChange={onChange}
-                className={errors.endTime ? "input-error" : ""}
-            />
+            <FormField label={`Spätestes Ende ${endLabel}`} error={errors.endTime}>
+                <input
+                    type="time"
+                    name="endTime"
+                    value={actionForm.endTime}
+                    onChange={onChange}
+                    className={errors.endTime ? "input-error" : ""}
+                />
+            </FormField>
 
+            {/* 3. Visual Slider */}
             <div className="action-slider">
                 <TimeRangeSlider
                     startTime={actionForm.startTime}
@@ -84,49 +92,47 @@ function ActionForm({
                 />
             </div>
 
+            {/* 4. Dynamic Fields (Consumption / Duration) */}
             {selectedDevice && (
-                <>
+                <div className="dynamic-fields-container">
                     {isVariable ? (
-                        <div className="input-group-dynamic">
-                            <div className="input-label">
-                                Gesamtverbrauch (Wh)
-                                {errors.totalConsumption && <span className="field-error">{errors.totalConsumption}</span>}
-                            </div>
+                        <FormField label="Gesamtverbrauch (Wh)" error={errors.totalConsumption}>
                             <input
                                 type="number"
                                 name="totalConsumption"
                                 value={actionForm.totalConsumption || ""}
                                 onChange={onChange}
                                 className={errors.totalConsumption ? "input-error" : ""}
+                                placeholder="z.B. 2500"
                             />
-                        </div>
+                        </FormField>
                     ) : (
-                        <div className="input-group-dynamic">
-                            <div className="input-label">
-                                Dauer (min)
-                                {errors.duration && <span className="field-error">{errors.duration}</span>}
-                            </div>
+                        <FormField label="Dauer (min)" error={errors.duration}>
                             <input
                                 type="number"
                                 name="duration"
                                 value={actionForm.duration || ""}
                                 onChange={onChange}
                                 className={errors.duration ? "input-error" : ""}
+                                placeholder="z.B. 60"
                             />
-                        </div>
+                        </FormField>
                     )}
-                    <div className="input-label">
-                        {isVariable ? "Max. Leistung (W)" : "Leistung (W)"}
-                        {errors.consumption && <span className="field-error">{errors.consumption}</span>}
-                    </div>
-                    <input
-                        type="number"
-                        name="consumption"
-                        value={actionForm.consumption || ""}
-                        onChange={onChange}
-                        className={errors.consumption ? "input-error" : ""}
-                    />
-                </>
+
+                    <FormField
+                        label={isVariable ? "Max. Leistung (W)" : "Leistung (W)"}
+                        error={errors.consumption}
+                    >
+                        <input
+                            type="number"
+                            name="consumption"
+                            value={actionForm.consumption || ""}
+                            onChange={onChange}
+                            className={errors.consumption ? "input-error" : ""}
+                            placeholder="z.B. 1000"
+                        />
+                    </FormField>
+                </div>
             )}
         </div>
     );
