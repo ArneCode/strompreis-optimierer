@@ -258,12 +258,12 @@ function PlanPage() {
         <div className="data-popup">
           <div className="data-popup-window">
             <div className="data-popup-head">
-              <p>{selectedTask?.name}</p>
+              <p className="graph-title">{selectedTask?.name}</p>
               <button onClick={closeTaskModal}>✕</button>
             </div>
             {selectedBattery && (
               <>
-                <p>Battery SOC (Wh)</p>
+                <p className="graph-y-axis">Battery SOC (Wh)</p>
                 <LineChart width={600} height={300} data={buildBatterySeries(selectedBattery)} margin={{ bottom: 20 }}>
                   <CartesianGrid strokeDasharray="1 1" />
                   <XAxis
@@ -282,7 +282,7 @@ function PlanPage() {
 
             {!selectedBattery && selectedVA && (
               <>
-                <p>Power (W)</p>
+                <p className="graph-y-axis">Power (W)</p>
                 <LineChart width={600} height={300} data={buildVariableActionSeries(selectedVA)} margin={{ bottom: 20 }}>
                   <CartesianGrid strokeDasharray="1 1" />
                   <XAxis
@@ -308,29 +308,36 @@ function PlanPage() {
 
       <div className="plan-header">
         <p>Ablaufplan</p>
-        {!status.hasSchedule && !status.currentlyRunning && (
-          <div>Noch kein Plan vorhanden. Klicke "Plan generieren".</div>
-        )}
-
-        {status.currentlyRunning && (
-          <div>Optimierung läuft... bitte warten.</div>
-        )}
-
-        {error && <div className="error">{error}</div>}
-        <button
-            className="plan-refresh-button"
-            onClick={refreshAll}
+        
+        <div className="plan-header-info">
+          <button
+            className={status.currentlyRunning ? "generate-plan-button-running" : "generate-plan-button"}
+            onClick={handleGeneratePlan}
             disabled={status.currentlyRunning}
-        >
-          Aktualisieren
-          <img src="./src/assets/images/refresh.png" />
-        </button>
-        <button
-          onClick={handleGeneratePlan}
-          disabled={status.currentlyRunning}
-        >
-          {status.currentlyRunning ? "Plan wird generiert..." : "Plan generieren"}
-        </button>
+          >
+            {status.currentlyRunning ? "Plan wird generiert..." : "Plan generieren"}
+          </button>
+
+          <button
+              className={status.currentlyRunning ? "plan-refresh-button-running" : "plan-refresh-button"}
+              onClick={refreshAll}
+              disabled={status.currentlyRunning}
+          >
+            Aktualisieren
+            <img src="./src/assets/images/refresh.png" />
+          </button>
+
+          {!status.hasSchedule && !status.currentlyRunning && (
+            <div>Noch kein Plan vorhanden. Klicke "Plan generieren".</div>
+          )}
+
+          {status.currentlyRunning && (
+            <div>Optimierung läuft... bitte warten.</div>
+          )}
+
+          {error && <div className="error">{error}</div>}
+        </div>
+
       </div>
       <div className="plan">
         <div className="plan-chart">
