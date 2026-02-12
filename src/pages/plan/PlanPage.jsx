@@ -344,7 +344,7 @@ function PlanPage() {
             disabled={isOptimizing}
         >
           {isOptimizing ? "Optimierung läuft..." : "Aktualisieren"}
-          <img src="./src/assets/refresh.png" />
+          <img src="./src/assets/images/refresh.png" />
         </button>
       </div>
       <div className="plan">

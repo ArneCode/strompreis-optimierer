@@ -126,7 +126,7 @@ function ActionsPage() {
             <div className="action-head">
                 <h1>Aktionen</h1>
                 <button className="new-action-button" onClick={toggleCreateActionPopup}>
-                    <img className="new-device-plus-image" src="./src/assets/plus.png" alt="plus"/> Neue Aktion
+                    <img className="new-device-plus-image" src="./src/assets/images/plus.png" alt="plus"/> Neue Aktion
                 </button>
             </div>
 

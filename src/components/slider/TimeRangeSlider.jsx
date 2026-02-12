@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Slider from '@mui/material/Slider';
+
+const MINUTES_DAY = 1435;
+const MIN_DISTANCE = 5;
 
 function TimeRangeSlider({
                              startTime,
@@ -10,16 +13,17 @@ function TimeRangeSlider({
                              hasError,
                              currentTimeStr
                          }) {
-    const sliderValue = [
+
+
+    const sliderValue = useMemo(() => [
         timeToSlider(startTime || currentTimeStr),
         timeToSlider(endTime || "23:59")
-    ];
+    ], [startTime, endTime, currentTimeStr, timeToSlider]);
 
     const handleSliderChange = (event, newValue) => {
-        const [newStart, newEnd] = newValue;
-        if (newEnd - newStart < 5) return;
-
-        onChange(sliderToTime(newStart), sliderToTime(newEnd));
+        const [start, end] = newValue;
+        if (end - start < MIN_DISTANCE) return;
+        onChange(sliderToTime(start), sliderToTime(end));
     };
 
     return (
@@ -28,11 +32,11 @@ function TimeRangeSlider({
                 value={sliderValue}
                 onChange={handleSliderChange}
                 min={0}
-                max={1435}
+                max={MINUTES_DAY}
                 step={5}
                 disableSwap
                 valueLabelDisplay="auto"
-                valueLabelFormat={(val) => sliderToTime(val)}
+                valueLabelFormat={sliderToTime}
                 className={`custom-slider ${hasError ? 'slider-error' : 'slider-standard'}`}
             />
 

@@ -1,4 +1,4 @@
-import Sidebar from './components/Sidebar.jsx';
+import Sidebar from './components/sidebar/Sidebar.jsx';
 import DevicesPage from './pages/devices/./DevicesPage.jsx';
 import PlanPage from './pages/plan/./PlanPage.jsx';
 import SettingsPage from './pages/settings/SettingsPage.jsx';

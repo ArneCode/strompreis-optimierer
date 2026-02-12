@@ -275,7 +275,7 @@ function DevicesPage() {
           className="new-device-button"
           onClick={toggleCreateDevicePopUp}
         >
-          <img className="new-device-plus-image" src="./src/assets/plus.png" />
+          <img className="new-device-plus-image" src="./src/assets/images/plus.png" />
           Neues Gerät
         </button>
       </div>
