@@ -1,299 +1,161 @@
-import {useEffect, useState} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import Device from './components/Device.jsx';
+import DeviceModal from './DeviceModal';
+import apiService from "../../services/apiService";
+import plusIcon from "../../assets/images/plus.png";
+import { INITIAL_DEVICE_FORM, validateDevice } from './DevicesLogic';
 import '../../styles/pages/Devices.css';
-import Device from './Device.jsx';
-import DeviceForm from './DeviceForm.jsx';
-import {INITIAL_DEVICE_FORM, validateDevice} from './DevicesLogic.js'
-import apiService from "../../services/apiService.js";
 
-
+const MODAL_MODES = {
+    CREATE: 'create',
+    EDIT: 'edit',
+    CLOSED: null
+};
 
 function DevicesPage() {
-    const [deviceErrors, setDeviceErrors] = useState({});
-    const [deviceForm, setDeviceForm] = useState(INITIAL_DEVICE_FORM);
-    const[errorMessage, setErrorMessage] = useState("");
-    const [editIndex, setEditIndex] = useState(null);
-    const [openCreateDevice, setOpenCreateDevice] = useState(false);
-    const [openEditDevice, setOpenEditDevice] = useState(false);
     const [devices, setDevices] = useState([]);
+    const [modalMode, setModalMode] = useState(MODAL_MODES.CLOSED);
+    const [deviceForm, setDeviceForm] = useState(INITIAL_DEVICE_FORM);
+    const [deviceErrors, setDeviceErrors] = useState({});
+    const [errorMessage, setErrorMessage] = useState("");
+    const [editIndex, setEditIndex] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
+    useEffect(() => {
+        let timer;
+        if (errorMessage) {
+            timer = setTimeout(() => setErrorMessage(""), 3000);
+        }
+        return () => clearTimeout(timer);
+    }, [errorMessage]);
 
-
-
-
-    const refreshDevices = async () => {
+    const refreshDevices = useCallback(async () => {
+        setIsLoading(true);
         try {
             const data = await apiService.fetchDevices();
             setDevices(data);
         } catch (error) {
-            console.error("Fehler beim Laden:", error);
-            setErrorMessage("Geräte konnten nicht aktualisiert werden.");
+            setErrorMessage("Fehler beim Laden.");
+        } finally {
+            setIsLoading(false);
         }
-    };
-
-    useEffect(() => {
-        refreshDevices();
     }, []);
 
+    useEffect(() => { refreshDevices(); }, [refreshDevices]);
 
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setDeviceForm(prev => ({ ...prev, [name]: value }));
+        setDeviceErrors(prev => ({ ...prev, [name]: undefined }));
+    };
 
+    const openCreate = () => {
+        setDeviceForm(INITIAL_DEVICE_FORM);
+        setDeviceErrors({});
+        setModalMode(MODAL_MODES.CREATE);
+    };
 
-  function handleDeviceFormChange(e) {
-    const {name, value} = e.target;
+    const handleDeviceClick = (index) => {
+        const device = devices[index];
+        setEditIndex(index);
+        setDeviceForm({ ...INITIAL_DEVICE_FORM, ...device });
+        setDeviceErrors({});
+        setModalMode(MODAL_MODES.EDIT);
+    };
 
-    setDeviceForm(prev => ({...prev, [name]: value}));
-    setDeviceErrors(prev => ({ ...prev, [name]: undefined}));
-  }
+    const closeModal = () => {
+        setModalMode(MODAL_MODES.CLOSED);
+        setErrorMessage("");
+    };
 
-
-
-    async function deleteDevice() {
-        if (editIndex === null) return;
-        const deviceToDelete = devices[editIndex];
-
-        try {
-            await apiService.deleteDevice(deviceToDelete.id);
-
-            const newDevices = devices.filter((_, idx) => idx !== editIndex);
-            setDevices(newDevices);
-            toggleEditDevicePopUp();
-            resetAll();
-        } catch (error) {
-            console.error("Fehler beim Löschen:", error);
-            setErrorMessage("Gerät konnte nicht gelöscht werden.");
-            setTimeout(() => setErrorMessage(""), 3000);
-        }
-    }
-
-  async function addDevice() {
-      let newDevice = {
-          type: deviceForm.type,
-          name: deviceForm.name
-      }
-
-      const errors = validateDevice(deviceForm);
-
-      if (Object.keys(errors).length > 0) {
-          setDeviceErrors(errors);
-          setErrorMessage("Bitte fülle alle Felder aus!");
-          setTimeout(() => {
-              setErrorMessage("");
-          }, 3000);
-          return;
-      }
-
-      if (deviceForm.type === "Generator") {
-          newDevice.forecast = deviceForm.forecast;
-      } else if (deviceForm.type === "PVGenerator") {
-          newDevice.ratedPower = deviceForm.ratedPower;
-          newDevice.angleOfInclination = deviceForm.angleOfInclination;
-          newDevice.alignment = deviceForm.alignment;
-          newDevice.location = deviceForm.location;
-          newDevice.lat = deviceForm.lat;
-          newDevice.lng = deviceForm.lng;
-
-      } else if (deviceForm.type === "Consumer") {
-          newDevice.flexibility = deviceForm.flexibility;
-          setOpenCreateDevice(false);
-
-      } else if (deviceForm.type === "Battery") {
-          newDevice.capacity = deviceForm.capacity;
-          newDevice.maxDischarge = deviceForm.maxDischarge;
-          newDevice.maxChargeRate = deviceForm.maxChargeRate;
-          newDevice.currentCharge = deviceForm.currentCharge;
-          newDevice.efficiency = deviceForm.efficiency;
-      }
-
-      try {
-          await apiService.saveDevice(deviceForm);
-          await refreshDevices();
-          setOpenCreateDevice(false);
-      } catch (error) {
-          setErrorMessage("Speichern fehlgeschlagen.");
-      }
-
-  }
-
-
-  function resetDeviceForm() {
-    setDeviceForm(INITIAL_DEVICE_FORM);
-    setOpenCreateDevice(false);
-  }
-
-  function resetAll() {
-    resetDeviceForm();
-    setDeviceErrors({});
-
-  }
-
-  function toggleCreateDevicePopUp() {
-    setOpenCreateDevice(!openCreateDevice);
-  }
-
-  function toggleEditDevicePopUp() {
-    setOpenEditDevice(!openEditDevice);
-  }
-
-  function loadEditDevice(key) {
-    setEditIndex(key);
-
-    const device = devices[key];
-
-    setDeviceForm({
-      name: device.name || "",
-      type: device.type || "generator",
-
-      ratedPower: device.ratedPower || "",
-      angleOfInclination: device.angleOfInclination || "",
-      alignment: device.alignment || "",
-      location: device.location || "",
-
-      forecast: device.forecast || "",
-
-      flexibility: device.flexibility || "constant",
-
-      capacity: device.capacity || "",
-      maxDischarge: device.maxDischarge || "",
-      maxChargeRate: device.maxChargeRate || "",
-      efficiency: device.efficiency || "",
-      currentCharge: device.currentCharge || "",
-    });
-  }
-
-
-
-
-
-    async function editDevice() {
-        if (editIndex === null) return;
-
+    const saveDevice = async (isEdit) => {
         const errors = validateDevice(deviceForm);
         if (Object.keys(errors).length > 0) {
             setDeviceErrors(errors);
-            setErrorMessage("Bitte fülle alle Felder aus!");
-            setTimeout(() => setErrorMessage(""), 3000);
+            setErrorMessage("Bitte alle Felder prüfen!");
             return;
         }
 
+        setIsLoading(true);
         try {
-            const deviceToDelete = devices[editIndex];
-            await apiService.deleteDevice(deviceToDelete.id);
+            if (isEdit) {
+                try {
+                    await apiService.deleteDevice(devices[editIndex].id);
+                } catch (error) {
+                    setErrorMessage("Löschen des alten Gerätes fehlgeschlagen.");
+                    setIsLoading(false);
+                    return;
+                }
+            }
 
-            await apiService.saveDevice(deviceForm);
-
-            await refreshDevices();
-
-            resetAll();
-            setOpenEditDevice(false);
-        } catch (error) {
-            console.error("Fehler beim Ersetzen des Geräts:", error);
-            setErrorMessage("Änderung fehlgeschlagen.");
+            try {
+                await apiService.saveDevice(deviceForm);
+                await refreshDevices();
+                closeModal();
+            } catch (error) {
+                setErrorMessage("Speichern fehlgeschlagen.");
+            }
+        } finally {
+            setIsLoading(false);
         }
-    }
+    };
 
-  return (
-    <>
+    const deleteDevice = async () => {
+        if (isDeleting) return;
 
-      {openEditDevice &&
-        <div className="edit-device-popup">
-          <div className="device-popup-window">
-            <p className="device-popup-header">
-              Gerät bearbeiten
-            </p>
-            <div
-              className="device-popup-inputs"
-            >
-                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} errors={deviceErrors} isEdit={true} />
-          </div>
-            <div className="device-popup-buttons">
-              <button className="devices-edit-delete-button"
-              onClick={() => {deleteDevice(editIndex)}}>
-                Löschen
-              </button>
-              <button
-                className="devices-edit-cancel-button"
-                onClick={() => {
-                  toggleEditDevicePopUp();
-                  resetAll();
-                }}
-              >
-                Abbrechen
-              </button>
+        const deviceId = devices[editIndex]?.id || deviceForm.id;
 
-                {deviceForm.type !== "Consumer" && (
-                    <button
-                        className="devices-save-button"
-                        onClick={editDevice}
-                    >
-                        Speichern
-                    </button>
-                )}
+        if (!deviceId) {
+            setErrorMessage("Keine Geräte-ID gefunden.");
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            await apiService.deleteDevice(deviceId);
+            await refreshDevices();
+            closeModal();
+        } catch (error) {
+            setErrorMessage("Löschen fehlgeschlagen.");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    return (
+        <div className="devices-page">
+            <div className="devices-head">
+                <p>Geräte</p>
+                <button className="new-device-button" onClick={openCreate}>
+                    <img className="new-device-plus-image" src={plusIcon} alt="+" />
+                    Neues Gerät
+                </button>
             </div>
-          </div>
+
+            <div className="devices-grid">
+                {devices.map((dev, idx) => (
+                    <div key={dev.id || idx} onClick={() => handleDeviceClick(idx)}>
+                        <Device type={dev.type} name={dev.name} />
+                    </div>
+                ))}
+            </div>
+
+            <DeviceModal
+                isOpen={modalMode !== MODAL_MODES.CLOSED}
+                isEdit={modalMode === MODAL_MODES.EDIT}
+                onClose={closeModal}
+                onSave={saveDevice}
+                onDelete={deleteDevice}
+                errorMessage={errorMessage}
+                deviceForm={deviceForm}
+                onChange={handleFormChange}
+                errors={deviceErrors}
+                isLoading={isLoading}
+                isDeleting={isDeleting}
+            />
         </div>
-      }
-
-      {openCreateDevice &&
-        <div className="create-device-popup">
-          <div className="device-popup-window">
-              {errorMessage &&
-              <div className="error-message">
-                  {errorMessage}
-              </div>}
-            <p className="device-popup-header">
-              Gerät erstellen
-            </p>
-            <div
-              className="device-popup-inputs"
-            >
-                <DeviceForm deviceForm={deviceForm} onChange={handleDeviceFormChange} errors={deviceErrors}/>
-          </div>
-            <div className="device-popup-buttons">
-              <button
-                className="devices-create-cancel-button"
-                onClick={() => {
-                  toggleCreateDevicePopUp();
-                  resetAll();
-                }}
-              >
-                Abbrechen
-              </button>
-              <button
-                className="devices-create-button"
-                onClick={addDevice}
-              >
-                Erstellen
-              </button>
-            </div>
-          </div>
-        </div>
-      }
-
-
-      <div className="devices-head">
-        <p>Geräte</p>
-        <button
-          className="new-device-button"
-          onClick={toggleCreateDevicePopUp}
-        >
-          <img className="new-device-plus-image" src="./src/assets/plus.png" />
-          Neues Gerät
-        </button>
-      </div>
-      <div className="devices-grid">
-        {devices.map((val, key) => {
-          return (
-            <div onClick={()=> {toggleEditDevicePopUp(); loadEditDevice(key)}}> 
-              <Device
-                type={val.type}
-                name={val.name}
-                id={key}
-              />
-            </div>
-          );
-        })}
-      </div>
-    </>
-  );
+    );
 }
 
 export default DevicesPage;

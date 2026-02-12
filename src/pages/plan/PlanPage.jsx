@@ -202,8 +202,8 @@ function PlanPage() {
             onClick={refreshAll}
             disabled={status.currentlyRunning}
         >
-          Aktualisieren
-          <img src="./src/assets/refresh.png" />
+          {isOptimizing ? "Optimierung läuft..." : "Aktualisieren"}
+          <img src="./src/assets/images/refresh.png" />
         </button>
         <button
           onClick={handleGeneratePlan}
