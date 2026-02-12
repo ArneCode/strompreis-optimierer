@@ -26,7 +26,7 @@ class SqlAlchemyDeviceService(IDeviceService):
     def get_battery(self, device_id: "int") -> "Battery | None":
         return self.session.get(Battery, device_id)
 
-    def get_generator_pv(self, device_id: "int") -> "Generator | None":
+    def get_generator_pv(self, device_id: "int") -> "GeneratorPV | None":
         return self.session.get(GeneratorPV, device_id)
 
     def get_constant_action_device(self, device_id: "int") -> "ConstantActionDevice | None":
