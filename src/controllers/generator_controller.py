@@ -91,6 +91,10 @@ class GeneratorPvController(DeviceController):
         )
         context.add_generated_electricity_prognoses(prognoses)
 
+    def get_prognoses(self, device_manager: "IDeviceManager") -> dict[datetime, float]:
+        self._ensure_forecast_is_ready(device_manager)
+        return self._forecast_service.get_hourly_production(datetime.now())
+
     def update_device(self, current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Optional periodic update; for generators we generally don't actuate devices."""
         # Could poll interactor to advance simulated state if it exposes update()
