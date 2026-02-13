@@ -30,7 +30,6 @@ class ActionBase(BaseModel):
 class ConstantActionIn(ActionBase):
     """
     Schema for actions with a fixed power consumption and a specific duration.
-    The optimizer can shift this block within the start/end window.
     """
     duration_minutes: float
 
