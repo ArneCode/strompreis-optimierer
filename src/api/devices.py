@@ -23,6 +23,10 @@ class DeviceBaseIn(BaseModel):
 
 
 class ConsumerIn(DeviceBaseIn):
+    """
+    Input schema for energy consumers. Supports both fixed-load (constant)
+    and flexible-load (variable) appliances.
+    """
     type: Literal["Consumer"]
     flexibility: Literal["constant", "variable"] = "constant"
     power: float | None = None
@@ -30,6 +34,10 @@ class ConsumerIn(DeviceBaseIn):
 
 
 class BatteryIn(DeviceBaseIn):
+    """
+    Input schema for storage systems. Used to buffer excess generation
+    and optimize cost.
+    """
     type: Literal["Battery"]
     capacity: float
     currentCharge: float = 0
@@ -39,6 +47,10 @@ class BatteryIn(DeviceBaseIn):
 
 
 class PVGeneratorIn(DeviceBaseIn):
+    """
+    Input schema for Photovoltaic systems. Location and orientation data
+    are used for solar yield forecasting.
+    """
     type: Literal["PVGenerator"]
     location: str
     peakPower: float
@@ -57,6 +69,18 @@ DevicePayload = Union[ConsumerIn, BatteryIn, PVGeneratorIn, RandomGeneratorIn]
 
 
 def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
+    """
+    Transforms an internal Device object into a dictionary optimized for the frontend.
+
+    This converts physical unit objects (Watt, WattHour) into raw numeric values
+    and ensures all timestamps are ISO formatted for JSON compatibility.
+
+    Args:
+        d: The Device instance to convert (Battery, PV, Consumer, etc.).
+
+    Returns:
+        A dictionary containing all frontend-relevant attributes of the device.
+    """
     base: dict[str, Any] = {
         "id": d.id,
         "name": d.name,
@@ -130,6 +154,12 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
 
 @router.get("/devices")
 def get_devices(manager: IDeviceManager = Depends(get_device_manager)) -> list[dict[str, Any]]:
+    """
+    Retrieve a list of all devices currently configured in the system.
+
+    Returns:
+        A list of dictionaries representing the configuration of each device.
+    """
     devices = manager.get_device_service().get_all_devices()
     return [_device_to_frontend_dict(d) for d in devices]
 
@@ -138,7 +168,21 @@ def get_devices(manager: IDeviceManager = Depends(get_device_manager)) -> list[d
 def create_device(
         payload: DevicePayload,
         manager: IDeviceManager = Depends(get_device_manager)) -> dict[str, Any]:
+    """
+    Create a new device based on the provided parameters and add it to the manager.
 
+    Supports various device types including consumers (constant/variable),
+    batteries, and generators (PV, Random).
+
+    Args:
+        payload: Validated device data from the request body.
+
+    Returns:
+        The newly created device in frontend-compatible format.
+
+    Raises:
+        HTTPException: 400 if the device type is invalid.
+    """
     if isinstance(payload, ConsumerIn):
         if payload.flexibility == "variable":
             model = VariableActionDevice(name=payload.name)
@@ -185,6 +229,21 @@ def create_device(
 
 @router.post("/devices/{device_id}/new_seed", status_code=status.HTTP_200_OK)
 def new_random_seed(device_id: int, manager: IDeviceManager = Depends(get_device_manager)) -> dict[str, Any]:
+    """
+    Generate a new random seed for a Random Generator device.
+    This changes the simulated generation profile for future optimizations.
+
+    Args:
+        device_id: ID of the device to update.
+
+    Returns:
+        The updated device data.
+
+    Raises:
+        HTTPException:
+            404 if the device is not found.
+            400 if the device is not a random generator.
+    """
     svc = manager.get_device_service()
     device = svc.get_device(device_id)
     if device is None:
@@ -201,6 +260,18 @@ def new_random_seed(device_id: int, manager: IDeviceManager = Depends(get_device
 
 @router.delete("/devices/{device_id}")
 def delete_device(device_id: int, manager: IDeviceManager = Depends(get_device_manager)) -> dict[str, Any]:
+    """
+    Remove a specific device from the system.
+
+    Args:
+        device_id: ID of the device to be deleted.
+
+    Returns:
+        A success status dictionary.
+
+    Raises:
+        HTTPException: 404 if the device is not found.
+    """
     svc = manager.get_device_service()
     if svc.get_device(device_id) is None:
         raise HTTPException(status_code=404, detail="Nicht gefunden")
@@ -210,6 +281,13 @@ def delete_device(device_id: int, manager: IDeviceManager = Depends(get_device_m
 
 @router.delete("/devices")
 def reset_all_devices(manager: IDeviceManager = Depends(get_device_manager)) -> dict[str, Any]:
+    """
+    Delete all currently registered devices from the Device Manager.
+    Used to completely reset the system configuration.
+
+    Returns:
+        A success message indicating all devices have been removed.
+    """
     ids = manager.get_device_service().get_all_device_ids()
     for did in ids:
         manager.remove_device(did)

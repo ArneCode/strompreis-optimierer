@@ -28,9 +28,17 @@ class ActionBase(BaseModel):
     consumption: float
 
 class ConstantActionIn(ActionBase):
+    """
+    Schema for actions with a fixed power consumption and a specific duration.
+    The optimizer can shift this block within the start/end window.
+    """
     duration_minutes: float
 
-class VariableActionIn(ActionBase):
+class VariableActionIn(ActionBase):#
+    """
+    Schema for actions where power can vary over time.
+    Defined by a total energy amount (Wh) and a maximum power limit (W).
+    """
     total_consumption: float
 
 
@@ -42,6 +50,24 @@ def create_action(
 ) -> dict[str, Any]:
     svc = manager.get_device_service()
     device = svc.get_device(device_id)
+    """
+    Add a new scheduled action to a specific device.
+
+    Depending on the device type, this creates either a ConstantAction 
+    (fixed power/duration) or a VariableAction (flexible power distribution).
+
+    Args:
+        device_id: The ID of the device to assign the action to.
+        payload: Dictionary containing the action parameters (validated per device type).
+
+    Returns:
+        A success status and the type of device the action was added to.
+
+    Raises:
+        HTTPException:
+            404 if the device is not found.
+            400 if validation fails or the device type does not support actions.
+    """
 
     if device is None:
         raise HTTPException(status_code=404, detail="Gerät nicht gefunden")
@@ -89,6 +115,21 @@ def delete_action(
 ) -> dict[str, Any]:
     svc = manager.get_device_service()
     device = svc.get_device(device_id)
+    """
+    Remove a specific action from a device's schedule.
+
+    Args:
+        device_id: The ID of the device owning the action.
+        action_id: The unique ID of the action to be removed.
+
+    Returns:
+        A confirmation message upon successful deletion.
+
+    Raises:
+        HTTPException:
+            404 if the device or the action is not found.
+            400 if the device type is incompatible with actions.
+    """
 
     if device is None:
         raise HTTPException(status_code=404, detail="Gerät nicht gefunden")
