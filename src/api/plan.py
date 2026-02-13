@@ -24,6 +24,16 @@ def _collect_total_generation_kw(
     manager: IDeviceManager,
     timeline: list[datetime]
 ) -> list[float]:
+    """
+    Compute the total generation for all configured generators for each timestamp in a timeline.
+
+    Args:
+        manager: Device manager providing access to generators and services.
+        timeline: List of timestamps (typically 24 hourly points) for which generation is computed.
+
+    Returns: 
+        A list of floats (length equals len(timeline)) containing total generation in kW per hour.
+    """
     generators = manager.get_device_service().get_all_generators()
     total_kw: list[float] = []
 
@@ -51,6 +61,17 @@ def _collect_total_generation_kw(
     return total_kw
 
 def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | None]:
+    """
+    Collect hourly electricity prices aligned with the given timeline.
+
+    Args:
+        timeline: List of timestamps (typically hourly) used to align price values.
+    
+    Returns:
+        A list of prices in ct/kWh aligned to 'timeline'. If a price for a given hour is missing in the
+        cache, the list contains None at that position.
+    """
+
     blocks = api_services.price_cache.get_blocks()
     prices: list[float | None] = []
 
@@ -66,6 +87,20 @@ def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | 
     return prices   
 
 def _require_schedule(orchestrator: IOrchestratorService) -> Schedule:
+    """
+    Ensure that a schedule is available, otherwise raise an HTTPException.
+
+    Args:
+        orchestrator: Orchestrator service providing schedule state and access.
+    
+    Returns:
+        The current Schedule object.
+
+    Raises:
+        HTTPException:
+            409 if optimization is currently running but schedule is not yet available
+            404 if no schedule is available
+    """
     if not orchestrator.has_schedule:
         if orchestrator.currently_running:
             raise HTTPException(
@@ -95,10 +130,6 @@ def _create_timeline(hours: int):
 def _collect_power_values(action, assigned_action, step_minutes):
     power_values = []
 
-    """
-    for time in timeline:
-        power_values.append(Watt.get_value(assigned_action.get_consumption(time)))
-    """
     start = action.start
     end = action.end
 
@@ -121,6 +152,23 @@ def _collect_soc_values(battery, timeline):
     return soc_values
 
 def _collect_plan_data(manager, schedule) -> dict[str, Any]:
+    """
+    Transform the optimizer schedule and device configuration into frontend plan data.
+
+    It generates:
+        Gantt tasks for devices that have schedule assignments
+        time series data for batteries (SOC) and variable actions (power values)
+        hourly price series (ct/kWh)
+        hourly total generation (kW)
+
+    Args:
+        manager: Device manager providing access to all configured devices.
+        schedule: The current optimizer schedule.
+
+    Returns:
+        A dict containing: tasks, timeline, batteries, variableActions, priceCtPerKwh, generationKw
+    """
+
     tasks = []
     batteries = []
     variable_actions = []
@@ -156,6 +204,10 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
 
         if isinstance(device, VariableActionDevice):
             for action in device.actions:
+                assigned_action = schedule.get_variable_action(device.id)
+                if assigned_action is None:
+                    continue 
+
                 tasks.append(
                     {
                         "id": str(i),
@@ -165,10 +217,6 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                         "end": action.end.isoformat(),
                     }
                 ) 
-
-                assigned_action = schedule.get_variable_action(device.id)
-                if assigned_action is None:
-                    continue
 
                 variable_actions.append(
                     {
@@ -182,6 +230,10 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                 i += 1
 
         if isinstance(device, Battery):
+            assigned_battery = schedule.get_battery(device.id)
+            if assigned_battery is None:
+                continue
+
             tasks.append(
                 {
                     "id": str(i),
@@ -192,9 +244,6 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                 }
             )
 
-            assigned_battery = schedule.get_battery(device.id)
-            if assigned_battery is None:
-                continue
 
             batteries.append(
                 {
@@ -222,6 +271,18 @@ def get_plan(
     manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
 ) -> dict[str, Any]:
+    """
+    Get the optimal plan as Gantt tasks.
+
+    Returns:
+        Dict containing:
+            tasks: list of frontend compatible Gantt tasks
+
+    Raises:
+        HTTPException:
+            409 if optimization is currently running and schedule is not yet available
+            404 if no schedule is available
+    """
     schedule = _require_schedule(orchestrator)
     data = _collect_plan_data(manager, schedule)
 
@@ -234,6 +295,21 @@ def get_plan_data(
     manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
 ):
+    """
+    Get additional plan data required for charts and detail views.
+
+    Includes: 
+        timeline (ISO timestamps)
+        battery SOC series (Wh)
+        variable action power series (W)
+        hourly electricity price (ct/kWh)
+        hourly total generation (kW)
+
+    Raises:
+        HTTPException:
+            409 if optimization is currently running and schedule is not yet available
+            404 if no schedule is available
+    """
     schedule = _require_schedule(orchestrator)
     data = _collect_plan_data(manager, schedule)
 
@@ -250,6 +326,16 @@ def generate_plan(
     device_manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
 ):
+    """
+    Start plan generation by running the optimization algorithm.
+
+    Returns:
+        {"status": "started"} if the optimization was successfully started.
+
+    Raises:
+        HTTPException:
+            409 if optimization is already running
+    """
     if orchestrator.currently_running:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -268,6 +354,14 @@ def generate_plan(
 
 @router.get("/plan/status")
 def get_plan_status(orchestrator: IOrchestratorService = Depends(get_orchestrator_service)):
+    """
+    Get the current plan/optimization status.
+
+    Returns:
+        A dict containing:
+            currentlyRunning: True if an optimization is currently running
+            hasSchedule: True if a schedule has been generated and is available
+    """
     return {
         "currentlyRunning": orchestrator.currently_running,
         "hasSchedule": orchestrator.has_schedule,
