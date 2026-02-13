@@ -38,23 +38,14 @@ class GeneratorRandomController(GeneratorController):
         # Compute random generation for the interval [start, end] using the generator's random generator.
         # uses noise function with generator's seed and the timestamps to produce a deterministic random generation value for the interval.
         # For simplicity, we can just take the average of the generation at the start and end timestamps.
-        start_ts = start.timestamp()
-        end_ts = end.timestamp()
-
-        # pnoise1 returns a value between -1 and 1. We scale it to be between 0 and 1.
-        # The 'base' parameter is used as a seed for the noise function.
-        # The timestamp is divided by a factor to control the "frequency" of the noise.
-        noise_start = (pnoise1(start_ts / 3600.0, base=generator.seed) + 1) / 2
-        noise_end = (pnoise1(end_ts / 3600.0, base=generator.seed) + 1) / 2
-
-        # Scale by the generator's max power
-        gen_start = noise_start * generator.peak_power
-        gen_end = noise_end * generator.peak_power
+        gen_start = generator.get_generation(start)
+        gen_end = generator.get_generation(end)
 
         # Average generation over the interval
-        avg_generation = (gen_start + gen_end) / 2
+        avg_generation = (gen_start.value + gen_end.value) / 2
 
-        result = Watt(avg_generation) * timedelta(seconds=(end_ts - start_ts))
+        duration_seconds = (end - start).total_seconds()
+        result = Watt(avg_generation) * timedelta(seconds=duration_seconds)
         return result
 
     def add_to_optimizer_context(self, context: OptimizerContext, current_time: datetime, device_manager: "IDeviceManager"):

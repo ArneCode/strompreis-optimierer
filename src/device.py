@@ -15,6 +15,7 @@ from sqlalchemy import Enum, ForeignKey, String, Integer, Float
 from database.base import Base
 import enum
 import random
+from noise import pnoise1
 
 from database.mapper import TimezoneAwareDateMapper, WattHourMapper, WattMapper, EuroMapper, EuroPerWhMapper
 
@@ -193,3 +194,13 @@ class GeneratorRandom(Generator):
     def new_random_seed(self):
         """Generate a new random seed for this generator."""
         self.seed = random.randint(0, int(1e9))
+
+    def get_generation(self, time: datetime) -> Watt:
+        """Get the generation at a specific time."""
+        ts = time.timestamp()
+        # pnoise1 returns a value between -1 and 1. We scale it to be between 0 and 1.
+        # The 'base' parameter is used as a seed for the noise function.
+        # The timestamp is divided by a factor to control the "frequency" of the noise.
+        noise = (pnoise1(ts / 3600.0, base=self.seed) + 1) / 2
+        generation = noise * self.peak_power
+        return Watt(generation)
