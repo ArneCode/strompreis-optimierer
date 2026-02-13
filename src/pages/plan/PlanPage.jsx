@@ -65,6 +65,7 @@ function PlanPage() {
   ]);
   */
   
+  /*
   const [pvData, setPvData] = useState([
     { hour: '00:00', generation: 0 },
     { hour: '01:00', generation: 0 },
@@ -91,6 +92,7 @@ function PlanPage() {
     { hour: '22:00', generation: 0 },
     { hour: '23:00', generation: 0 },
   ]);
+  */
 
   const variableActionById = useMemo(() => {
     const m = new Map();
@@ -247,6 +249,14 @@ function PlanPage() {
     return {
       hour: String(d.getHours()).padStart(2, "0") + ":00",
       price: planData.pricesCtPerKwh?.[i] ?? null,
+    };
+  });
+
+  const generatorDataFromBackend = (planData.timeline ?? []).map((iso, i) => {
+    const d = new Date(iso);
+    return {
+      hour: String(d.getHours()).padStart(2, "0") + ":00",
+      generation: planData.generationKw?.[i] ?? 0,
     };
   });
     
@@ -410,7 +420,7 @@ function PlanPage() {
                   (min) => Math.floor(min * 0.95),
                   (max) => Math.ceil(max),
                 ]}
-                ticks={priceTicks}
+                /*ticks={priceTicks}*/
               />
             </LineChart>
           </div>
@@ -421,7 +431,7 @@ function PlanPage() {
           <div className="diagram">
             <LineChart 
               style={{ width: '100%', aspectRatio: 1.5, maxWidth: 700}} 
-              data={pvData}
+              data={generatorDataFromBackend}
               responsive
               margin={{bottom: 30}}
             >
@@ -433,7 +443,7 @@ function PlanPage() {
                   0,
                   (max) => Math.ceil(max * 1.1)
                 ]}
-                ticks={generationTicks}
+                /*ticks={generationTicks}*/
               />
             </LineChart>
           </div>
