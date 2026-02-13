@@ -1,3 +1,8 @@
+/**
+ * ActionsPage
+ * Manage device actions (scheduled tasks). Users can create, edit, and delete actions.
+ * Provides time-range selection and validation.
+ */
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import ActionGrid from "./components/ActionGrid.jsx";
 import ActionModal from "./ActionModal";
@@ -17,7 +22,6 @@ import {
 import "../../styles/pages/Actions.css";
 import "../../styles/components/Slider.css";
 
-// Modal Modes Konstanten
 const MODAL_MODES = {
     CREATE: 'create',
     EDIT: 'edit',
@@ -44,7 +48,6 @@ function ActionsPage() {
             referenceTime.getHours() * 60 + referenceTime.getMinutes(),
         [referenceTime]);
 
-    // Error-Message Auto-Clear mit Cleanup
     useEffect(() => {
         let timer;
         if (errorMessage) {

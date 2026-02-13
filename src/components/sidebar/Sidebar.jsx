@@ -1,3 +1,7 @@
+/**
+ * Sidebar navigation component with collapsible state.
+ * Displays main navigation (Devices, Actions, Plan) and settings link.
+ */
 import React, { useState } from 'react';
 import { NavLink } from "react-router-dom";
 import { SIDEBAR_MAIN_ITEMS, SIDEBAR_SETTING_ITEMS } from './SidebarData.jsx';

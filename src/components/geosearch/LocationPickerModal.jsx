@@ -1,6 +1,7 @@
 /**
  * Modal to pick a location on a Leaflet map. Uses search + map clicks.
  * Returns a selected location object via onSelect.
+ * AI supported.
  */
 import React from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';

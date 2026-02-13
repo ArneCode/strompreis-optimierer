@@ -1,6 +1,7 @@
 /**
  * TimeRangeSlider
  * Reusable slider for selecting a start and end time within a day.
+ * AI supported
  * @param {object} props
  * @param {string} props.startTime - current start time string (e.g. "08:00")
  * @param {string} props.endTime - current end time string (e.g. "18:00")

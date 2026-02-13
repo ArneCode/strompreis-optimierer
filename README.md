@@ -1,15 +1,15 @@
 # Strompreis-Optimierer — Frontend
 
+React-basierte Webanwendung zur Optimierung des Energieverbrauchs von Haushaltsgeräten und Speichersystemen basierend auf Strompreisen.
 
-
-Voraussetzungen
+## Voraussetzungen
 
 - Node.js (empfohlen v18 oder neuer)
 - npm (wird mit Node ausgeliefert)
 
-Installation
+## Installation
 
-Im Projekt-Root ausführen:
+Abhängigkeiten installieren:
 
 ```powershell
 npm install
@@ -21,10 +21,11 @@ Development (lokal)
 npm run dev
 ```
 
-Standardmäßig startet Vite den Dev-Server auf http://localhost:5173; Vite wählt ggf. einen alternativen freien Port.
+Vite wählt automatisch einen freien Port, falls 5173 belegt ist.
 
+## Build erstellen
 
-Build erstellen:
+Produktions-Build erzeugen:
 
 ```powershell
 npm run dev
@@ -38,5 +39,3 @@ Kurzer Projektüberblick (Auszug)
 - `src/components/` — wiederverwendbare UI-Komponenten
 - `src/services/` — API-Wrapper und Hilfsfunktionen
 - `src/styles/` — CSS-Dateien
-
-Mehr Details findest du im Quellcode unter `src/`.
