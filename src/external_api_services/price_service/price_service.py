@@ -73,7 +73,7 @@ class PriceService(PriceServicePort):
             if price is None:
                 raise RuntimeError(f"No price for {current.isoformat()}.")
 
-            hourly_prices[current] = price
+            hourly_prices[current] = price / 1000
             current += timedelta(hours=1)
 
         return hourly_prices

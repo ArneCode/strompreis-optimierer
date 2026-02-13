@@ -1,23 +1,8 @@
-"""
-from external_api_services.forecast_manager import ForecastManager
-from external_api_services.forecast_service.forecast_client import ForecastClient
-
-
-class ApiServicesFacade():
-    forecast_client = ForecastClient()
-    forecast_manager = ForecastManager(
-        client=ForecastClient()
-    )
-"""
-
-# external_api_services/api_services.py
-
 from external_api_services.forecast_service.forecast_client import ForecastClient
 from external_api_services.forecast_manager import ForecastManager
 
 from external_api_services.price_service.price_service import PriceService
 from external_api_services.price_service.price_cache import PriceCache
-
 
 class ApiServices:
     def __init__(self) -> None:
