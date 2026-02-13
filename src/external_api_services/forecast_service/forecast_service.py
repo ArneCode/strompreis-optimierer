@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 
 from external_api_services.forecast_service.forecast_cache import ForecastCache
 from external_api_services.forecast_service.forecast_service_port import ForecastServicePort
+from optimizer.python.electricity_price_optimizer_py.units import WattHour, Watt
 
 BERLIN = ZoneInfo("Europe/Berlin")
 
@@ -61,20 +62,21 @@ class ForecastService(ForecastServicePort):
 
         return total_wh
 
-    def get_hourly_production(self, start: datetime) -> Dict[datetime, float]:
-        start = start.astimezone(BERLIN)
+    def get_prognoses(self, timestamps: list[datetime], end: datetime) -> list[WattHour]:
+        prognoses: list[WattHour] = []
+
+        for i in range (0, len(timestamps) - 1):
+            start_timestamp = timestamps[i]
+            end_timestamp = timestamps[i + 1]
+            prognoses.append(WattHour(self.get_total_production(start_timestamp, end_timestamp)))
+
+        prognoses.append(WattHour(self.get_total_production(timestamps[len(timestamps) - 1], end)))
+        return prognoses
+
+
+    def get_current_power(self) -> Watt:
+        current = datetime.now().astimezone(BERLIN)
         blocks = self._cache.get_blocks()
+        produced_amount = blocks.get(_floor_hour(current))
+        return Watt(produced_amount)
 
-        current = _floor_hour(start)
-        end = current + timedelta(hours = 23)
-        hourly_production: Dict[datetime, float] = {}
-        while current < end:
-            production: float = blocks.get(current)
-
-            if production is None:
-                raise RuntimeError(f"No production for {current.isoformat()}.")
-
-            hourly_production[current] = production
-            current += timedelta(hours = 1)
-
-        return hourly_production
