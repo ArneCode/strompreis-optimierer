@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, status
 from api.dependencies import get_device_manager, get_orchestrator_service
 from device_manager import IDeviceManager
-from device import Battery, VariableActionDevice, VariableAction, ConstantActionDevice, ConstantAction, GeneratorPV
+from device import Battery, GeneratorRandom, VariableActionDevice, VariableAction, ConstantActionDevice, ConstantAction, GeneratorPV
 from electricity_price_optimizer_py.units import WattHour, Watt
 from services.orchestrator_service import IOrchestratorService, OrchestratorService
 
@@ -55,8 +55,12 @@ def test_orchestrator(manager: IDeviceManager = Depends(get_device_manager), orc
 
     # 4) PV generator
     pv = GeneratorPV(name="Roof PV", latitude=52.5200, longitude=13.4050,
-                     declination=30, azimuth=180, peak_power=Watt(8.5))
+                     declination=30, azimuth=180, peak_power=Watt(8.5), location="Berlin")
     manager.add_generator_pv(pv)
+
+    pvrandom = GeneratorRandom(
+        name="Random PV", peak_power=Watt(8.5), seed=None)
+    manager.add_generator_random(pvrandom)
 
     # Run orchestrator
     orchestrator.run_optimization(manager)

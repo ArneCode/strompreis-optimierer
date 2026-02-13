@@ -4,7 +4,7 @@ from typing import Any
 
 from external_api_services.api_services import api_services
 from controllers.base import GeneratorController
-#from external_api_services.forecast_service.forecast_cache import PVConfiguration
+# from external_api_services.forecast_service.forecast_cache import PVConfiguration
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -20,6 +20,7 @@ from electricity_price_optimizer_py import Schedule
 BERLIN = ZoneInfo("Europe/Berlin")
 
 router = APIRouter(prefix="/api", tags=["plan"])
+
 
 def _collect_total_generation_kw(
     manager: IDeviceManager,
@@ -37,17 +38,18 @@ def _collect_total_generation_kw(
         the element in 'timeline' of the same index.
 
     """
-    step = (timeline[1] - timeline[0]) if len(timeline) > 1 else timedelta(hours=1)
+    step = (timeline[1] - timeline[0]
+            ) if len(timeline) > 1 else timedelta(hours=1)
     end = timeline[-1] + step
 
     total_kw: list[float] = [0.0 for _ in timeline]
 
     controllers = manager.get_controller_service().get_all_controllers()
 
-    gen_controllers = [
-        c for c in controllers
-        if hasattr(c, "get_prognoses") and callable(getattr(c, "get_prognoses"))
-    ]
+    gen_controllers = manager.get_controller_service().get_all_generator_controllers()
+
+    print(
+        f"collecting generation for {len(gen_controllers)} generator controllers out of {len(controllers)} total controllers")
 
     end = timeline[-1] + timedelta(hours=1)
 
@@ -77,7 +79,7 @@ def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | 
 
     Args:
         timeline: List of timestamps (typically hourly) used to align price values.
-    
+
     Returns:
         A list of prices in ct/kWh aligned to 'timeline'. If a price for a given hour is missing in the
         cache, the list contains None at that position.
@@ -95,7 +97,8 @@ def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | 
         else:
             prices.append(float(block.price) / 10.0)
 
-    return prices   
+    return prices
+
 
 def _require_schedule(orchestrator: IOrchestratorService) -> Schedule:
     """
@@ -103,7 +106,7 @@ def _require_schedule(orchestrator: IOrchestratorService) -> Schedule:
 
     Args:
         orchestrator: Orchestrator service providing schedule state and access.
-    
+
     Returns:
         The current Schedule object.
 
@@ -130,6 +133,7 @@ def _require_schedule(orchestrator: IOrchestratorService) -> Schedule:
             detail="schedule not available",
         )
 
+
 def _create_timeline(hours: int):
     timeline = []
 
@@ -137,6 +141,7 @@ def _create_timeline(hours: int):
     timeline = [start_time + timedelta(hours=i) for i in range(hours)]
 
     return timeline
+
 
 def _collect_power_values(action, assigned_action, step_minutes):
     power_values = []
@@ -154,6 +159,7 @@ def _collect_power_values(action, assigned_action, step_minutes):
 
     return power_values
 
+
 def _collect_soc_values(battery, timeline):
     soc_values = []
 
@@ -161,6 +167,7 @@ def _collect_soc_values(battery, timeline):
         soc_values.append(WattHour.get_value(battery.get_charge_level(time)))
 
     return soc_values
+
 
 def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     """
@@ -189,7 +196,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     prices_ct_per_kwh = _collect_hourly_prices_ct_per_kwh(timeline)
 
     plan_start = timeline[0]
-    plan_end = timeline[-1] + timedelta(hours = 1)
+    plan_end = timeline[-1] + timedelta(hours=1)
 
     i = 1
     for device in manager.get_device_service().get_all_devices():
@@ -198,7 +205,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                 assigned = schedule.get_constant_action(device.id)
                 if assigned is None:
                     continue
-                
+
                 start = assigned.get_start_time().isoformat()
                 end = assigned.get_end_time().isoformat()
 
@@ -211,13 +218,13 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                         "end": end,
                     }
                 )
-                i += 1    
+                i += 1
 
         if isinstance(device, VariableActionDevice):
             for action in device.actions:
                 assigned_action = schedule.get_variable_action(device.id)
                 if assigned_action is None:
-                    continue 
+                    continue
 
                 tasks.append(
                     {
@@ -227,7 +234,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                         "start": action.start.isoformat(),
                         "end": action.end.isoformat(),
                     }
-                ) 
+                )
 
                 variable_actions.append(
                     {
@@ -237,7 +244,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                         "start": action.start.isoformat(),
                         "stepMinutes": 30,
                     }
-                )          
+                )
                 i += 1
 
         if isinstance(device, Battery):
@@ -255,7 +262,6 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                 }
             )
 
-
             batteries.append(
                 {
                     "id": str(i),
@@ -265,9 +271,6 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
             )
             i += 1
 
-           
-
-    
     return {
         "tasks": tasks,
         "timeline": [time.isoformat() for time in timeline],
@@ -276,6 +279,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
         "pricesCtPerKwh": prices_ct_per_kwh,
         "generationKw": generation_kw,
     }
+
 
 @router.get("/plan")
 def get_plan(
@@ -300,6 +304,7 @@ def get_plan(
     return {
         "tasks": data["tasks"]
     }
+
 
 @router.get("/plan/data")
 def get_plan_data(
@@ -332,6 +337,7 @@ def get_plan_data(
         "generationKw": data["generationKw"]
     }
 
+
 @router.post("/plan/generate", status_code=status.HTTP_202_ACCEPTED)
 def generate_plan(
     device_manager: IDeviceManager = Depends(get_device_manager),
@@ -352,16 +358,17 @@ def generate_plan(
             status_code=status.HTTP_409_CONFLICT,
             detail="optimization already running",
         )
-    
+
     try:
         orchestrator.run_optimization(device_manager)
     except RuntimeError:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, 
+            status_code=status.HTTP_409_CONFLICT,
             detail="optimization already running"
         )
 
     return {"status": "started"}
+
 
 @router.get("/plan/status")
 def get_plan_status(orchestrator: IOrchestratorService = Depends(get_orchestrator_service)):

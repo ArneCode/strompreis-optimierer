@@ -3,7 +3,8 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use crate::{optimizer::flow_optimizer::flow::MinCostFlow, time::Time};
+use crate::algorithm::flow::flow_optimizer::flow::MinCostFlow;
+use crate::time::Time;
 
 /// A wrapper around `MinCostFlow` to provide a more ergonomic API using `FlowNode` enums.
 ///

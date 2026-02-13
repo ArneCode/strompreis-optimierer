@@ -92,6 +92,7 @@ class DeviceManager(IDeviceManager):
             MockGeneratorInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorRandomController(device.id))
+        return id
 
     def add_constant_action_device(self, device: "ConstantActionDevice") -> "int":
         id = self._uow.device_service.add_device(device)

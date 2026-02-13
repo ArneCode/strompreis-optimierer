@@ -1,3 +1,9 @@
+//! Time series types exposed to Python.
+//!
+//! `DataPoint` pairs a UTC timestamp with an arbitrary Python value.
+//! `TimeSeries` collects data points over a bounded interval and supports
+//! lookup by timestamp.
+
 use std::fmt::Debug;
 
 use chrono::{DateTime, Utc};
@@ -28,12 +34,17 @@ impl Clone for DataPoint {
 #[pymethods]
 impl DataPoint {
     #[new]
+    /// Create a data point with a timestamp and an arbitrary Python value.
     fn new(timestamp: DateTime<Utc>, value: Py<PyAny>) -> Self {
         DataPoint { timestamp, value }
     }
 }
 
 /// A time series with explicit start and end bounds.
+///
+/// Points are expected to be sorted by timestamp in ascending order.
+/// `get_value_at` performs a linear scan to find the latest point at or before
+/// the requested time, effectively providing step-function interpolation.
 #[pyclass]
 #[derive(Clone)]
 pub struct TimeSeries {
@@ -46,6 +57,8 @@ pub struct TimeSeries {
 }
 
 impl TimeSeries {
+    /// Construct a `TimeSeries` from a `Prognoses<T>`, converting each timestep
+    /// into a `DataPoint` whose timestamp is derived from `start_time`.
     pub fn from_prognoses<'py, T>(
         py: Python<'py>,
         prognoses: &Prognoses<T>,
@@ -83,6 +96,7 @@ impl TimeSeries {
 #[pymethods]
 impl TimeSeries {
     #[new]
+    /// Create a time series from explicit bounds and a list of data points.
     fn new(start_time: DateTime<Utc>, end_time: DateTime<Utc>, points: Vec<DataPoint>) -> Self {
         TimeSeries {
             start_time,
@@ -91,6 +105,10 @@ impl TimeSeries {
         }
     }
 
+    /// Look up the value at a specific time using step-function interpolation.
+    ///
+    /// Returns `None` if `time` is outside `[start_time, end_time)`.
+    /// Otherwise returns the value of the latest data point whose timestamp ≤ `time`.
     fn get_value_at<'py>(
         &self,
         py: Python<'py>,
@@ -100,18 +118,20 @@ impl TimeSeries {
             return Ok(None);
         }
 
+        // Linear scan: keep the last point that is at or before `time`.
         let mut result: Option<&DataPoint> = None;
         for point in &self.points {
             if point.timestamp <= time {
                 result = Some(point);
             } else {
-                break;
+                break; // points are sorted, so no later point can match
             }
         }
 
         Ok(result.map(|p| p.value.bind(py).clone()))
     }
 
+    /// Return the number of data points in the series.
     fn __len__(&self) -> usize {
         self.points.len()
     }

@@ -23,9 +23,9 @@ use std::{collections::HashMap, hash::Hash};
 
 use std::time::Instant;
 
-use crate::helper::stack_proxy::StackProxy;
-use crate::optimizer::flow_optimizer::flow::FlowWrapper;
-use crate::optimizer::flow_optimizer::flow::wrapper::FlowNode;
+use crate::utils::stack_proxy::StackProxy;
+use crate::algorithm::flow::flow_optimizer::flow::FlowWrapper;
+use crate::algorithm::flow::flow_optimizer::flow::wrapper::FlowNode;
 use crate::optimizer_context::action::constant::{self, AssignedConstantAction, ConstantAction};
 use crate::optimizer_context::action::variable::{AssignedVariableAction, VariableAction};
 use crate::optimizer_context::battery::{AssignedBattery, Battery};

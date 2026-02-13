@@ -8,7 +8,7 @@
 pub mod multi_change;
 mod random_helpers;
 mod random_move;
-use crate::simulated_annealing::state::State;
+use crate::algorithm::simulated_annealing::state::State;
 
 /// A trait representing a reversible change to a `State`.
 ///

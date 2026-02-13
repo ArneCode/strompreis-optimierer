@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
+from electricity_price_optimizer_py.units import Watt
+
 from .base import DeviceController
 
 from electricity_price_optimizer_py import (
@@ -84,7 +86,6 @@ class VariableActionController(DeviceController):
         if interactor.get_total_consumed(device_manager) >= action.total_consumption:
             return  # already fully consumed, no need to add to context
 
-
         start = action.start
         end = action.end
 
@@ -137,6 +138,6 @@ class VariableActionController(DeviceController):
             consumption = assigned.get_consumption(current_time)
             # Instruct the interactor to set this consumption
             interactor.set_current(consumption, device_manager)
-        except ValueError:
+        except:
             # Time is outside schedule range, stop consumption
-            interactor.set_current(units.Watt(0), device_manager)
+            interactor.set_current(Watt(0), device_manager)

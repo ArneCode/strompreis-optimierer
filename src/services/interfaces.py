@@ -8,7 +8,7 @@ implementations (e.g., in-memory vs. database-backed).
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional
 
-from device import GeneratorPV, GeneratorPV
+from device import GeneratorPV, GeneratorPV, GeneratorRandom
 if TYPE_CHECKING:
     from electricity_price_optimizer_py import Schedule
     from controllers.base import DeviceController
@@ -131,6 +131,26 @@ class IControllerServiceReader(ABC):
         """Retrieve all controllers."""
         ...
 
+    @abstractmethod
+    def get_all_battery_controllers(self) -> list["BatteryController"]:
+        """Retrieve all battery controllers."""
+        ...
+
+    @abstractmethod
+    def get_all_generator_controllers(self) -> list["GeneratorPvController"]:
+        """Retrieve all generator controllers."""
+        ...
+
+    @abstractmethod
+    def get_all_constant_action_controllers(self) -> list["ConstantActionController"]:
+        """Retrieve all constant action controllers."""
+        ...
+
+    @abstractmethod
+    def get_all_variable_action_controllers(self) -> list["VariableActionController"]:
+        """Retrieve all variable action controllers."""
+        ...
+
 
 class IControllerService(IControllerServiceReader):
     """Controller service API with mutation operations."""
@@ -213,8 +233,13 @@ class IDeviceServiceReader(ABC):
         ...
 
     @abstractmethod
-    def get_all_generators(self) -> "list[GeneratorPV]":
+    def get_all_generators_pv(self) -> "list[GeneratorPV]":
         """Retrieve all generators."""
+        ...
+
+    @abstractmethod
+    def get_all_generators_random(self) -> "list[GeneratorRandom]":
+        """Retrieve all random generators."""
         ...
 
     @abstractmethod
