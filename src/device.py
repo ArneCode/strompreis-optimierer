@@ -201,6 +201,6 @@ class GeneratorRandom(Generator):
         # pnoise1 returns a value between -1 and 1. We scale it to be between 0 and 1.
         # The 'base' parameter is used as a seed for the noise function.
         # The timestamp is divided by a factor to control the "frequency" of the noise.
-        noise = (pnoise1(ts / 3600.0, base=self.seed) + 1) / 2
+        noise: float = (pnoise1(ts / 3600.0, base=self.seed) + 1) / 2
         generation = noise * self.peak_power
-        return Watt(generation)
+        return generation
