@@ -168,3 +168,18 @@ class GeneratorPV(Generator):
     __mapper_args__ = {
         "polymorphic_identity": DeviceType.GENERATOR_PV,
     }
+
+
+class GeneratorRandom(Generator):
+    """Random generator device (for testing)."""
+    __tablename__ = "generator_random"
+    id: Mapped[int] = mapped_column(
+        ForeignKey("device.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+    seed: Mapped[int] = mapped_column(Integer, nullable=False)
+    peak_power: Mapped[Watt] = mapped_column(WattMapper, nullable=False)
+
+    __mapper_args__ = {
+        "polymorphic_identity": DeviceType.GENERATOR_PV,
+    }

@@ -5,7 +5,7 @@ from electricity_price_optimizer_py.units import Watt, WattHour
 
 from external_api_services.api_services import api_services
 from external_api_services.forecast_service.forecast_cache import PVConfiguration
-from .base import DeviceController
+from .base import DeviceController, GeneratorController
 
 from electricity_price_optimizer_py import (
     Schedule,
@@ -16,6 +16,7 @@ from electricity_price_optimizer_py import (
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
+
 def get_pv_configuration(generator) -> PVConfiguration:
     return PVConfiguration(
         float(generator.latitude),
@@ -25,7 +26,8 @@ def get_pv_configuration(generator) -> PVConfiguration:
         float(generator.peak_power.get_value())
     )
 
-class GeneratorPvController(DeviceController):
+
+class GeneratorPvController(GeneratorController):
     """Controller for generator devices (e.g., PV panels).
 
     Generators are passive: they don't receive commands but their
@@ -48,7 +50,6 @@ class GeneratorPvController(DeviceController):
         generator = device_manager.get_device_service().get_generator_pv(self._id)
         pv_configuration = get_pv_configuration(generator)
         return api_services.forecast_manager.get_service(pv_configuration)
-
 
     def add_to_optimizer_context(self, context: "OptimizerContext", current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Add generator prognoses to the optimizer context."""

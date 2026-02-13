@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 from datetime import datetime
 
+from electricity_price_optimizer_py.units import WattHour
+
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
@@ -62,4 +64,16 @@ class DeviceController(ABC):
         1. Looks up the behavior for the device at the current time
         2. Instructs the device (via interactor) how to behave
         """
+        pass
+
+
+class GeneratorController(DeviceController):
+    """Controller for generator devices (e.g., PV panels).
+
+    Generators are passive: they don't receive commands but their
+    prognoses/current output is added to the optimizer context.
+    """
+
+    @abstractmethod
+    def get_prognoses(self, dm: "IDeviceManager", timestamps: list[datetime], end: datetime) -> list["WattHour"]:
         pass
