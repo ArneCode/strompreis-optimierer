@@ -25,6 +25,18 @@ def _collect_total_generation_kw(
     manager: IDeviceManager,
     timeline: list[datetime],
 ) -> list[float]:
+    """
+    Calculates the total sum of all generators based on the timeslots of 'timeline'.
+
+    Args:
+        manager: Device manager providing access to all configured devices.
+        timeline: the list of timeslots to calculate the total generation for.
+
+    Returns:
+        A list of the total generation in kw. Each element of the list corresponds with
+        the element in 'timeline' of the same index.
+
+    """
     step = (timeline[1] - timeline[0]) if len(timeline) > 1 else timedelta(hours=1)
     end = timeline[-1] + step
 
