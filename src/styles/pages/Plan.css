@@ -28,6 +28,47 @@
   padding-bottom: 0;
 }
 
+.plan-header-info {
+  display: flex;
+  align-items: center;
+}
+
+.plan-header-info button {
+  margin-right: 20px;
+  margin-bottom: 0;
+}
+
+.generate-plan-button {
+  background-color: rgb(33, 129, 255);
+  /*padding: 10px 15px;*/
+  padding: 0.6rem 1rem;
+  font-size: 15px;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.graph-title {
+  font-weight: 700;
+}
+
+.graph-y-axis {
+  color: rgb(122, 122, 122);
+}
+
+.generate-plan-button-running {
+  background-color: rgb(137, 188, 255);
+  /*padding: 10px 15px;*/
+  padding: 0.6rem 1rem;
+  font-size: 15px;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
 .data-popup-head {
   display: flex;
   justify-content: space-between;
@@ -158,7 +199,7 @@
   margin-right: 50px;
   */
   margin: 0 3rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0rem;
 }
 
 .plan-header p {
@@ -167,7 +208,7 @@
   margin-bottom: 10px;
   margin-top: 15px;
   */
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   margin-top: 1rem;
 }
 
@@ -185,7 +226,24 @@
   cursor: pointer;
 }
 
+.plan-refresh-button-running {
+  background-color: rgb(209, 112, 126);
+  padding: 0.6rem 1rem;
+  font-size: 15px;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+}
+
 .plan-refresh-button img {
+  width: 20px;
+  margin-left: 10px;
+}
+
+.plan-refresh-button-running img {
   width: 20px;
   margin-left: 10px;
 }

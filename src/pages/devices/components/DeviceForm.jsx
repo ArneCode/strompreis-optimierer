@@ -1,0 +1,171 @@
+/**
+ * DeviceForm - Form component for creating/editing household devices
+ * Renders type-specific fields based on device type selection.
+ * Supports Battery, Consumer, Generator, and PVGenerator types.
+ * @param {object} props
+ * @param {object} props.deviceForm - Current form field values
+ * @param {string} props.deviceForm.name - Device name
+ * @param {string} props.deviceForm.type - Device type (Battery|Consumer|Generator|PVGenerator)
+ * @param {Function} props.onChange - Callback(fieldName, value) for field changes
+ * @param {Function} props.onChange.fieldName - Name of field being changed
+ * @param {Function} props.onChange.value - New value for the field
+ * @param {Object} [props.errors={}] - Validation errors {fieldName: errorMessage}
+ * @param {boolean} [props.isEdit=false] - Edit mode (cannot change device type)
+ * @param {boolean} [props.disabled=false] - Disable all form inputs
+ * @returns {JSX.Element} Form container with type-specific fields
+ */
+import React, { useState } from 'react'
+import LocationPickerModal from "../../../components/geosearch/LocationPickerModal.jsx";
+import { translateDevice } from "../DevicesLogic.js";
+
+/**
+ * Helper component for consistent form field rendering with label and error.
+ * @param {object} props
+ * @param {string} props.label - Field label text
+ * @param {string} [props.error] - Validation error message (if any)
+ * @param {ReactNode} props.children - Input element(s)
+ * @param {string} [props.className=""] - Additional CSS class
+ * @returns {JSX.Element}
+ */
+const FormField = ({ label, error, children, className = "" }) => (
+    <div className={`input-group ${className}`}>
+        <div className="input-label">
+            {label}
+            {error && <div className="field-error">{error}</div>}
+        </div>
+        {children}
+    </div>
+);
+
+function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disabled = false }) {
+    const [isMapOpen, setIsMapOpen] = useState(false);
+
+    /**
+     * Receive a selected location and push values into the form via onChange.
+     * @param {object|null} location - {label, lat, lng}
+     */
+    const handleLocationConfirm = (location) => {
+        if (!location) return;
+        onChange({
+            target: {
+                name: 'location_data',
+                values: { location: location.label, lat: location.lat, lng: location.lng }
+            }
+        });
+        ['location', 'lat', 'lng'].forEach((key, i) => {
+            const vals = [location.label, location.lat, location.lng];
+            onChange({ target: { name: key, value: vals[i] } });
+        });
+        setIsMapOpen(false);
+    };
+
+    const handleFileUpload = (event) => {
+        onChange({ target: { name: "forecast", value: event.target.files[0] } });
+    };
+
+    return (
+        <>
+            {!isEdit ? (
+                <FormField label="Gerätetyp" error={errors.type}>
+                    <select name="type" value={deviceForm.type} onChange={onChange} disabled={disabled}>
+                        {["Generator", "PVGenerator", "Consumer", "Battery"].map(t => (
+                            <option key={t} value={t}>{translateDevice(t)}</option>
+                        ))}
+                    </select>
+                </FormField>
+            ) : (
+                <div className="device-type-readonly">
+                    <strong>Typ:</strong> {translateDevice(deviceForm.type)}
+                </div>
+            )}
+
+            <FormField label="Name" error={errors.name}>
+                <input
+                    name="name"
+                    value={deviceForm.name}
+                    onChange={onChange}
+                    disabled={disabled || (isEdit && deviceForm.type === "Consumer")}
+                    readOnly={isEdit && deviceForm.type === "Consumer"}
+                    className={`${errors.name ? "input-error" : ""} ${isEdit && deviceForm.type === "Consumer" ? "device-type-readonly" : ""}`}
+                />
+            </FormField>
+
+            {deviceForm.type === "Generator" && (
+                <FormField label="Prognose" error={errors.forecast} className="upload-section">
+                    <input type="file" accept=".csv" onChange={handleFileUpload} disabled={disabled} />
+                    {deviceForm.forecast && <p className="file-info">📄 {deviceForm.forecast.name}</p>}
+                </FormField>
+            )}
+
+            {deviceForm.type === "PVGenerator" && (
+                <>
+                    <FormField label="Nennleistung (kWp)" error={errors.ratedPower}>
+                        <input name="ratedPower" type="number" value={deviceForm.ratedPower} onChange={onChange} disabled={disabled} />
+                    </FormField>
+
+                    <FormField label="Neigungswinkel (°)" error={errors.angleOfInclination}>
+                        <input name="angleOfInclination" type="number" value={deviceForm.angleOfInclination} onChange={onChange} disabled={disabled} />
+                    </FormField>
+
+                    <FormField label="Ausrichtung">
+                        <select name="alignment" value={deviceForm.alignment} onChange={onChange} disabled={disabled}>
+                            {["Süd", "Südost", "Südwest", "Ost", "West", "Nordost", "Nordwest", "Nord"].map(dir => (
+                                <option key={dir} value={dir}>{dir}</option>
+                            ))}
+                        </select>
+                    </FormField>
+
+                    <FormField label="Standort" error={errors.location}>
+                        <button type="button" className="device-popup-inputs-button" onClick={() => setIsMapOpen(true)} disabled={disabled}>
+                            📍 {deviceForm.location || "Standort wählen"}
+                        </button>
+                    </FormField>
+                </>
+            )}
+
+            {deviceForm.type === "Consumer" && (
+                <FormField label="Flexibilität" error={errors.flexibility}>
+                    {!isEdit ? (
+                        <select name="flexibility" value={deviceForm.flexibility} onChange={onChange} disabled={disabled}>
+                            <option value="constant">durchlaufen</option>
+                            <option value="variable">flexibel</option>
+                        </select>
+                    ) : (
+                        <div className="device-type-readonly">
+                            {deviceForm.flexibility === "variable" ? "flexibel" : "durchlaufen"}
+                        </div>
+                    )}
+                </FormField>
+            )}
+
+            {deviceForm.type === "Battery" && (
+                <div className="battery-grid">
+                    <FormField label="Kapazität (kWh)" error={errors.capacity}>
+                        <input name="capacity" type="number" value={deviceForm.capacity} onChange={onChange} disabled={disabled} />
+                    </FormField>
+                    <FormField label="Ladezustand (kWh)" error={errors.currentCharge}>
+                        <input name="currentCharge" type="number" value={deviceForm.currentCharge} onChange={onChange} disabled={disabled} />
+                    </FormField>
+                    <FormField label="Max. Entladung (kW)" error={errors.maxDischarge}>
+                        <input name="maxDischarge" type="number" value={deviceForm.maxDischarge} onChange={onChange} disabled={disabled} />
+                    </FormField>
+                    <FormField label="Max. Ladung (kW)" error={errors.maxChargeRate}>
+                        <input name="maxChargeRate" type="number" value={deviceForm.maxChargeRate} onChange={onChange} disabled={disabled} />
+                    </FormField>
+                    <FormField label="Effizienz (%)" error={errors.efficiency}>
+                        <input name="efficiency" type="number" value={deviceForm.efficiency} onChange={onChange} disabled={disabled} />
+                    </FormField>
+                </div>
+            )}
+
+            {isMapOpen && (
+                <LocationPickerModal
+                    onSelect={handleLocationConfirm}
+                    onCancel={() => setIsMapOpen(false)}
+                />
+            )}
+        </>
+    );
+}
+
+export default DeviceForm;

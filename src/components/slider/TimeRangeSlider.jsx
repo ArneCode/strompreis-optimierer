@@ -1,3 +1,17 @@
+/**
+ * Created AI supported.
+ * TimeRangeSlider - Reusable dual-slider for selecting start and end times within 24h.
+ * Uses Material-UI Slider with minimum distance enforcement between handles.
+ * @param {object} props
+ * @param {string} props.startTime - Current start time in HH:MM format (e.g., "08:00")
+ * @param {string} props.endTime - Current end time in HH:MM format (e.g., "18:00")
+ * @param {Function} props.onChange - Callback(startTime, endTime) when slider changes
+ * @param {Function} props.timeToSlider - Convert HH:MM format to slider minute value
+ * @param {Function} props.sliderToTime - Convert slider minute value to HH:MM format
+ * @param {boolean} [props.hasError=false] - Apply error styling if true
+ * @param {string} props.currentTimeStr - Current time in HH:MM format for reference
+ * @returns {JSX.Element} Slider component
+ */
 import React, { useMemo } from 'react';
 import Slider from '@mui/material/Slider';
 

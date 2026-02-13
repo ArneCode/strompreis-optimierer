@@ -1,358 +1,342 @@
+/** Plan Page
+ * Displays the optimized schedule (Gantt) and related plan data (charts).
+ */
+import {useState, useEffect, useRef, useMemo} from 'react';
 import {Gantt, Willow} from '@svar-ui/react-gantt';
-import {downloadCSV, downloadPDF} from "./exportHelper.js";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import {useState, useEffect, useMemo, useRef} from 'react';
 import '@svar-ui/react-gantt/all.css'
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
+
+import apiService from "../../services/apiService.js";
+import {downloadCSV, downloadPDF} from "./exportHelper.js";
 import '../../styles/pages/Plan.css';
-import apiService from '../../services/apiService.js';
 
-
-
-function PlanPage() {
-  const [openDataWindow, setOpenDataWindow] = useState(false);
-  const [api, setApi] = useState(null);
-  const [selectedTask, setSelectedTask] = useState(null);
-  const batteriesRef = useRef([]);
-  const timelineRef = useRef([]);
-  const tasksRef = useRef([]);
-  const [popupType, setPopupType] = useState(null);
-  const variableActionsRef = useRef([]);
-  const [isOptimizing, setIsOptimizing] = useState(false);
-
-  const [tasks, setTasks] = useState ([]);
-  const [priceData, setPriceData] = useState([
-    { hour: '00:00', price: 22.4 },
-    { hour: '01:00', price: 21.9 },
-    { hour: '02:00', price: 21.5 },
-    { hour: '03:00', price: 21.2 },
-    { hour: '04:00', price: 21.0 },
-    { hour: '05:00', price: 21.6 },
-    { hour: '06:00', price: 23.1 },
-    { hour: '07:00', price: 25.4 },
-    { hour: '08:00', price: 26.8 },
-    { hour: '09:00', price: 26.1 },
-    { hour: '10:00', price: 25.0 },
-    { hour: '11:00', price: 24.3 },
-    { hour: '12:00', price: 23.9 },
-    { hour: '13:00', price: 23.5 },
-    { hour: '14:00', price: 23.8 },
-    { hour: '15:00', price: 24.6 },
-    { hour: '16:00', price: 25.9 },
-    { hour: '17:00', price: 27.4 },
-    { hour: '18:00', price: 28.6 },
-    { hour: '19:00', price: 29.1 },
-    { hour: '20:00', price: 28.3 },
-    { hour: '21:00', price: 26.9 },
-    { hour: '22:00', price: 25.1 },
-    { hour: '23:00', price: 23.6 },
-  ]);
-  const [pvData, setPvData] = useState([
-    { hour: '00:00', generation: 0 },
-    { hour: '01:00', generation: 0 },
-    { hour: '02:00', generation: 0 },
-    { hour: '03:00', generation: 0 },
-    { hour: '04:00', generation: 0 },
-    { hour: '05:00', generation: 0 },
-    { hour: '06:00', generation: 0.5 },
-    { hour: '07:00', generation: 1.2 },
-    { hour: '08:00', generation: 2.1 },
-    { hour: '09:00', generation: 3.0 },
-    { hour: '10:00', generation: 3.8 },
-    { hour: '11:00', generation: 4.2 },
-    { hour: '12:00', generation: 4.5 },
-    { hour: '13:00', generation: 4.4 },
-    { hour: '14:00', generation: 4.0 },
-    { hour: '15:00', generation: 3.5 },
-    { hour: '16:00', generation: 2.8 },
-    { hour: '17:00', generation: 2.0 },
-    { hour: '18:00', generation: 1.0 },
-    { hour: '19:00', generation: 0.3 },
-    { hour: '20:00', generation: 0 },
-    { hour: '21:00', generation: 0 },
-    { hour: '22:00', generation: 0 },
-    { hour: '23:00', generation: 0 },
-  ]);
-  const [timeline, setTimeline] = useState([]);
-  const [batteries, setBatteries] = useState([]);
-  const [variableActions, setVariableActions] = useState([]);
-  const [error, setError] = useState("");
-  
-  const { ganttStart, ganttEnd } = useMemo(() => {
-    if (tasks.length) {
-      const minMs = Math.min(...tasks.map(t => t.start.getTime()));
-      const maxMs = Math.max(...tasks.map(t => t.end.getTime()));
-      return {
-        ganttStart: new Date(minMs),
-        ganttEnd: new Date(maxMs)
-      };
-    }
-  
-    //Fallback
-    const fallbackStart = new Date("2026-01-01T00:00:00Z");
-    const fallbackEnd = new Date("2026-01-01T06:00:00Z");
-    return {
-      ganttStart: fallbackStart,
-      ganttEnd: fallbackEnd
-    }
-  }, [tasks]);
-  
-  const scales = [
+/** Gantt scale configuration (day + hour) */
+const SCALES = [
     { unit: "day", step: 1, format: "d" },
     { unit: "hour", step: 1, format: "h"}
-  ];
-  const priceTicks = Array.from({length: 12}, (_,i) => 20 + i * 1);
-  const generationTicks = [0, 1, 2, 3, 4, 5];
+];
 
-  
-  useEffect(() => {
-    tasksRef.current = tasks; 
-  }, [tasks]);
-  
-  useEffect(() => {
-    batteriesRef.current = batteries;
-  }, [batteries]);
-  
-  useEffect(() => {
-    timelineRef.current = timeline;
-  }, [timeline]);
+function PlanPage() {
+  const pollRef = useRef(null);
+  const tasksRef = useRef([]);
 
-  useEffect(() => {
-    variableActionsRef.current = variableActions;
-  }, [variableActions]);
-  
-  async function handleUpdate() {
-    setError("");
-    setIsOptimizing(true);
+  const [tasks, setTasks] = useState ([]);
+  const [planData, setPlanData] = useState({
+    timeline: [],
+    batteries: [],
+    variableActions: [],
+  });
+  const [status, setStatus] = useState({
+    currentlyRunning: false,
+    hasSchedule: false,
+  });
+  const [error, setError] = useState(null);
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  /** Map variable actions to their id for fast lookup of detail data */
+  const variableActionById = useMemo(() => {
+    const m = new Map();
+    for (const va of planData.variableActions ?? []) {
+      m.set(String(va.id), va);
+    }
+    return m;
+  }, [planData.variableActions]);
+  
+  /** Map batteries to their id for fast lookup of detail data */
+  const batteryById = useMemo(() => {
+    const m = new Map();
+    for (const b of planData.batteries ?? []) {
+      m.set(String(b.id), b);
+    }
+    return m;
+  }, [planData.batteries]);
+
+  /** Transform backend timeline/prices to chart-friendly format */
+  const priceDataFromBackend = (planData.timeline ?? []).map((iso, i) => {
+    const d = new Date(iso);
+
+    return {
+      hour: String(d.getHours()).padStart(2, "0") + ":00",
+      price: planData.pricesCtPerKwh?.[i] ?? null,
+    };
+  });
+  /** Transform backend timeline/generation to chart-friendly format */
+  const generatorDataFromBackend = (planData.timeline ?? []).map((iso, i) => {
+    const d = new Date(iso);
+    return {
+      hour: String(d.getHours()).padStart(2, "0") + ":00",
+      generation: planData.generationKw?.[i] ?? 0,
+    };
+  });
+
+  /** Open details modal for the clicked task */
+  const openTaskModal = (task) => {
+    setSelectedTask(task);
+    setModalOpen(true);
+  };
+  /** Close details modal and clear selection */
+  const closeTaskModal = () => {
+    setModalOpen(false);
+    setSelectedTask(null);
+  };
+  /** Trigger optimization in backend. Then load status and start polling until finished. */
+  const handleGeneratePlan = async () => {
+    setError(null);
     try {
-      await apiService.runOptimization();
+      await apiService.generatePlan();
+    } catch (e) {
+      // ignore
+    }
 
-      const timeoutMs = 20000;
-      const start = Date.now();
-
-      while (true) {
-        try {
-          await loadPlan(); 
-          break; 
-        } catch (e) {
-          if (Date.now() - start > timeoutMs) {
-            throw new Error("Optimierung dauert zu lange (Timeout).");
-          }
-          await new Promise(r => setTimeout(r, 500));
-        }
+    await loadStatus();
+    startPolling();
+  };
+  /** Refresh everything once (status + plan + plan-data).
+   *  If no schedule exists, clears displayed data.
+   */
+  const refreshAll = async () => {
+    setError(null);
+    try {
+      const s = await loadStatus();
+      if (s.hasSchedule) {
+        await loadPlan();
+        await loadPlanData();
+      } else {
+        setTasks([]);
+        setPlanData({ timeline: [], batteries: [], variableActions: [] });
       }
     } catch (e) {
-      setError(e.message || "Optimierung fehlgeschlagen");
-    } finally {
-      setIsOptimizing(false);
+      setError(e?.message ?? String(e));
     }
-  }
+  };
 
-  
-  function handleInit(apiInstance) {
-    setApi(apiInstance);
+  /**
+   * Load optimization status from backend (/plan/status).
+   * @returns Promise of {currentlyRunning: boolean, hasSchedule: boolean}
+   */
+  const loadStatus = async () => {
+    const s = await apiService.fetchPlanStatus();
+    setStatus(s);
     
-    apiInstance.on("select-task", (ev) => {
-      const sel = Array.isArray(ev) ? ev[0] : ev;
-      const selectedId = sel?.id;
-      if (selectedId == null) return;
-      
-      const task = tasksRef.current.find(t => String(t.id) === String(selectedId));
-      if (!task) return;
+    return s;
+  };
+  /** Load Gantt tasks from backend (/plan) and convert time strings to Date objects. */
+  const loadPlan = async () => {
+    const plan = await apiService.fetchPlan();
+    setTasks(toGanttTasks(plan.tasks));
+  };
+  /** Load additional plan data from backend (/plan/data). */
+  const loadPlanData = async () => {
+    const data = await apiService.fetchPlanData();
+    setPlanData(data);
+  };
 
-      setSelectedTask(task);
-      
-      const battery = batteriesRef.current.find(b => b.name === task.name);
-      if (battery) {
-        setPopupType("battery");
-        setOpenDataWindow(true);
-        return;
-      }
-      
-      const va = variableActionsRef.current.find(a => a.name == task.name);
-      if (va) {
-        setPopupType("variable");
-        setOpenDataWindow(true);
-        return;
-      }
+  /** Stops polling optimization status */
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  };
+  /** Poll optimization status every second. When finished + schedule available,
+   *  stop polling and refresh plan/plan-data.
+   */
+  const startPolling = () => {
+    if (pollRef.current) return;
 
-      setPopupType(null);
+    pollRef.current = setInterval(async () => {
+      try {
+        const s = await loadStatus();
+
+        if (!s.currentlyRunning && s.hasSchedule) {
+          stopPolling();
+          await loadPlan();
+          await loadPlanData();
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }, 1000);
+  };
+
+  /** Determine displayed time window for the Gantt chart. */
+  const ganttStart =
+    planData.timeline?.length > 0
+      ? new Date(planData.timeline[0])
+      : tasks.length > 0
+        ? new Date(Math.min(...tasks.map((t) => t.start.getTime())))
+        : new Date();
+     
+  const ganttEnd =
+    planData.timeline?.length > 0
+      ? new Date(planData.timeline[planData.timeline.length - 1])
+      : tasks.length > 0
+        ? new Date(Math.max(...tasks.map((t) => t.end.getTime()))) 
+        : new Date(Date.now() + 6 * 60 * 60 * 1000);
+
+
+  /**
+   * Build chart series for battery SOC (timeline aligned).
+   * @param {object} battery Battery object from backend.
+   * @returns {Array<{time: string, value: number | null}>}
+   */
+  const buildBatterySeries = (battery) => {
+    const t = planData.timeline ?? [];
+    const y = battery?.socWh ?? [];
+    return t.map((iso, i) => ({
+      time: iso,
+      value: y[i] ?? null,
+    }));
+  };
+  /**
+   * Build chart series for variable action power.
+   * @param {object} va Variable action object from backend.
+   * @returns {Array<{time: string, value: number}>}
+   */
+  const buildVariableActionSeries = (va) => {
+    if (!va) return [];
+    const start = new Date(va.start);
+    const stepMs = (va.stepMinutes ?? 30) * 60 * 1000;
+
+    return (va.powerW ?? []).map((p, i) => ({
+      time: new Date(start.getTime() + i * stepMs).toISOString(),
+      value: p,
+    }));
+  };
+  /**
+   * Hook into Gantt events. On task select, open modal with detail data.
+   * @param {object} api Svar Gantt API instance.
+   */
+  const initGantt = (api) => {
+    api.on("select-task", (task) => {
+      const clicked = tasksRef.current.find((t) => String(t.id) === String(task.id));
+      if (clicked) {
+        openTaskModal(clicked);
+      }
     });
-  }
-  
-  
-  
-  function mapTasks(rawTasks) {
-    return rawTasks.map((t) => ({
+  };
+  /**
+   * Convert backend tasks to Gantt tasks.
+   * @param {Array} apiTasks tasks from backend.
+   */
+  const toGanttTasks = (apiTasks) =>
+    (apiTasks ?? []).map((t) => ({
       ...t,
       start: new Date(t.start),
       end: new Date(t.end),
       type: "task",
       lazy: false,
     }));
-  }
-  
-  async function loadPlan() {
-    setError("");
-    try {
-      const plan = await apiService.fetchPlan();
-      setTasks(mapTasks(plan.tasks || []));
-      
-      const data = await apiService.fetchPlanData();
-      setTimeline(data.timeline || []);
-      setBatteries(data.batteries || []);
-      setVariableActions(data.variableActions || []);
-    } catch (e) {
-      setError(e.message || "Error loading the plan");
-    }
-  }
   
   useEffect(() => {
-    loadPlan();
+    tasksRef.current = tasks;
+  }, [tasks]);  
+  useEffect(() => {
+    refreshAll();
   }, []);
-  
-  
-  const selectedBattery = useMemo(() => {
-    if (!selectedTask) return null;
+  useEffect(() => {
+    return () => stopPolling();
+  }, []);
 
-    return batteries.find(b => b.name === selectedTask.name) || null;
-  }, [selectedTask, batteries]);
-
-  const batteryChartData = useMemo(() => {
-    if (!selectedBattery || !timeline.length) return [];
-
-    return timeline.map((t, i) => ({
-      time: t,
-      socWh: selectedBattery.socWh?.[i] ?? null,
-    }))
-  }, [selectedBattery, timeline]);
-
-  const socTicks = useMemo(() => {
-    if (!selectedBattery?.socWh?.length) return undefined;
-    
-    const vals = selectedBattery.socWh.filter((v) => typeof v === "number");
-    if (!vals.length) return undefined;
-
-    const min = Math.min(...vals);
-    const max = Math.max(...vals);
-    const steps = 5;
-    const step = (max - min) / steps || 1;
-
-    return Array.from({ length: steps + 1 }, (_, i) => Math.round(min + i * step)); 
-  }, [selectedBattery]);
-
-  const selectedVariableAction = useMemo(() => {
-    if (!selectedTask) return null;
-    return variableActions.find(a => a.name === selectedTask.name) || null;
-  }, [selectedTask, variableActions]);
-
-  const variableActionChartData = useMemo(() => {
-    if (!selectedVariableAction) return [];
-
-    const start = new Date(selectedVariableAction.start);
-    const stepMs = (selectedVariableAction.stepMinutes || 30) * 60 * 1000;
-
-    return (selectedVariableAction.powerW || []).map((p, idx) => ({
-      time: new Date(start.getTime() + idx * stepMs).toISOString(),
-      powerW: p,
-    }));
-  }, [selectedVariableAction]);
+  const selectedId = selectedTask ? String(selectedTask.id) : null;
+  const selectedBattery = selectedId ? batteryById.get(selectedId) : null;
+  const selectedVA = selectedId ? variableActionById.get(selectedId) : null;
 
   return (
     <>
-      {openDataWindow && 
+      {modalOpen && (
         <div className="data-popup">
           <div className="data-popup-window">
             <div className="data-popup-head">
-              <p>
-                {popupType === "battery" && selectedBattery && `Batterie: ${selectedBattery.name}`}
-                {popupType === "variable" && selectedVariableAction && `Verbrauch: ${selectedVariableAction.name}`}
-                {!popupType && "Daten"}
-              </p>
-              <button onClick={() => setOpenDataWindow(false)}>
-                ✕
-              </button>
+              <p className="graph-title">{selectedTask?.name}</p>
+              <button onClick={closeTaskModal}>✕</button>
             </div>
-            {popupType === "battery" && (
-              !selectedBattery ? (
-                <p>Keine Battery-Daten gefunden.</p>
-              ) : batteryChartData.length === 0 ? (
-                <p>Keine Timeline/SoC-Daten verfügbar.</p>
-              ) : (
-                <div style={{ width: "100%", height: 280 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={batteryChartData} margin={{ top: 10, right: 10, left: 0, bottom: 30 }}>
-                      <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-                      <Line dataKey="socWh" name="SoC (Wh)" strokeWidth={2} dot={false} />
-                      <XAxis
-                        dataKey="time"
-                        tickFormatter={(iso) =>
-                          new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
-                        }
-                        interval={3}
-                        label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-                      />
-                      <YAxis
-                        label={{ value: "SoC (Wh)", position: "insideLeft", angle: -90 }}
-                        domain={["auto", "auto"]}
-                        ticks={socTicks}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              )
-            )}
-            {popupType === "variable" && (
-              !selectedVariableAction ? (
-                <p>Keine VariableAction-Daten gefunden.</p>
-              ) : variableActionChartData.length === 0 ? (
-                <p>Keine Verbrauchsdaten verfügbar.</p>
-              ) : (
-                <div style={{ width: "100%", height: 280 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={variableActionChartData} margin={{ top: 10, right: 10, left: 0, bottom: 30 }}>
-                      <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-                      <Line dataKey="powerW" name="Leistung (W)" strokeWidth={2} dot={false} />
-                      <XAxis
-                        dataKey="time"
-                        tickFormatter={(iso) =>
-                          new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
-                        }
-                        interval={3}
-                        label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-                      />
-                      <YAxis
-                        label={{ value: "W", position: "insideLeft", angle: -90 }}
-                        domain={[0, "auto"]}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              )
+            {selectedBattery && (
+              <>
+                <p className="graph-y-axis">Battery SOC (Wh)</p>
+                <LineChart width={600} height={300} data={buildBatterySeries(selectedBattery)} margin={{ bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="1 1" />
+                  <XAxis
+                    dataKey="time"
+                    tickFormatter={(iso) => {
+                      const d = new Date(iso);
+                      return String(d.getHours()).padStart(2, "0") + ":00";
+                    }}
+                    label={{value: "Uhrzeit", position: "insideBottom", offset: -15}}
+                  />
+                  <YAxis />
+                  <Line dataKey="value" strokeWidth={2} dot={false} />
+                </LineChart>
+              </>
             )}
 
+            {!selectedBattery && selectedVA && (
+              <>
+                <p className="graph-y-axis">Power (W)</p>
+                <LineChart width={600} height={300} data={buildVariableActionSeries(selectedVA)} margin={{ bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="1 1" />
+                  <XAxis
+                    dataKey="time"
+                    tickFormatter={(iso) => {
+                      const d = new Date(iso);
+                      return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+                    }}
+                    label={{value: "Uhrzeit", position: "insideBottom", offset: -15}}
+                  />
+                  <YAxis />
+                  <Line dataKey="value" strokeWidth={2} dot={false} />
+                </LineChart>
+              </>
+            )}
 
-          </div>
-        </div>
-      }
+            {!selectedBattery && !selectedVA && (
+              <div>Für diese Aufgabe sind keine Detaildaten verfügbar.</div>
+            )}
+                </div>
+              </div>
+            )}
 
       <div className="plan-header">
         <p>Ablaufplan</p>
-        <button
-            className="plan-refresh-button"
-            onClick={handleUpdate}
-            disabled={isOptimizing}
-        >
-          {isOptimizing ? "Optimierung läuft..." : "Aktualisieren"}
-          <img src="./src/assets/images/refresh.png" />
-        </button>
+        
+        <div className="plan-header-info">
+          <button
+            className={status.currentlyRunning ? "generate-plan-button-running" : "generate-plan-button"}
+            onClick={handleGeneratePlan}
+            disabled={status.currentlyRunning}
+          >
+            {status.currentlyRunning ? "Plan wird generiert..." : "Plan generieren"}
+          </button>
+
+          <button
+              className={status.currentlyRunning ? "plan-refresh-button-running" : "plan-refresh-button"}
+              onClick={refreshAll}
+              disabled={status.currentlyRunning}
+          >
+            Aktualisieren
+            <img src="./src/assets/images/refresh.png" />
+          </button>
+
+          {!status.hasSchedule && !status.currentlyRunning && (
+            <div>Noch kein Plan vorhanden. Klicke "Plan generieren".</div>
+          )}
+
+          {status.currentlyRunning && (
+            <div>Optimierung läuft... bitte warten.</div>
+          )}
+
+          {error && <div className="error">{error}</div>}
+        </div>
+
       </div>
       <div className="plan">
         <div className="plan-chart">
           <Willow>
             <Gantt 
               tasks={tasks} 
-              scales={scales} 
+              scales={SCALES} 
               autoScale={false}
               start={ganttStart}
               end={ganttEnd}
@@ -360,7 +344,7 @@ function PlanPage() {
               cellWidth={45}
               durationUnit="hour"
               readonly={true}
-              init={handleInit}
+              init={initGantt}
               columns={[
                 {
                   id: "name",
@@ -373,11 +357,17 @@ function PlanPage() {
           </Willow>
         </div>
         <div className="plan-options">
-            <button className="plan-export-button" onClick={() => downloadCSV(tasks)}>
+            <button
+                className="plan-export-button"
+                onClick={() => downloadCSV(tasks, "ablaufplan.csv", setError)}
+            >
                 Exportieren als CSV
             </button>
 
-            <button className="plan-export-button" onClick={() => downloadPDF(tasks)}>
+            <button
+                className="plan-export-button"
+                onClick={() => downloadPDF(tasks, "ablaufplan.pdf", setError)}
+            >
                 Exportieren als PDF
             </button>
         </div>
@@ -389,7 +379,7 @@ function PlanPage() {
           <div className="diagram">
             <LineChart 
               style={{ width: '100%', aspectRatio: 1.5, maxWidth: 700}} 
-              data={priceData}
+              data={priceDataFromBackend}
               responsive
               margin={{bottom: 30}}
             >
@@ -401,7 +391,7 @@ function PlanPage() {
                   (min) => Math.floor(min * 0.95),
                   (max) => Math.ceil(max),
                 ]}
-                ticks={priceTicks}
+                /*ticks={priceTicks}*/
               />
             </LineChart>
           </div>
@@ -412,7 +402,7 @@ function PlanPage() {
           <div className="diagram">
             <LineChart 
               style={{ width: '100%', aspectRatio: 1.5, maxWidth: 700}} 
-              data={pvData}
+              data={generatorDataFromBackend}
               responsive
               margin={{bottom: 30}}
             >
@@ -424,7 +414,7 @@ function PlanPage() {
                   0,
                   (max) => Math.ceil(max * 1.1)
                 ]}
-                ticks={generationTicks}
+                /*ticks={generationTicks}*/
               />
             </LineChart>
           </div>

@@ -1,3 +1,6 @@
+/**
+ * Settings page for admin actions like resetting all devices.
+ */
 import { useState } from "react";
 import '../../styles/pages/Settings.css';
 import apiService from "../../services/apiService.js";
@@ -9,6 +12,10 @@ function SettingsPage() {
         setOpenReset(!openReset);
     }
 
+    /**
+     * Call backend to delete all devices and close the popup.
+     * Alerts on failure.
+     */
     async function handleReset() {
         try {
             await apiService.resetAllDevices();

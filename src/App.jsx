@@ -1,59 +1,39 @@
-import Sidebar from './components/sidebar/Sidebar.jsx';
-import DevicesPage from './pages/devices/./DevicesPage.jsx';
-import PlanPage from './pages/plan/./PlanPage.jsx';
-import SettingsPage from './pages/settings/SettingsPage.jsx';
-import ActionsPage from './pages/actions/ActionsPage.jsx';
-import './styles/App.css'
-import {useState} from "react";
-import { BrowserRouter, Routes, Route} from "react-router-dom";
+/**
+ * Main application component that sets up routing and global layout.
+ */
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import Sidebar from './components/sidebar/Sidebar';
+import DevicesPage from './pages/devices/DevicesPage';
+import PlanPage from './pages/plan/PlanPage';
+import SettingsPage from './pages/settings/SettingsPage';
+import ActionsPage from './pages/actions/ActionsPage';
+
+import './styles/App.css';
+
 
 function App() {
-  const [devices, setDevices] = useState([
-    {
-      name: "Waschmaschine",
-      type: "Consumer",
-      actions: [
-          { startTime: "10:00", endTime: "10:00" },
-          { startTime: "10:00", endTime: "12:00" },
-      ],
-    },
-    {
-      name: "E-auto",
-      type: "Consumer",
-      actions: [
-          { startTime: "10:00", endTime: "10:00" },
-      ],
-    },
-  ]);
+    return (
+        <BrowserRouter>
+            <div className="app">
+                <Sidebar />
 
+                <main className="main-section">
+                    <Routes>
+                        <Route path="/" element={<Navigate to="/geraete" replace />} />
 
-  return (
-    <BrowserRouter>
-        <div className="app">
-          <Sidebar />
-          <div className="main-section">
-              <Routes>
-                <Route 
-                  path="/geraete"
-                  element={<DevicesPage devices={devices} setDevices={setDevices} />}
-                />
-                <Route 
-                  path="/aktionen"
-                  element={<ActionsPage devices={devices} setDevices={setDevices} />}
-                />
-                <Route 
-                  path="/ablaufplan"
-                  element={<PlanPage />}
-                />
-                <Route 
-                  path="/einstellungen"
-                  element={<SettingsPage devices={devices} setDevices={setDevices} />}
-                />
-              </Routes>
-          </div>
-        </div>
-    </BrowserRouter>
-  )
+                        <Route path="/geraete" element={<DevicesPage />} />
+                        <Route path="/aktionen" element={<ActionsPage />} />
+                        <Route path="/ablaufplan" element={<PlanPage />} />
+                        <Route path="/einstellungen" element={<SettingsPage />} />
+
+                        <Route path="*" element={<Navigate to="/geraete" replace />} />
+                    </Routes>
+                </main>
+            </div>
+        </BrowserRouter>
+    );
 }
 
-export default App
+export default App;

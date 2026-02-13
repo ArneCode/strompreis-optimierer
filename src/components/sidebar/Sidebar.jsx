@@ -1,3 +1,7 @@
+/**
+ * Sidebar navigation component with collapsible state.
+ * Displays main navigation (Devices, Actions, Plan) and settings link.
+ */
 import React, { useState } from 'react';
 import { NavLink } from "react-router-dom";
 import { SIDEBAR_MAIN_ITEMS, SIDEBAR_SETTING_ITEMS } from './SidebarData.jsx';
@@ -6,7 +10,17 @@ import collapseIcon from '../../assets/icons/sidebar/sidebar-collapse.png';
 import uncollapseIcon from '../../assets/icons/sidebar/sidebar-uncollapse.png';
 import '../../styles/components/Sidebar.css';
 
-
+/**
+ * Navigation link component for sidebar entries.
+ * Displays icon and title (if not collapsed) with active state highlighting.
+ * @param {object} props
+ * @param {object} props.item - Navigation item configuration
+ * @param {string} props.item.title - Display title (e.g., "Geräte")
+ * @param {string} props.item.icon - Image path for icon
+ * @param {string} props.item.link - React Router path (e.g., "/geraete")
+ * @param {boolean} props.isCollapsed - Hide text labels when true
+ * @returns {JSX.Element} NavLink element
+ */
 const SidebarRow = ({ item, isCollapsed }) => (
     <NavLink
         to={item.link}
@@ -19,6 +33,9 @@ const SidebarRow = ({ item, isCollapsed }) => (
     </NavLink>
 );
 
+/**
+ * Collapsible navigation sidebar used across the app.
+ */
 function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
 
