@@ -59,3 +59,21 @@ class PriceService(PriceServicePort):
             raise RuntimeError("Duration of given interval is 0")
 
         return (total_weighted / total_duration) / 1000
+
+    def get_hourly_prices_24h(self, start: datetime) -> dict[datetime, float]:
+        start = start.astimezone(BERLIN)
+        blocks = self._cache.get_blocks()
+
+        current = _floor_hour(start)
+        end = current + timedelta(hours=23)
+        hourly_prices: dict[datetime, float] = {}
+        while current < end:
+            price: float = blocks[current].price
+
+            if price is None:
+                raise RuntimeError(f"No price for {current.isoformat()}.")
+
+            hourly_prices[current] = price / 1000
+            current += timedelta(hours=1)
+
+        return hourly_prices

@@ -7,10 +7,10 @@ from dataclasses import dataclass
 from typing import Optional, Dict
 from zoneinfo import ZoneInfo
 
-from device import GeneratorPV
 from external_api_services.forecast_service.forecast_client import ForecastClient
 
 BERLIN = ZoneInfo("Europe/Berlin")
+MINIMUM_FUTURE_HOURS = 24
 
 def floor_hour(dt: datetime) -> datetime:
     return dt.replace(minute=0, second=0, microsecond=0)
@@ -49,13 +49,6 @@ class ForecastBlock:
     end: datetime # exklusiv
     production: float
 
-@dataclass(frozen=True)
-class PVConfiguration:
-    latitude: float
-    longitude: float
-    declination: float
-    azimuth: float
-    peak_power: float
 
 class ForecastCache:
     """
@@ -86,11 +79,11 @@ class ForecastCache:
         if (time.time() - self._last_fetch_s) > self._refresh_interval_s:
             return True
         now = floor_hour(datetime.now(BERLIN))
-        needed_end = now + timedelta(hours = 24) #Vielleicht nur 24h anstelle von 48h hier
+        needed_end = now + timedelta(hours = MINIMUM_FUTURE_HOURS)
         return self._cached_until is None or self._cached_until < needed_end
 
     def refresh(self) -> None:
-        with self._lock: #Vielleicht unnötig
+        with self._lock:
             if not self._refresh_needed():
                 return
 
@@ -175,7 +168,6 @@ class ForecastCache:
             self._blocks = {dt: block.production for dt, block in blocks.items()}
             self._last_fetch_s = time.time()
             self._cached_until = cache_end
-            self._generator_has_changed = False
 
             #Debug
             print("Blocks:")

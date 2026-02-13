@@ -8,6 +8,7 @@ from device import *
 from electricity_price_optimizer_py import OptimizerContext, run_simulated_annealing
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
+from api.example_price_24h_request import router as example_price_24h_request_router
 
 from tasks import initialize_services_from_db, update_controllers, update_mock_interactors
 
@@ -69,6 +70,7 @@ app.include_router(example_router)
 app.include_router(devices_router)
 app.include_router(actions_router)
 app.include_router(plan_router)
+app.include_router(example_price_24h_request_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=5000)

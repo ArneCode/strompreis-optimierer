@@ -4,8 +4,8 @@ from typing import Optional, TYPE_CHECKING
 from electricity_price_optimizer_py.units import Watt, WattHour
 
 from external_api_services.api_services import api_services
-from external_api_services.forecast_service.forecast_cache import PVConfiguration
-from .base import DeviceController, GeneratorController
+from external_api_services.forecast_service.pv_configuration import get_pv_configuration
+from .base import DeviceController
 
 from electricity_price_optimizer_py import (
     Schedule,
@@ -16,18 +16,7 @@ from electricity_price_optimizer_py import (
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
-
-def get_pv_configuration(generator) -> PVConfiguration:
-    return PVConfiguration(
-        float(generator.latitude),
-        float(generator.longitude),
-        float(generator.declination),
-        float(generator.azimuth),
-        float(generator.peak_power.get_value())
-    )
-
-
-class GeneratorPvController(GeneratorController):
+class GeneratorPvController(DeviceController):
     """Controller for generator devices (e.g., PV panels).
 
     Generators are passive: they don't receive commands but their
@@ -61,9 +50,9 @@ class GeneratorPvController(GeneratorController):
         )
         context.add_generated_electricity_prognoses(prognoses)
 
-    def get_prognoses(self, device_manager: "IDeviceManager") -> dict[datetime, float]:
+    def get_prognoses(self, device_manager: "IDeviceManager", timestamps: list[datetime], end: datetime) -> list[WattHour]:
         service = self._forecast_service(device_manager)
-        return service.get_hourly_production(datetime.now())
+        return service.get_prognoses(datetime.now(), timestamps, end)
 
     def update_device(self, current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Optional periodic update; for generators we generally don't actuate devices."""
