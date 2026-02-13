@@ -16,7 +16,14 @@ def _ceil_hour(dt: datetime) -> datetime:
         return floored_hour + timedelta(hours = 1)
 
 class PriceService(PriceServicePort):
-    def __init__(self, cache : PriceCache = PriceCache()) -> None:
+    """
+    Provides access to cached electricity price data.
+    """
+    def __init__(self, cache : PriceCache) -> None:
+        """
+        Initializes the price service.
+        :param cache: the cache that caches price data
+        """
         self._cache = cache
 
     def get_average_price(self, start: datetime, end: datetime) -> float:
@@ -60,7 +67,12 @@ class PriceService(PriceServicePort):
 
         return (total_weighted / total_duration) / 1000
 
-    def get_hourly_prices_24h(self, start: datetime) -> dict[datetime, float]:
+    def get_hourly_prices_24h(self, start: datetime = datetime.now()) -> dict[datetime, float]:
+        """
+        Returns hourly prices for the next 24 hours from now or a given datetime.
+        :param start: the start date
+        :return: a dictionary mapping datetime to their hourly price.
+        """
         start = start.astimezone(BERLIN)
         blocks = self._cache.get_blocks()
 

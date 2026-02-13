@@ -5,8 +5,15 @@ from external_api_services.price_service.price_service import PriceService
 from external_api_services.price_service.price_cache import PriceCache
 
 class ApiServices:
+    """
+    Central access point for external API services.
+
+    Provides shared instances for:
+    - PV forecast
+    - Electricity prices
+    """
     def __init__(self) -> None:
-        self.forecast_client = ForecastClient() # Ein Client für ALLE pv anlagen
+        self.forecast_client = ForecastClient()
         self.forecast_manager = ForecastManager(
             client=self.forecast_client,
             refresh_interval_s=15 * 60,
@@ -14,8 +21,8 @@ class ApiServices:
             series_key="watt_hours_period",
         )
 
-        # zentrale price api sachen
         self.price_cache = PriceCache()
         self.price_service = PriceService(cache=self.price_cache)
 
+# Global service container
 api_services = ApiServices()

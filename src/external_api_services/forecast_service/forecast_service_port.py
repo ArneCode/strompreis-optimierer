@@ -3,7 +3,7 @@ from datetime import datetime
 
 class ForecastServicePort(ABC):
     """
-    Port for all price services.
+    Port for all forecast services.
     """
     @abstractmethod
     def get_total_production(self, start: datetime, end: datetime) -> float:

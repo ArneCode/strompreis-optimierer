@@ -16,26 +16,39 @@ FALLBACK_TWO_DAYS = 48
 
 @dataclass(frozen = True)
 class PriceBlock:
+    """
+    One hourly price interval.
+    """
     start : datetime
     end : datetime
-    price: float # by API: EUR/MWh
-
+    price: float
 
 def _floor_hour(dt: datetime) -> datetime:
+    """
+    Truncates a datetime to the beginning of its hour.
+    """
     floor_time = dt.replace(minute = 0, second = 0, microsecond = 0)
     return floor_time
 
 class PriceCache:
+    """
+    In-memory cache for hourly electricity prices.
+    Uses fallback logic for missing data.
+    """
     def __init__(
             self,
             client : AwattarClient | None = None,
             refresh_interval_s: int = 15 * 60,
             future_hours: int = 48
     ):
+        """
+        Initializes the PriceCache.
+        :param client: Client for fetching hourly electricity prices.
+        :param refresh_interval_s: minimum seconds between API fetches
+        :param future_hours: number of hours to cache starting from the current hour
+        """
         if future_hours < NEEDED_FUTURE_HOURS:
-            raise ValueError(
-                f"future_hours ({future_hours}) must be >= NEEDED_FUTURE_HOURS ({NEEDED_FUTURE_HOURS})"
-            )
+            raise ValueError(f"future_hours ({future_hours}) must be >= ({NEEDED_FUTURE_HOURS})")
         self._client = client or AwattarClient('DE')
         self.refresh_interval_s = refresh_interval_s
         self.future_hours = future_hours
@@ -69,9 +82,6 @@ class PriceCache:
             now_dt = _floor_hour(datetime.now(BERLIN))
             cache_start = now_dt
             cache_end = cache_start + timedelta(hours = self.future_hours)
-
-            #Debug
-            print("CACHE REFRESH")
 
             if now_dt.hour < API_UPDATE_HOUR:
                 begin_dt = now_dt.replace(hour = 0, minute = 0, second = 0, microsecond = 0)
