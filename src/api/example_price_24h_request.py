@@ -1,16 +1,15 @@
-"""Example FastAPI endpoint demonstrating device deletion.
-
-DELETE /devices/{device_id}:
-- Uses DeviceManager dependency
-- Returns 204 on success, 404 if not found
 """
-# Created with AI assistance
+Example FastAPI endpoint demonstrating a request for the electricity prices of the next 24 hours.
+
+GET/price/next-24h:
+- Returns 200 on success
+- Returns 400 on failure
+"""
+
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter
 from pydantic import BaseModel
-
-from api.dependencies import get_device_manager
 from external_api_services.api_services import api_services
 
 router = APIRouter(prefix="/api")

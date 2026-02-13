@@ -4,13 +4,21 @@ import requests
 FORECAST_SOLAR_BASE_URL = "https://api.forecast.solar"
 
 class ForecastApiError(RuntimeError):
+    """
+    Raised when a forecast API request fails.
+    """
     pass
 
 class ForecastClient:
     """
-    Client makes HTTP requests to forecast.solar.
+    HTTP client for accessing the forecast.solar API.
     """
     def __init__(self, base_url: str = FORECAST_SOLAR_BASE_URL, timeout_seconds: float = 10.0) -> None:
+        """
+        Initializes the ForecastClient.
+        :param base_url: Base URL of the forecast.solar API
+        :param timeout_seconds: Maximum time to wait for an API response
+        """
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout_seconds
         self._session = requests.Session()
@@ -25,6 +33,9 @@ class ForecastClient:
         kilowatt_peak: float,
         time_mode: str = "utc"
     ) -> dict:
+        """
+        Requests a production forecast for a PV Generator with the given configuration.
+        """
         url = f"{self._base_url}/estimate/{latitude}/{longitude}/{declination}/{azimuth}/{kilowatt_peak}"
         try:
             resp = self._session.get(url, params={"time": time_mode}, timeout=self._timeout)
