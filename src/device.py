@@ -196,11 +196,43 @@ class GeneratorRandom(Generator):
         self.seed = random.randint(0, int(65535))
 
     def get_generation(self, time: datetime) -> Watt:
-        """Get the generation at a specific time."""
-        ts = time.timestamp()
-        # pnoise1 returns a value between -1 and 1. We scale it to be between 0 and 1.
-        # The 'base' parameter is used as a seed for the noise function.
-        # The timestamp is divided by a factor to control the "frequency" of the noise.
-        noise: float = (pnoise1(ts / 3600.0, base=self.seed) + 1) / 2
-        generation = noise * self.peak_power
-        return generation
+        """Get the generation at a specific time with realistic variation."""
+        # 1. Use a relative offset to keep the numbers small for the C-extension
+        # We'll use seconds since Jan 1, 2025 as a reference point.
+        reference_ts = 1735689600
+        ts_offset = time.timestamp() - reference_ts
+
+        # 2. Define a 'wavelength' (how fast the noise changes).
+        # Let's say one full 'feature' of noise occurs every 12 hours.
+        wavelength = 12 * 3600.0
+        x = ts_offset / wavelength
+
+        # 3. Use 'octaves' to add detail.
+        # octaves=3 adds two smaller, faster waves on top of the main one.
+        # persistence=0.5 means each smaller wave is half as strong as the previous.
+        raw_noise: float = pnoise1(
+            x,
+            octaves=3,
+            persistence=0.5,
+            lacunarity=2.0,
+            base=self.seed % 1024  # Keep seed small to avoid Segfaults
+        )
+
+        # 4. Scale from [-1, 1] to [0, 1]
+        # We use a slight clip to ensure we don't get negative power
+        noise_scaled = max(0, (raw_noise + 1) / 2)
+
+        return noise_scaled * self.peak_power
+
+
+if __name__ == "__main__":
+    # Example usage
+    gen = GeneratorRandom(
+        seed=42, name="Test Random Generator", peak_power=Watt(1000))
+    # print generation for the next 24 hours in 1-hour intervals
+    now = datetime.now()
+    print(f"Generation for '{gen.name}' with seed {gen.seed}:")
+    for i in range(24):
+        current_time = now + timedelta(hours=i)
+        generation = gen.get_generation(current_time)
+        print(f"  {current_time.strftime('%Y-%m-%d %H:%M')}: {generation}")
