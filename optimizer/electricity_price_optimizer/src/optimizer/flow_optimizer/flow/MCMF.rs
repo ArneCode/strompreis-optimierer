@@ -1,3 +1,8 @@
+//! An implementation of the min-cost max-flow algorithm using SPFA (Shortest Path Faster Algorithm).
+//!
+//! This code is adapted for the project's needs and provides the core solver
+//! for the flow-based optimization.
+
 use std::{
     cmp::Reverse,
     collections::{BinaryHeap, VecDeque},
@@ -12,6 +17,8 @@ struct Edge {
     f: i64,
     cost: i64,
 }
+
+/// A solver for the min-cost max-flow problem on a directed graph.
 #[derive(Clone)]
 pub struct MinCostFlow {
     n: usize,
@@ -28,6 +35,7 @@ pub struct MinCostFlow {
 }
 
 impl MinCostFlow {
+    /// Creates a new `MinCostFlow` instance with a source and a sink node.
     pub fn new() -> Self {
         Self {
             n: 2,
@@ -44,24 +52,30 @@ impl MinCostFlow {
         }
     }
 
+    /// Returns the ID of the source node.
     pub fn get_source(&self) -> usize {
         self.s
     }
 
+    /// Returns the ID of the sink node.
     pub fn get_sink(&self) -> usize {
         self.t
     }
 
+    /// Returns the final flow value for a given edge ID after the algorithm has run.
     pub fn get_flow(&self, edge_id: usize) -> i64 {
         self.edges[edge_id ^ 1].f
     }
 
+    /// Adds a new node to the graph and returns its ID.
     pub fn new_node(&mut self) -> usize {
         self.adj.push(vec![]);
         self.n += 1;
         self.n - 1
     }
 
+    /// Adds a directed edge from node `u` to `v` with capacity `cap` and cost `cost`.
+    /// Returns the ID of the created edge.
     pub fn add_edge(&mut self, u: usize, v: usize, cap: i64, cost: i64) -> usize {
         self.adj[u].push(self.edges.len());
         self.edges.push(Edge {
@@ -77,6 +91,7 @@ impl MinCostFlow {
         });
         return self.edges.len() - 2;
     }
+
     fn spfa_with_cycle_cancel(&mut self) -> bool {
         let n = self.adj.len();
         self.pref = vec![usize::MAX; n];
@@ -258,6 +273,10 @@ impl MinCostFlow {
         }
     }
 
+    /// Runs the min-cost max-flow algorithm and returns the total cost and total flow.
+    ///
+    /// This initializes the potentials and repeatedly finds augmenting paths using SPFA
+    /// until no more paths can be found.
     pub fn mincostflow(&mut self) -> (i64, i64) {
         let n = self.adj.len();
         self.con = vec![0; n];
@@ -267,6 +286,7 @@ impl MinCostFlow {
         return self.update_flow();
     }
 
+    /// Updates the flow calculation. Can be called after modifying the graph.
     pub fn update_flow(&mut self) -> (i64, i64) {
         // println!("Updating flow...");
         let n = self.adj.len();

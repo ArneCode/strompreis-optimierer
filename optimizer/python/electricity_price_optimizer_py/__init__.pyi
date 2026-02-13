@@ -1,3 +1,5 @@
+# mostly generated with ai from the rust code
+# generics added manually
 from datetime import datetime, timedelta
 from typing import Callable, Optional, Tuple, Generic, TypeVar, List
 from . import units as units

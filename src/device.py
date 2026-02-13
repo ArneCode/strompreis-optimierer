@@ -197,6 +197,7 @@ class GeneratorRandom(Generator):
 
     def get_generation(self, time: datetime) -> Watt:
         """Get the generation at a specific time with realistic variation."""
+        # mit ki generiert
         # 1. Use a relative offset to keep the numbers small for the C-extension
         # We'll use seconds since Jan 1, 2025 as a reference point.
         reference_ts = 1735689600

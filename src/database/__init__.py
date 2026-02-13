@@ -1,3 +1,8 @@
+"""Database initialization and session management.
+
+This module sets up the SQLAlchemy engine and session factory for the application.
+It provides a centralized point for database configuration.
+"""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

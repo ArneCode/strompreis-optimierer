@@ -13,6 +13,10 @@ use crate::{
     time::Time,
 };
 
+/// Represents a state in the simulated annealing algorithm.
+///
+/// A `State` encapsulates a specific configuration of the smart home schedule,
+/// including the start times of constant actions and the resulting electricity flow.
 pub struct State {
     constant_actions: HashMap<u32, AssignedConstantAction>,
     constant_action_ids: Vec<u32>,
@@ -21,20 +25,14 @@ pub struct State {
 }
 
 impl State {
+    /// Creates a new `State` with a random initial configuration.
+    ///
+    /// The start times for constant actions are chosen randomly within their allowed bounds.
     pub fn new_random<R: rand::Rng>(context: OptimizerContext, rng: &mut R) -> Self {
         let constant_actions: HashMap<u32, AssignedConstantAction> = context
             .get_constant_actions()
             .iter()
             .map(|action| {
-                // let start_minutes = action.get_start_from().get_minutes();
-                // let end_minutes =
-                //     action.get_end_before().get_minutes() - action.duration.get_minutes();
-                // let middle_minutes = (start_minutes + end_minutes) / 2;
-                // AssignedConstantAction::new(action.clone(), Time::new(0, middle_minutes))
-                // (
-                //     action.get_id(),
-                //     AssignedConstantAction::new(action.clone(), action.get_start_from()),
-                // )
                 let start_bound = action.get_start_from().to_timestep();
                 let end_bound =
                     action.get_end_before().to_timestep() - action.duration.to_timestep();
@@ -70,28 +68,42 @@ impl State {
             smart_home_flow,
         }
     }
+    /// Adds a constant action to the state.
+    ///
+    /// This updates both the internal list of constant actions and the smart home flow.
     pub fn add_constant_action(&mut self, action: AssignedConstantAction) {
         self.smart_home_flow
             .add_constant_consumption(action.clone());
         self.constant_actions.insert(action.get_id(), action);
     }
+    /// Removes a constant action from the state by its ID.
+    ///
+    /// This updates both the internal list of constant actions and the smart home flow.
+    /// Returns the removed action if it existed.
     pub fn remove_constant_action(&mut self, action_id: u32) -> Option<AssignedConstantAction> {
         self.constant_actions.remove(&action_id);
         self.smart_home_flow.remove_constant_consumption(action_id)
     }
 
+    /// Gets a reference to a constant action by its ID.
+    ///
+    /// # Panics
+    /// Panics if the action ID is not found.
     pub fn get_constant_action(&self, action_id: u32) -> &AssignedConstantAction {
         self.constant_actions.get(&action_id).unwrap()
     }
 
+    /// Gets a reference to the vector of constant action IDs.
     pub fn get_constant_action_ids(&self) -> &Vec<u32> {
         &self.constant_action_ids
     }
 
+    /// Calculates and returns the total cost of the current state.
     pub fn get_cost(&mut self) -> i64 {
         self.smart_home_flow.get_cost()
     }
 
+    /// Generates a `Schedule` from the current state.
     pub fn get_schedule(&mut self) -> Schedule {
         let mut schedule = self.smart_home_flow.get_schedule();
         schedule.set_constant_actions(self.constant_actions.clone());

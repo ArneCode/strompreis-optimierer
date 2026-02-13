@@ -1,3 +1,21 @@
+//! # Flow-based Optimizer
+//!
+//! This module implements the core logic for optimizing electricity usage using a
+//! min-cost max-flow algorithm. It models the smart home's energy system as a flow
+//! network where nodes represent components (like batteries, actions, grid) at
+//! different points in time, and edges represent the flow of energy between them.
+//!
+//! The process involves:
+//! 1.  **Building the Network**: `SmartHomeFlowBuilder` constructs a `FlowWrapper` graph
+//!     based on the `OptimizerContext`. It creates nodes for each timestep and component
+//!     and adds edges with capacities (max power) and costs (electricity price).
+//! 2.  **Solving the Flow**: `SmartHomeFlow` takes the graph and solves the min-cost
+//!     max-flow problem to find the cheapest way to satisfy all energy demands.
+//! 3.  **Constructing the Schedule**: The `Blueprint` pattern is used to translate the
+//!     resulting low-level flows in the graph back into a high-level, understandable
+//!     `Schedule`. Each `...Blueprint` struct knows which edges in the graph correspond
+//!     to its component and how to interpret the flow through them.
+
 use std::collections::HashSet;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -17,6 +35,7 @@ use crate::time::{STEPS_PER_DAY, Time, TimeIterator};
 
 mod flow_optimizer;
 
+/// A blueprint for constructing an `AssignedBattery` from a solved flow network.
 pub struct BatteryBlueprint {
     battery: Arc<Battery>,
     relevant_edges: HashMap<Time, usize>,
@@ -44,11 +63,12 @@ impl Blueprint<FlowWrapper, AssignedBattery> for BatteryBlueprint {
         }
         edge_flows.insert(Time::from_timestep(0), self.battery.get_initial_level());
         let charge_level =
-            Prognoses::from_closure(|t| edge_flows.get(&t).expect("Missing edge flow").clone());
+            Prognoses::from_closure(|t| *edge_flows.get(&t).expect("Missing edge flow"));
         AssignedBattery::new(self.battery.clone(), charge_level)
     }
 }
 
+/// A blueprint for constructing an `AssignedVariableAction` from a solved flow network.
 pub struct VariableActionBlueprint {
     variable_action: Arc<VariableAction>,
     relevant_edges: HashMap<Time, usize>,
@@ -78,12 +98,13 @@ impl Blueprint<FlowWrapper, AssignedVariableAction> for VariableActionBlueprint 
         let end_time = self.variable_action.get_end();
         let consumption = (start_time..end_time)
             .iter_steps()
-            .map(|t| edge_flows.get(&t).expect("Missing edge flow").clone())
+            .map(|t| *edge_flows.get(&t).expect("Missing edge flow"))
             .collect();
         AssignedVariableAction::new(self.variable_action.clone(), consumption)
     }
 }
 
+/// A blueprint for constructing the network consumption `Prognoses` from a solved flow network.
 pub struct NetworkConsumptionBlueprint {
     relevant_edges: HashMap<Time, usize>,
 }
@@ -108,11 +129,12 @@ impl Blueprint<FlowWrapper, Prognoses<i64>> for NetworkConsumptionBlueprint {
                 .get(&t)
                 .expect("Missing relevant edge for network consumption");
             let flow = from.get_flow(*edge_id);
-            flow as i64
+            flow
         })
     }
 }
 
+/// A container for all blueprints needed to construct a complete `Schedule`.
 pub struct SmartHomeBlueprint {
     battery_blueprints: Vec<BatteryBlueprint>,
     variable_action_blueprints: Vec<VariableActionBlueprint>,
@@ -163,15 +185,29 @@ impl Blueprint<FlowWrapper, Schedule> for SmartHomeBlueprint {
     }
 }
 
+/// A generic trait for constructing a high-level object `T` from a low-level source `F`.
+///
+/// In this context, it's used to build `Schedule` components from the `FlowWrapper` result.
 pub trait Blueprint<F, T> {
+    /// Constructs the object `T` from the source `F`.
     fn construct(&self, from: &F) -> T;
 }
+
+/// A builder for creating a `SmartHomeFlow` instance.
+///
+/// This builder sets up the entire flow network graph, adding nodes and edges
+/// for generation, grid consumption, batteries, and variable actions based on
+/// the provided prognoses and device configurations.
 pub struct SmartHomeFlowBuilder {
     flow: FlowWrapper,
     blueprint: SmartHomeBlueprint,
     first_timestep_fraction: f32,
 }
 impl SmartHomeFlowBuilder {
+    /// Creates a new `SmartHomeFlowBuilder` and initializes the basic network structure.
+    ///
+    /// This includes the source, sink, generator, and network nodes, as well as the
+    /// main "wire" nodes for each timestep.
     pub fn new(
         generate_prog: &Prognoses<i64>,
         price_prog: &Prognoses<i64>,
@@ -198,12 +234,6 @@ impl SmartHomeFlowBuilder {
 
             // Edge from NETWORK to wire with cost based on price
             let price = *price_prog.get(Time::from_timestep(i)).unwrap_or(&0) as i64;
-            // flow.add_edge(
-            //     FlowNode::Network,
-            //     FlowNode::Wire(Time::from_timestep(i)),
-            //     i64::MAX,
-            //     price,
-            // );
             let edge_id = flow.add_edge(
                 FlowNode::Network,
                 FlowNode::Wire(Time::from_timestep(i)),
@@ -233,6 +263,7 @@ impl SmartHomeFlowBuilder {
         }
     }
 
+    /// Adds a battery to the flow network.
     pub fn add_battery(mut self, battery: &Arc<Battery>) -> Self {
         let id = battery.get_id();
         let mut battery_blueprint = BatteryBlueprint::new(battery.clone());
@@ -291,12 +322,14 @@ impl SmartHomeFlowBuilder {
         self
     }
 
+    /// Adds multiple batteries to the flow network.
     pub fn add_batteries(mut self, batteries: &Vec<Arc<Battery>>) -> Self {
         for battery in batteries {
             self = self.add_battery(battery);
         }
         self
     }
+    /// Adds a variable action to the flow network.
     pub fn add_action(mut self, action: &Arc<VariableAction>) -> Self {
         let mut variable_action_blueprint = VariableActionBlueprint::new(action.clone());
         for t in (action.get_start()..action.get_end()).iter_steps() {
@@ -327,17 +360,25 @@ impl SmartHomeFlowBuilder {
             .add_variable_action_blueprint(variable_action_blueprint);
         self
     }
+    /// Adds multiple variable actions to the flow network.
     pub fn add_actions(mut self, variable_actions: &Vec<Arc<VariableAction>>) -> Self {
         for action in variable_actions {
             self = self.add_action(action);
         }
         self
     }
+    /// Builds the final `SmartHomeFlow` instance.
     pub fn build(mut self) -> SmartHomeFlow {
         // self.flow.mincostflow();
         SmartHomeFlow::new(self.flow, self.blueprint)
     }
 }
+/// Represents the smart home as a solvable flow network.
+///
+/// This struct holds the flow graph, the blueprint for schedule construction,
+/// and the state of constant actions. It provides methods to add/remove
+/// constant consumption, calculate the optimal flow, and retrieve the total cost
+/// and the final `Schedule`.
 pub struct SmartHomeFlow {
     flow: StackProxy<FlowWrapper>,
 
@@ -350,6 +391,7 @@ pub struct SmartHomeFlow {
 
 // WARNING: wire has ID = 0, make sure no node uses this ID!
 impl SmartHomeFlow {
+    /// Creates a new `SmartHomeFlow`.
     pub fn new(flow: FlowWrapper, blueprint: SmartHomeBlueprint) -> Self {
         let mut flow: StackProxy<FlowWrapper> = StackProxy::new(flow);
         flow.push();
@@ -362,17 +404,25 @@ impl SmartHomeFlow {
     }
 
     // Both functions work in progress:
+    /// Adds a fixed consumption from a `ConstantAction` to the model.
+    /// This invalidates the current cost calculation.
     pub fn add_constant_consumption(&mut self, constant_action: AssignedConstantAction) {
         self.constant_actions
             .insert(constant_action.get_id(), constant_action);
         self.calc_result = None;
     }
 
+    /// Removes a fixed consumption by its action ID.
+    /// This invalidates the current cost calculation.
     pub fn remove_constant_consumption(&mut self, id: u32) -> Option<AssignedConstantAction> {
         self.calc_result = None;
         self.constant_actions.remove(&id)
     }
 
+    /// Internal function to solve the min-cost max-flow problem.
+    ///
+    /// It first applies the current constant action consumptions to the graph
+    /// before running the solver. The result is cached.
     fn calc_flow(&mut self) {
         let start = Instant::now();
         self.flow.pop();
@@ -392,21 +442,23 @@ impl SmartHomeFlow {
                 );
             }
         }
-        // println!("start flow");
         let (flow_cost, flow_value) = self.flow.mincostflow();
         self.calc_result = Some(flow_cost);
-        // println!("Total flow: {}, Total cost: {}", flow_value, flow_cost);
         let inner_duration = inner_start.elapsed();
-        // println!("Flow setup took: {:?}", inner_duration);
         let duration = start.elapsed();
-        // println!("Flow calculation took: {:?}", duration);
     }
+    /// Returns the total cost of the optimal schedule.
+    ///
+    /// If the cost has not been calculated yet, this triggers `calc_flow`.
     pub fn get_cost(&mut self) -> i64 {
         if self.calc_result.is_none() {
             self.calc_flow();
         }
         self.calc_result.unwrap()
     }
+    /// Returns the full, optimal `Schedule`.
+    ///
+    /// If the schedule has not been calculated yet, this triggers `calc_flow`.
     pub fn get_schedule(&mut self) -> Schedule {
         if self.calc_result.is_none() {
             self.calc_flow();

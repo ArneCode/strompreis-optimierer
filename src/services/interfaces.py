@@ -1,3 +1,10 @@
+"""Service layer interfaces.
+
+This module defines the abstract base classes (interfaces) for the various
+services used in the application, such as device, controller, interactor, and
+orchestrator services. These interfaces enforce a consistent API across different
+implementations (e.g., in-memory vs. database-backed).
+"""
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional
 

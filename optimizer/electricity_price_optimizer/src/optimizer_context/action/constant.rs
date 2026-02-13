@@ -1,3 +1,5 @@
+//! Defines constant actions, which have a fixed consumption and duration.
+
 use std::{hash::Hash, ops::Deref, rc::Rc, sync::Arc};
 
 use crate::time::Time;
