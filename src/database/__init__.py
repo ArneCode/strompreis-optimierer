@@ -10,7 +10,7 @@ from database.base import Base
 
 # 1. Create the engine
 # 'echo=True' will log all SQL statements to your terminal (great for debugging)
-engine = create_engine("sqlite:///database.db", echo=True)
+engine = create_engine("sqlite:///database.db", echo=False)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

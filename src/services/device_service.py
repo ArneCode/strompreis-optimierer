@@ -44,8 +44,11 @@ class SqlAlchemyDeviceService(IDeviceService):
     def get_all_batteries(self) -> "list[Battery]":
         return self.session.query(Battery).all()
 
-    def get_all_generators(self) -> "list[GeneratorPV]":
+    def get_all_generators_pv(self) -> "list[GeneratorPV]":
         return self.session.query(GeneratorPV).all()
+
+    def get_all_generators_random(self) -> "list[GeneratorRandom]":
+        return self.session.query(GeneratorRandom).all()
 
     def get_all_constant_action_devices(self) -> "list[ConstantActionDevice]":
         return self.session.query(ConstantActionDevice).all()

@@ -42,7 +42,7 @@ class GeneratorRandomController(GeneratorController):
         gen_end = generator.get_generation(end)
 
         # Average generation over the interval
-        avg_generation = (gen_start.value + gen_end.value) / 2
+        avg_generation = (gen_start.get_value() + gen_end.get_value()) / 2
 
         duration_seconds = (end - start).total_seconds()
         result = Watt(avg_generation) * timedelta(seconds=duration_seconds)
@@ -74,4 +74,6 @@ class GeneratorRandomController(GeneratorController):
                 generator, start_interval, end_interval)
             prognoses.append(generation)
 
+        print(
+            f"GeneratorRandomController {self._id} prognoses: {[g.get_value() for g in prognoses]} Wh")
         return prognoses
