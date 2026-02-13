@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 
 from external_api_services.forecast_service.forecast_cache import ForecastCache
 from external_api_services.forecast_service.forecast_service_port import ForecastServicePort
-from optimizer.python.electricity_price_optimizer_py.units import WattHour, Watt
+from electricity_price_optimizer_py.units import WattHour, Watt
 
 BERLIN = ZoneInfo("Europe/Berlin")
 

@@ -52,7 +52,8 @@ class GeneratorPvController(DeviceController):
 
     def get_prognoses(self, device_manager: "IDeviceManager", timestamps: list[datetime], end: datetime) -> list[WattHour]:
         service = self._forecast_service(device_manager)
-        return service.get_prognoses(datetime.now(), timestamps, end)
+        #return service.get_prognoses(datetime.now(), timestamps, end)
+        return service.get_prognoses(timestamps, end)
 
     def update_device(self, current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Optional periodic update; for generators we generally don't actuate devices."""

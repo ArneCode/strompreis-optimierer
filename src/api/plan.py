@@ -25,32 +25,39 @@ def _collect_total_generation_kw(
     manager: IDeviceManager,
     timeline: list[datetime],
 ) -> list[float]:
+    step = (timeline[1] - timeline[0]) if len(timeline) > 1 else timedelta(hours=1)
+    end = timeline[-1] + step
+
+    total_kw: list[float] = [0.0 for _ in timeline]
+
     controllers = manager.get_controller_service().get_all_controllers()
-    generator_controllers = [
-        c for c in controllers if isinstance(c, GeneratorController)
+
+    gen_controllers = [
+        c for c in controllers
+        if hasattr(c, "get_prognoses") and callable(getattr(c, "get_prognoses"))
     ]
 
-    if not generator_controllers:
-        return [0.0 for _ in timeline]
-    
     end = timeline[-1] + timedelta(hours=1)
-    total_kw: list[float] = []
-    
-    all_series = [
-        controller.get_prognoses(manager, timeline, end)
-        for controller in generator_controllers
-    ]
 
-    for i in range(len(timeline)):
-        total_wh_this_hour = 0.0
+    for ctrl in gen_controllers:
+        try:
+            prognoses = ctrl.get_prognoses(manager, timeline, end)
+        except Exception:
+            continue
 
-        for series in all_series:
-            if i < len(series):
-                total_wh_this_hour += WattHour.get_value(series[i])
+        if not prognoses:
+            continue
 
-        total_kw.append(total_wh_this_hour / 1000.0)
+        for i in range(min(len(prognoses), len(timeline))):
+            try:
+                wh = WattHour.get_value(prognoses[i])
+            except Exception:
+                continue
+
+            total_kw[i] += float(wh) / 1000.0
 
     return total_kw
+
 
 def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | None]:
     """
