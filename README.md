@@ -28,7 +28,7 @@ Vite wählt automatisch einen freien Port, falls 5173 belegt ist.
 Produktions-Build erzeugen:
 
 ```powershell
-npm run dev
+npm run build
 ```
 
 Kurzer Projektüberblick (Auszug)
