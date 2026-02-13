@@ -179,7 +179,7 @@ function PlanPage() {
 
   /**
    * Build chart series for battery SOC (timeline aligned).
-   * @param {*} battery Battery object from backend.
+   * @param {object} battery Battery object from backend.
    * @returns {Array<{time: string, value: number | null}>}
    */
   const buildBatterySeries = (battery) => {
@@ -192,7 +192,7 @@ function PlanPage() {
   };
   /**
    * Build chart series for variable action power.
-   * @param {*} va Variable action object from backend.
+   * @param {object} va Variable action object from backend.
    * @returns {Array<{time: string, value: number}>}
    */
   const buildVariableActionSeries = (va) => {
@@ -207,7 +207,7 @@ function PlanPage() {
   };
   /**
    * Hook into Gantt events. On task select, open modal with detail data.
-   * @param {*} api Svar Gantt API instance.
+   * @param {object} api Svar Gantt API instance.
    */
   const initGantt = (api) => {
     api.on("select-task", (task) => {
@@ -219,7 +219,7 @@ function PlanPage() {
   };
   /**
    * Convert backend tasks to Gantt tasks.
-   * @param {*} apiTasks tasks from backend.
+   * @param {Array} apiTasks tasks from backend.
    */
   const toGanttTasks = (apiTasks) =>
     (apiTasks ?? []).map((t) => ({
