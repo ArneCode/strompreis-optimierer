@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from external_api_services.api_services import api_services
+from external_api_services.forecast_service.forecast_cache import PVConfiguration
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -18,6 +19,36 @@ from electricity_price_optimizer_py import Schedule
 BERLIN = ZoneInfo("Europe/Berlin")
 
 router = APIRouter(prefix="/api", tags=["plan"])
+
+def _collect_total_generation_kw(
+    manager: IDeviceManager,
+    timeline: list[datetime]
+) -> list[float]:
+    generators = manager.get_device_service().get_all_generators()
+    total_kw: list[float] = []
+
+    services = []
+    for g in generators:
+        cfg = PVConfiguration(
+            latitude=float(g.latitude),
+            longitude=float(g.longitude),
+            declination=float(g.declination),
+            azimuth=float(g.azimuth),
+            peak_power=float(Watt.get_value(g.peak_power)) / 1000.0,
+        )
+        services.append(api_services.forecast_manager.get_service(cfg))
+
+    for t in timeline:
+        hour = t.astimezone(BERLIN).replace(minute=0, second=0, microsecond=0)
+        total_wh = 0.0
+
+        for svc in services:
+            blocks = svc._cache.get_blocks()
+            total_wh += float(blocks.get(hour, 0.0))
+
+        total_kw.append(total_wh / 1000.0)
+    
+    return total_kw
 
 def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | None]:
     blocks = api_services.price_cache.get_blocks()
@@ -95,6 +126,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     variable_actions = []
     timeline = _create_timeline(24)
 
+    generation_kw = _collect_total_generation_kw(manager, timeline)
     prices_ct_per_kwh = _collect_hourly_prices_ct_per_kwh(timeline)
 
     plan_start = timeline[0]
@@ -182,6 +214,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
         "batteries": batteries,
         "variableActions": variable_actions,
         "pricesCtPerKwh": prices_ct_per_kwh,
+        "generationKw": generation_kw,
     }
 
 @router.get("/plan")
@@ -209,6 +242,7 @@ def get_plan_data(
         "batteries": data["batteries"],
         "variableActions": data["variableActions"],
         "pricesCtPerKwh": data["pricesCtPerKwh"],
+        "generationKw": data["generationKw"]
     }
 
 @router.post("/plan/generate", status_code=status.HTTP_202_ACCEPTED)
