@@ -65,8 +65,6 @@ class ConstantActionDevice(Device):
         primary_key=True
     )
 
-    # 1. The "one" side of the relationship
-    # This will be a list of ConstantAction objects
     actions: Mapped[List["ConstantAction"]] = relationship(
         "ConstantAction",
         back_populates="device",
@@ -87,8 +85,6 @@ class ConstantAction(Base):
         ForeignKey("constant_action_device.id", ondelete="CASCADE")
     )
 
-    # 2. The "many" side of the relationship
-    # This points back to the single parent device
     device: Mapped["ConstantActionDevice"] = relationship(
         "ConstantActionDevice",
         back_populates="actions"
@@ -224,16 +220,3 @@ class GeneratorRandom(Generator):
         noise_scaled = max(0, (raw_noise + 1) / 2)
 
         return noise_scaled * self.peak_power
-
-
-if __name__ == "__main__":
-    # Example usage
-    gen = GeneratorRandom(
-        seed=42, name="Test Random Generator", peak_power=Watt(1000))
-    # print generation for the next 24 hours in 1-hour intervals
-    now = datetime.now()
-    print(f"Generation for '{gen.name}' with seed {gen.seed}:")
-    for i in range(24):
-        current_time = now + timedelta(hours=i)
-        generation = gen.get_generation(current_time)
-        print(f"  {current_time.strftime('%Y-%m-%d %H:%M')}: {generation}")

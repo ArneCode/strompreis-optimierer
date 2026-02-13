@@ -1,3 +1,8 @@
+//! Python-facing `Schedule` wrapper.
+//!
+//! Wraps the internal Rust `Schedule` and pairs it with a start timestamp so
+//! that all time-related accessors can return proper `DateTime<Utc>` values.
+
 use chrono::{DateTime, Utc};
 use electricity_price_optimizer::{
     optimizer_context::prognoses::Prognoses, schedule::Schedule as RustSchedule,
@@ -10,7 +15,11 @@ use crate::timeseries::TimeSeries;
 use crate::units::WattHour;
 
 #[pyclass]
-/// Final schedule returned by the optimizer. Use accessors to retrieve assigned actions and batteries.
+/// Final schedule returned by the optimizer.
+///
+/// Provides accessors to retrieve assigned actions, batteries, and the
+/// network consumption time series. All time values are relative to the
+/// `start_timestamp` used when the optimizer was invoked.
 pub struct Schedule {
     inner: RustSchedule,
     start_timestamp: DateTime<Utc>,
@@ -36,17 +45,21 @@ impl Schedule {
             .map(|battery| AssignedBattery::new(battery.clone(), self.start_timestamp))
     }
 
+    /// Get the network consumption over the full day as a `TimeSeries` of `WattHour` values.
+    ///
+    /// Internal milli-Wh integers are converted to `WattHour` for each timestep.
     fn get_network_consumption<'py>(&self, py: Python<'py>) -> PyResult<TimeSeries> {
         let prognoses = &self.inner.network_consumption;
+        // Convert from internal milli-Wh (i64) to the user-facing WattHour type
         let prognoses = Prognoses::from_closure(|t| {
             let value = prognoses.get(t).expect("internal error");
-            // convert from i64 in milli-Wh to WattHour
             WattHour::from_milli_wh(*value as f64)
         });
         TimeSeries::from_prognoses(py, &prognoses, self.start_timestamp)
     }
 }
 impl Schedule {
+    /// Construct a Python-facing `Schedule` from a Rust `Schedule` and a reference timestamp.
     pub fn new(inner: RustSchedule, start_timestamp: DateTime<Utc>) -> Self {
         Schedule {
             inner,
