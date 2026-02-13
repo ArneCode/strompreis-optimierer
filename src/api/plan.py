@@ -3,8 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 from external_api_services.api_services import api_services
-from controllers.base import GeneratorController
-#from external_api_services.forecast_service.forecast_cache import PVConfiguration
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
