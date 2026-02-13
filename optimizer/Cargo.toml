@@ -9,5 +9,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.27.2", features = ["extension-module", "chrono"] }
-electricity_price_optimizer = { path = "electricity_price_optimizer" }
+electricity_price_optimizer = { path = "electricity_price_optimizer_new" }
 chrono = "0.4.43"

@@ -26,3 +26,9 @@ pub mod algorithm;
 pub mod optimizer_context;
 pub mod schedule;
 pub mod time;
+
+// Re-export algorithm submodules at the crate root so downstream crates that
+// expect `electricity_price_optimizer::simulated_annealing` or
+// `electricity_price_optimizer::flow` continue to work.
+pub use algorithm::simulated_annealing;
+pub use algorithm::flow;
