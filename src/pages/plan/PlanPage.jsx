@@ -1,3 +1,6 @@
+/** Plan Page
+ * Displays the optimized schedule (Gantt) and related plan data (charts).
+ */
 import {useState, useEffect, useRef, useMemo} from 'react';
 import {Gantt, Willow} from '@svar-ui/react-gantt';
 import '@svar-ui/react-gantt/all.css'
@@ -7,6 +10,7 @@ import apiService from "../../services/apiService.js";
 import {downloadCSV, downloadPDF} from "./exportHelper.js";
 import '../../styles/pages/Plan.css';
 
+/** Gantt scale configuration (day + hour) */
 const SCALES = [
     { unit: "day", step: 1, format: "d" },
     { unit: "hour", step: 1, format: "h"}
@@ -31,6 +35,7 @@ function PlanPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
+  /** Map variable actions to their id for fast lookup of detail data */
   const variableActionById = useMemo(() => {
     const m = new Map();
     for (const va of planData.variableActions ?? []) {
@@ -39,6 +44,7 @@ function PlanPage() {
     return m;
   }, [planData.variableActions]);
   
+  /** Map batteries to their id for fast lookup of detail data */
   const batteryById = useMemo(() => {
     const m = new Map();
     for (const b of planData.batteries ?? []) {
@@ -47,6 +53,7 @@ function PlanPage() {
     return m;
   }, [planData.batteries]);
 
+  /** Transform backend timeline/prices to chart-friendly format */
   const priceDataFromBackend = (planData.timeline ?? []).map((iso, i) => {
     const d = new Date(iso);
 
@@ -55,6 +62,7 @@ function PlanPage() {
       price: planData.pricesCtPerKwh?.[i] ?? null,
     };
   });
+  /** Transform backend timeline/generation to chart-friendly format */
   const generatorDataFromBackend = (planData.timeline ?? []).map((iso, i) => {
     const d = new Date(iso);
     return {
@@ -63,14 +71,17 @@ function PlanPage() {
     };
   });
 
+  /** Open details modal for the clicked task */
   const openTaskModal = (task) => {
     setSelectedTask(task);
     setModalOpen(true);
   };
+  /** Close details modal and clear selection */
   const closeTaskModal = () => {
     setModalOpen(false);
     setSelectedTask(null);
   };
+  /** Trigger optimization in backend. Then load status and start polling until finished. */
   const handleGeneratePlan = async () => {
     setError(null);
     try {
@@ -82,6 +93,9 @@ function PlanPage() {
     await loadStatus();
     startPolling();
   };
+  /** Refresh everything once (status + plan + plan-data).
+   *  If no schedule exists, clears displayed data.
+   */
   const refreshAll = async () => {
     setError(null);
     try {
@@ -98,27 +112,37 @@ function PlanPage() {
     }
   };
 
+  /**
+   * Load optimization status from backend (/plan/status).
+   * @returns Promise of {currentlyRunning: boolean, hasSchedule: boolean}
+   */
   const loadStatus = async () => {
     const s = await apiService.fetchPlanStatus();
     setStatus(s);
     
     return s;
   };
+  /** Load Gantt tasks from backend (/plan) and convert time strings to Date objects. */
   const loadPlan = async () => {
     const plan = await apiService.fetchPlan();
     setTasks(toGanttTasks(plan.tasks));
   };
+  /** Load additional plan data from backend (/plan/data). */
   const loadPlanData = async () => {
     const data = await apiService.fetchPlanData();
     setPlanData(data);
   };
 
+  /** Stops polling optimization status */
   const stopPolling = () => {
     if (pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
     }
   };
+  /** Poll optimization status every second. When finished + schedule available,
+   *  stop polling and refresh plan/plan-data.
+   */
   const startPolling = () => {
     if (pollRef.current) return;
 
@@ -132,11 +156,12 @@ function PlanPage() {
           await loadPlanData();
         }
       } catch (e) {
-        // a
+        // Ignore
       }
     }, 1000);
   };
 
+  /** Determine displayed time window for the Gantt chart. */
   const ganttStart =
     planData.timeline?.length > 0
       ? new Date(planData.timeline[0])
@@ -152,7 +177,11 @@ function PlanPage() {
         : new Date(Date.now() + 6 * 60 * 60 * 1000);
 
 
-
+  /**
+   * Build chart series for battery SOC (timeline aligned).
+   * @param {*} battery Battery object from backend.
+   * @returns {Array<{time: string, value: number | null}>}
+   */
   const buildBatterySeries = (battery) => {
     const t = planData.timeline ?? [];
     const y = battery?.socWh ?? [];
@@ -161,6 +190,11 @@ function PlanPage() {
       value: y[i] ?? null,
     }));
   };
+  /**
+   * Build chart series for variable action power.
+   * @param {*} va Variable action object from backend.
+   * @returns {Array<{time: string, value: number}>}
+   */
   const buildVariableActionSeries = (va) => {
     if (!va) return [];
     const start = new Date(va.start);
@@ -171,6 +205,10 @@ function PlanPage() {
       value: p,
     }));
   };
+  /**
+   * Hook into Gantt events. On task select, open modal with detail data.
+   * @param {*} api Svar Gantt API instance.
+   */
   const initGantt = (api) => {
     api.on("select-task", (task) => {
       const clicked = tasksRef.current.find((t) => String(t.id) === String(task.id));
@@ -179,6 +217,10 @@ function PlanPage() {
       }
     });
   };
+  /**
+   * Convert backend tasks to Gantt tasks.
+   * @param {*} apiTasks tasks from backend.
+   */
   const toGanttTasks = (apiTasks) =>
     (apiTasks ?? []).map((t) => ({
       ...t,
