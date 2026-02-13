@@ -173,7 +173,8 @@ def create_device(
     elif isinstance(payload, RandomGeneratorIn):
         model = GeneratorRandom(
             name=payload.name,
-            peak_power=Watt(payload.peakPower)
+            peak_power=Watt(payload.peakPower),
+            seed=None  # will be set in the constructor to a random seed if None
         )
         manager.add_generator_random(model)
     else:

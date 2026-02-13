@@ -189,11 +189,11 @@ class GeneratorRandom(Generator):
     def __init__(self, seed: Optional[int], **kwargs):
         super().__init__(**kwargs)
 
-        self.seed = seed if seed is not None else random.randint(0, int(1e9))
+        self.seed = seed if seed is not None else random.randint(0, int(65535))
 
     def new_random_seed(self):
         """Generate a new random seed for this generator."""
-        self.seed = random.randint(0, int(1e9))
+        self.seed = random.randint(0, int(65535))
 
     def get_generation(self, time: datetime) -> Watt:
         """Get the generation at a specific time."""
