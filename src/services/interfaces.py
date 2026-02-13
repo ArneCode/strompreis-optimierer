@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional
 
-from device import Generator, GeneratorPV
+from device import GeneratorPV, GeneratorPV
 if TYPE_CHECKING:
     from electricity_price_optimizer_py import Schedule
     from controllers.base import DeviceController
@@ -181,6 +181,11 @@ class IDeviceServiceReader(ABC):
         ...
 
     @abstractmethod
+    def get_generator_random(self, device_id: "int") -> "GeneratorPV | None":
+        """Retrieve random generator details by ID."""
+        ...
+
+    @abstractmethod
     def get_constant_action_device(self, device_id: "int") -> "ConstantActionDevice | None":
         """Retrieve constant action device details by ID."""
         ...
@@ -201,7 +206,7 @@ class IDeviceServiceReader(ABC):
         ...
 
     @abstractmethod
-    def get_all_generators(self) -> "list[Generator]":
+    def get_all_generators(self) -> "list[GeneratorPV]":
         """Retrieve all generators."""
         ...
 

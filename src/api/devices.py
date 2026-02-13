@@ -9,13 +9,13 @@ from device_manager import IDeviceManager
 from device import (
     Device,
     ConstantActionDevice,
+    GeneratorRandom,
     VariableActionDevice,
     GeneratorPV,
     Battery,
 )
 
 router = APIRouter(prefix="/api", tags=["devices"])
-
 
 
 class DeviceBaseIn(BaseModel):
@@ -47,7 +47,14 @@ class PVGeneratorIn(DeviceBaseIn):
     declination: float
     azimuth: float
 
-DevicePayload = Union[ConsumerIn, BatteryIn, PVGeneratorIn]
+
+class RandomGeneratorIn(DeviceBaseIn):
+    type: Literal["RandomGenerator"]
+    peakPower: float
+
+
+DevicePayload = Union[ConsumerIn, BatteryIn, PVGeneratorIn, RandomGeneratorIn]
+
 
 def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
     base: dict[str, Any] = {
@@ -99,6 +106,14 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
         })
         return base
 
+    if isinstance(d, GeneratorRandom):
+        base.update({
+            "type": "RandomGenerator",
+            "peakPower": Watt.get_value(d.peak_power),
+            "seed": d.seed
+        })
+        return base
+
     if isinstance(d, Battery):
         base.update({
             "type": "Battery",
@@ -113,7 +128,6 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
     return base
 
 
-
 @router.get("/devices")
 def get_devices(manager: IDeviceManager = Depends(get_device_manager)) -> list[dict[str, Any]]:
     devices = manager.get_device_service().get_all_devices()
@@ -124,7 +138,6 @@ def get_devices(manager: IDeviceManager = Depends(get_device_manager)) -> list[d
 def create_device(
         payload: DevicePayload,
         manager: IDeviceManager = Depends(get_device_manager)) -> dict[str, Any]:
-
 
     if isinstance(payload, ConsumerIn):
         if payload.flexibility == "variable":
@@ -145,7 +158,6 @@ def create_device(
         )
         manager.add_battery(model)
 
-
     elif isinstance(payload, PVGeneratorIn):
         model = GeneratorPV(
             name=payload.name,
@@ -156,12 +168,34 @@ def create_device(
             azimuth=payload.azimuth,
             peak_power=Watt(payload.peakPower)
         )
-        manager.add_generator(model)
+        manager.add_generator_pv(model)
 
+    elif isinstance(payload, RandomGeneratorIn):
+        model = GeneratorRandom(
+            name=payload.name,
+            peak_power=Watt(payload.peakPower)
+        )
+        manager.add_generator_random(model)
     else:
         raise HTTPException(status_code=400, detail="Ungültiger Gerätetyp")
 
     return _device_to_frontend_dict(model)
+
+
+@router.post("/devices/{device_id}/new_seed", status_code=status.HTTP_200_OK)
+def new_random_seed(device_id: int, manager: IDeviceManager = Depends(get_device_manager)) -> dict[str, Any]:
+    svc = manager.get_device_service()
+    device = svc.get_device(device_id)
+    if device is None:
+        raise HTTPException(status_code=404, detail="Nicht gefunden")
+
+    if not isinstance(device, GeneratorRandom):
+        raise HTTPException(
+            status_code=400, detail="Gerät ist kein Zufallsgenerator")
+
+    device.new_random_seed()
+
+    return _device_to_frontend_dict(device)
 
 
 @router.delete("/devices/{device_id}")

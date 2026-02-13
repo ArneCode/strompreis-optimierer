@@ -6,11 +6,13 @@ All operations occur within the provided Unit of Work context.
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from controllers.generator_random_controller import GeneratorRandomController
+from device import GeneratorRandom
 from interactors.mock import MockConstantActionInteractor, MockBatteryInteractor, MockGeneratorInteractor, MockVariableActionInteractor
 from controllers import ConstantActionController, VariableActionController, BatteryController, GeneratorPvController
 
 if TYPE_CHECKING:
-    from device import Battery, VariableActionDevice, Generator, ConstantActionDevice
+    from device import Battery, VariableActionDevice, GeneratorPV, ConstantActionDevice
     from services.interfaces import IControllerServiceReader, IDeviceServiceReader, IInteractorServiceReader
     from uow import IUnitOfWork
 
@@ -24,8 +26,13 @@ class IDeviceManager(ABC):
         ...
 
     @abstractmethod
-    def add_generator(self, device: "Generator") -> "int":
+    def add_generator_pv(self, device: "GeneratorPV") -> "int":
         """Add a new generator device and return its ID."""
+        ...
+
+    @abstractmethod
+    def add_generator_random(self, device: "GeneratorRandom") -> "int":
+        """Add a new random generator device and return its ID."""
         ...
 
     def add_constant_action_device(self, device: "ConstantActionDevice") -> "int":
@@ -71,13 +78,20 @@ class DeviceManager(IDeviceManager):
             BatteryController(device.id))
         return id
 
-    def add_generator(self, device: "Generator") -> "int":
+    def add_generator_pv(self, device: "GeneratorPV") -> "int":
         id = self._uow.device_service.add_device(device)
         self._uow.interactor_service.add_generator_interactor(
             MockGeneratorInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorPvController(device.id))
         return id
+
+    def add_generator_random(self, device: "GeneratorRandom") -> "int":
+        id = self._uow.device_service.add_device(device)
+        self._uow.interactor_service.add_generator_interactor(
+            MockGeneratorInteractor(device.id))
+        self._uow.controller_service.add_generator_controller(
+            GeneratorRandomController(device.id))
 
     def add_constant_action_device(self, device: "ConstantActionDevice") -> "int":
         id = self._uow.device_service.add_device(device)

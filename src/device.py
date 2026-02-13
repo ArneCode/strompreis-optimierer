@@ -9,12 +9,12 @@ Includes:
 from datetime import datetime, timedelta
 from sqlalchemy import DateTime, ForeignKey, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
+from typing import List, Optional
 from electricity_price_optimizer_py.units import WattHour, Watt, Euro, EuroPerWh
 from sqlalchemy import Enum, ForeignKey, String, Integer, Float
-from sqlalchemy.orm import Mapped, mapped_column, declared_attr
 from database.base import Base
 import enum
+import random
 
 from database.mapper import TimezoneAwareDateMapper, WattHourMapper, WattMapper, EuroMapper, EuroPerWhMapper
 
@@ -25,6 +25,7 @@ class DeviceType(enum.Enum):
     CONSTANT_ACTION_DEVICE = "CONSTANT_ACTION_DEVICE"
     VARIABLE_ACTION_DEVICE = "VARIABLE_ACTION_DEVICE"
     GENERATOR_PV = "GENERATOR_PV"
+    GENERATOR_RANDOM = "GENERATOR_RANDOM"
 
 
 class Device(Base):
@@ -181,5 +182,14 @@ class GeneratorRandom(Generator):
     peak_power: Mapped[Watt] = mapped_column(WattMapper, nullable=False)
 
     __mapper_args__ = {
-        "polymorphic_identity": DeviceType.GENERATOR_PV,
+        "polymorphic_identity": DeviceType.GENERATOR_RANDOM,
     }
+
+    def __init__(self, seed: Optional[int], **kwargs):
+        super().__init__(**kwargs)
+
+        self.seed = seed if seed is not None else random.randint(0, int(1e9))
+
+    def new_random_seed(self):
+        """Generate a new random seed for this generator."""
+        self.seed = random.randint(0, int(1e9))
