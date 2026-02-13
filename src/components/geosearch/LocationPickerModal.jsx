@@ -1,7 +1,14 @@
 /**
- * Modal to pick a location on a Leaflet map. Uses search + map clicks.
- * Returns a selected location object via onSelect.
- * AI supported.
+ * Modal dialog to pick geographic location on Leaflet map
+ * Supports both search (via OpenStreetMap Nominatim) and direct map click interactions.
+ * Returns selected location via callback with {lat, lng, label} structure.
+ * @param {object} props
+ * @param {Function} props.onSelect - Callback(location) when location confirmed
+ * @param {number} props.onSelect.location.lat - Selected latitude (-90 to 90)
+ * @param {number} props.onSelect.location.lng - Selected longitude (-180 to 180)
+ * @param {string} props.onSelect.location.label - Address label from Nominatim or user-set
+ * @param {Function} props.onCancel - Callback() when modal cancelled
+ * @returns {JSX.Element} Modal overlay with map and controls
  */
 import React from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';

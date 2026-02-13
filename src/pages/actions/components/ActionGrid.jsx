@@ -2,8 +2,15 @@ import Action from "./Action.jsx";
 import { extractTimeFromISO } from "../Actionslogic.js";
 
 /**
- * Grid that renders action cards for all devices.
- * Calls onEdit(deviceIndex, actionIndex) when a card is clicked.
+ * Grid layout for action cards - displays all actions from all devices.
+ * Each card is clickable to edit the action.
+ * @param {object} props
+ * @param {Array} props.devices - Array of device objects with actions
+ * @param {number} props.devices[].id - Device ID
+ * @param {string} props.devices[].name - Device name for card display
+ * @param {Array} props.devices[].actions - Array of action objects
+ * @param {Function} props.onEdit - Callback(deviceIndex, actionIndex) when card clicked
+ * @returns {JSX.Element} Grid container with action cards
  */
 function ActionGrid({ devices, onEdit }) {
     return (

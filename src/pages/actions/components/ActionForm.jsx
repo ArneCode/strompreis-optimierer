@@ -2,7 +2,12 @@ import React from 'react';
 import TimeRangeSlider from "../../../components/slider/TimeRangeSlider.jsx";
 
 /**
- * Helper component for consistent label and error rendering
+ * Helper component for consistent form field rendering with label and error.
+ * @param {object} props
+ * @param {string} props.label - Field label text
+ * @param {string} [props.error] - Validation error message
+ * @param {ReactNode} props.children - Input element
+ * @returns {JSX.Element}
  */
 const FormField = ({ label, error, children }) => (
     <div className="input-group">
@@ -15,8 +20,27 @@ const FormField = ({ label, error, children }) => (
 );
 
 /**
- * ActionForm
- * Renders a form for creating or editing an action. Supports time slider and dynamic fields.
+ * ActionForm - Form for creating/editing device actions with time range selector
+ * Supports both constant and variable flexibility actions with dynamic field rendering.
+ * @param {object} props
+ * @param {object} props.actionForm - Current form values
+ * @param {string} props.actionForm.deviceId - Selected device ID
+ * @param {string} props.actionForm.startTime - Start time in HH:MM format
+ * @param {string} props.actionForm.endTime - End time in HH:MM format
+ * @param {string} props.actionForm.duration - Duration in minutes (constant flexibility only)
+ * @param {string} props.actionForm.consumption - Power consumption in W
+ * @param {string} props.actionForm.totalConsumption - Total energy in Wh (variable only)
+ * @param {Function} props.onChange - Callback(fieldName, value) for field changes
+ * @param {Array} [props.devices=[]] - Available devices to select from
+ * @param {boolean} [props.isEdit=false] - Edit mode (cannot change device)
+ * @param {Object} [props.errors={}] - Validation errors {fieldName: errorMessage}
+ * @param {boolean} [props.disabled=false] - Disable all inputs
+ * @param {Function} props.sliderToTime - Convert slider value to HH:MM string
+ * @param {Function} props.timeToSlider - Convert HH:MM string to slider value
+ * @param {string} [props.startLabel] - Label for start time field
+ * @param {string} [props.endLabel] - Label for end time field
+ * @param {string} [props.currentTimeStr] - Current time in HH:MM format
+ * @returns {JSX.Element} Form container
  */
 function ActionForm({
                         actionForm,

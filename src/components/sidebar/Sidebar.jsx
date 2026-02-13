@@ -11,8 +11,15 @@ import uncollapseIcon from '../../assets/icons/sidebar/sidebar-uncollapse.png';
 import '../../styles/components/Sidebar.css';
 
 /**
- * Small presentational component for a sidebar entry.
- * @param {{item: object, isCollapsed: boolean}} props
+ * Navigation link component for sidebar entries.
+ * Displays icon and title (if not collapsed) with active state highlighting.
+ * @param {object} props
+ * @param {object} props.item - Navigation item configuration
+ * @param {string} props.item.title - Display title (e.g., "Geräte")
+ * @param {string} props.item.icon - Image path for icon
+ * @param {string} props.item.link - React Router path (e.g., "/geraete")
+ * @param {boolean} props.isCollapsed - Hide text labels when true
+ * @returns {JSX.Element} NavLink element
  */
 const SidebarRow = ({ item, isCollapsed }) => (
     <NavLink

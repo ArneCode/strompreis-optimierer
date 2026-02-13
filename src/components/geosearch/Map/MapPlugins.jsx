@@ -3,8 +3,11 @@ import { useMap, useMapEvents } from 'react-leaflet';
 import { OpenStreetMapProvider, GeoSearchControl } from 'leaflet-geosearch';
 
 /**
- * Add a geosearch control to the map that calls onLocationSelected(lat, lng, label).
- * @param {{onLocationSelected:function}} props
+ * Leaflet map search control using OpenStreetMap Nominatim API.
+ * Adds a search bar to the map that triggers location selection on search results.
+ * @param {object} props
+ * @param {Function} props.onLocationSelected - Callback(lat, lng, label) when location found
+ * @returns {null} Hook component, renders no DOM elements
  */
 export function SearchControl({ onLocationSelected }) {
     const map = useMap();
@@ -41,7 +44,11 @@ export function SearchControl({ onLocationSelected }) {
 }
 
 /**
- * Attach click handler to the map and propagate coordinates via onLocationSelected(lat, lng).
+ * Attach click event handler to map for location selection.
+ * Propagates clicked coordinates via callback with map click coordinates.
+ * @param {object} props
+ * @param {Function} props.onLocationSelected - Callback(lat, lng) for map clicks
+ * @returns {null} Hook component, renders no DOM elements
  */
 export function MapEvents({ onLocationSelected }) {
     useMapEvents({

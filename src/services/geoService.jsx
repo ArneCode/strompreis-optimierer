@@ -1,12 +1,16 @@
 /**
- * Lightweight geocoding service using OpenStreetMap's.
+ * Lightweight geocoding service using OpenStreetMap's Nominatim API.
  */
 export const geoService = {
     /**
-     * Reverse geocode coordinates to an address object.
-     * @param {number} lat - Latitude
-     * @param {number} lng - Longitude
-     * @returns {Promise<object>} Nominatim response as JSON
+     * Reverse geocode coordinates to an address using Nominatim.
+     * @param {number} lat - Latitude (-90 to 90)
+     * @param {number} lng - Longitude (-180 to 180)
+     * @returns {Promise<object>} Nominatim response with display_name and address components
+     * @throws {Error} If HTTP response is not ok (network error, API unavailable)
+     * @example
+     * const result = await geoService.getAddressFromCoords(52.52, 13.40);
+     * console.log(result.display_name); // "Berlin, Germany"
      */
     async getAddressFromCoords(lat, lng) {
         const response = await fetch(

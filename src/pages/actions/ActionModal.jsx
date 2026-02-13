@@ -1,5 +1,22 @@
 /**
- * Modal wrapper for creating or editing actions. Passes form props to `ActionForm`.
+ * Modal dialog for creating or editing device actions (scheduled tasks).
+ * Displays ActionForm with time range slider and validation.
+ * @param {object} props
+ * @param {boolean} props.isOpen - Whether modal is visible
+ * @param {boolean} props.isEdit - Edit mode (true) vs create mode (false)
+ * @param {Function} props.onClose - Callback when modal closes
+ * @param {Function} props.onSave - Callback(actionData) when save button clicked
+ * @param {Function} props.onDelete - Callback() when delete button clicked (edit mode only)
+ * @param {string} [props.errorMessage] - Error text to display
+ * @param {boolean} [props.isLoading=false] - True during save operation
+ * @param {boolean} [props.isDeleting=false] - True during delete operation
+ * @param {object} props.actionForm - Current form values (deviceId, startTime, endTime, etc.)
+ * @param {Function} props.onChange - Callback(fieldName, value) for form changes
+ * @param {Array} [props.devices=[]] - Available devices to select from
+ * @param {Function} props.sliderToTime - Convert slider value to HH:MM format
+ * @param {Function} props.timeToSlider - Convert HH:MM format to slider value
+ * @param {Object} [props.errors={}] - Field validation errors
+ * @returns {JSX.Element|null} Modal dialog or null if not open
  */
 import React from 'react';
 import ActionForm from "./components/ActionForm.jsx";

@@ -1,6 +1,19 @@
 /**
- * Modal wrapper that shows a device form for creating or editing devices.
- * Props include control flags and form handlers passed to `DeviceForm`.
+ * Modal dialog for creating or editing household devices.
+ * Displays a form with type selector and type-specific fields (Battery, PV, Consumer, Generator).
+ * @param {object} props
+ * @param {boolean} props.isOpen - Whether modal is visible
+ * @param {boolean} props.isEdit - Edit mode (true) vs create mode (false)
+ * @param {Function} props.onClose - Callback when modal closes (no params)
+ * @param {Function} props.onSave - Callback(deviceData) when save button clicked
+ * @param {Function} props.onDelete - Callback() when delete button clicked (edit mode only)
+ * @param {string} [props.errorMessage] - Error text to display in modal
+ * @param {boolean} [props.isLoading=false] - True during save operation (disables inputs)
+ * @param {boolean} [props.isDeleting=false] - True during delete operation (disables buttons)
+ * @param {object} props.deviceForm - Current form field values
+ * @param {Function} props.onChange - Callback(fieldName, value) for form field changes
+ * @param {Object} [props.errors={}] - Field-level validation errors {fieldName: errorMessage}
+ * @returns {JSX.Element|null} Modal dialog or null if not open
  */
 import React from 'react';
 import DeviceForm from './components/DeviceForm.jsx';

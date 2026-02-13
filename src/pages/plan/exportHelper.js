@@ -1,13 +1,18 @@
 /**
  * Export helpers for the Plan page (CSV and PDF exports).
+ * Handles data transformation, validation, and file generation.
  */
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-
 const TABLE_COLUMNS = ["ID", "Name", "Beschreibung", "Start", "Ende"];
 
-
+/**
+ * Escape CSV special characters (quotes, commas, newlines).
+ * @param {*} value - Value to escape
+ * @returns {string} Escaped CSV value
+ * @private
+ */
 const escapeCSV = (value) => {
     if (value === null || value === undefined) return '';
     const str = String(value);
@@ -17,7 +22,12 @@ const escapeCSV = (value) => {
     return str;
 };
 
-
+/**
+ * Format Date object to German date-time string.
+ * @param {Date} date - Date to format
+ * @returns {string} Formatted date string (DD.MM.YYYY HH:MM) or empty if invalid
+ * @private
+ */
 const formatDateTime = (date) => {
     if (!date || !(date instanceof Date)) return '';
     return date.toLocaleString('de-DE', {
@@ -29,7 +39,12 @@ const formatDateTime = (date) => {
     });
 };
 
-
+/**
+ * Validate export data is non-empty array.
+ * @param {*} data - Data to validate
+ * @returns {object} {isValid: boolean, error?: string}
+ * @private
+ */
 const validateExportData = (data) => {
     if (!Array.isArray(data)) {
         return { isValid: false, error: 'Daten müssen ein Array sein' };
@@ -40,6 +55,12 @@ const validateExportData = (data) => {
     return { isValid: true };
 };
 
+/**
+ * Transform task objects to CSV row format.
+ * @param {Array<object>} data - Task objects
+ * @returns {Array<Array>} Array of rows with formatted values
+ * @private
+ */
 const transformTaskData = (data) => {
     return data.map(task => [
         task.id ?? '-',
@@ -51,10 +72,20 @@ const transformTaskData = (data) => {
 };
 
 /**
- * Download an array of tasks as CSV file.
- * @param {Array} data - Task objects
+ * Download task data as CSV file (semicolon-delimited).
+ * Automatically triggers browser download with proper encoding.
+ * @param {Array<object>} data - Task objects to export
+ * @param {number} data[].id - Task ID
+ * @param {string} data[].name - Task name
+ * @param {string} data[].text - Task description
+ * @param {Date} data[].start - Start datetime
+ * @param {Date} data[].end - End datetime
  * @param {string} [fileName="ablaufplan.csv"] - Output filename
- * @param {function|null} [onError=null] - Optional error callback (message)
+ * @param {Function} [onError=null] - Error callback(errorMessage)
+ * @throws {Error} Silently caught, passed to onError callback
+ * @returns {void}
+ * @example
+ * downloadCSV(tasks, "schedule.csv", (error) => console.error(error));
  */
 export const downloadCSV = (data, fileName = "ablaufplan.csv", onError = null) => {
     try {
@@ -85,10 +116,20 @@ export const downloadCSV = (data, fileName = "ablaufplan.csv", onError = null) =
 };
 
 /**
- * Download an array of tasks as a PDF file.
- * @param {Array} data - Task objects
+ * Download task data as a formatted PDF file.
+ * Creates a landscape PDF with task table, header with export timestamp.
+ * @param {Array<object>} data - Task objects to export
+ * @param {number} data[].id - Task ID
+ * @param {string} data[].name - Task name
+ * @param {string} data[].text - Task description
+ * @param {Date} data[].start - Start datetime
+ * @param {Date} data[].end - End datetime
  * @param {string} [fileName="ablaufplan.pdf"] - Output filename
- * @param {function|null} [onError=null] - Optional error callback (message)
+ * @param {Function} [onError=null] - Error callback(errorMessage)
+ * @throws {Error} Silently caught, passed to onError callback
+ * @returns {void}
+ * @example
+ * downloadPDF(tasks, "schedule.pdf", (error) => console.error(error));
  */
 export const downloadPDF = (data, fileName = "ablaufplan.pdf", onError = null) => {
     try {

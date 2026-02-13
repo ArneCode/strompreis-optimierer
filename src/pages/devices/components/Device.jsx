@@ -3,7 +3,11 @@ import '../../../styles/pages/Devices.css';
 import { translateDevice } from "../DevicesLogic.js";
 
 /**
- * Simple presentational component for showing a device name and type.
+ * Device card component - displays device name and translated device type.
+ * @param {object} props
+ * @param {string} props.name - Device display name
+ * @param {string} props.type - Device type key (Battery|Consumer|Generator|PVGenerator)
+ * @returns {JSX.Element} Device card element
  */
 function Device({type, name}) {
     return (

@@ -2,8 +2,15 @@ import { useState, useCallback } from 'react';
 import { geoService } from '../../../services/geoService';
 
 /**
- * Hook that manages temporary selected location and reverse geocoding state.
- * Returns { tempLocation, updateLocation, isLoading }.
+ * Custom hook for managing location selection and reverse geocoding.
+ * Handles temporary location state and performs async address lookup via geoService.
+ * @returns {object} Hook state and functions
+ * @returns {object|null} .tempLocation - Current location {lat, lng, label}
+ * @returns {Function} .updateLocation - Callback(lat, lng, label?) to set location
+ * @returns {boolean} .isLoading - True during geocoding request
+ * @example
+ * const { tempLocation, updateLocation, isLoading } = useLocationLogic();
+ * await updateLocation(52.52, 13.40); // Geocodes automatically
  */
 export function useLocationLogic() {
     const [tempLocation, setTempLocation] = useState(null);
