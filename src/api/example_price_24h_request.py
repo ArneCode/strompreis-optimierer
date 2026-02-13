@@ -1,3 +1,4 @@
+# Created with AI Assistance
 """
 Example FastAPI endpoint demonstrating a request for the electricity prices of the next 24 hours.
 

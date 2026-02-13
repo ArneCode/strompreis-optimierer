@@ -2,6 +2,10 @@
 *.db-journal
 __pycache__
 .venv
+.venv312/
+
+docs_export/
+docs_export.zip
 
 .idea/
 
