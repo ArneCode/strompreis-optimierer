@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from external_api_services.api_services import api_services
+from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from electricity_price_optimizer_py.units import WattHour, Watt
@@ -13,7 +15,24 @@ from device import VariableActionDevice
 from device import Battery
 from electricity_price_optimizer_py import Schedule
 
+BERLIN = ZoneInfo("Europe/Berlin")
+
 router = APIRouter(prefix="/api", tags=["plan"])
+
+def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | None]:
+    blocks = api_services.price_cache.get_blocks()
+    prices: list[float | None] = []
+
+    for t in timeline:
+        hour = t.astimezone(BERLIN).replace(minute=0, second=0, microsecond=0)
+        block = blocks.get(hour)
+
+        if block is None:
+            prices.append(None)
+        else:
+            prices.append(float(block.price) / 10.0)
+
+    return prices   
 
 def _require_schedule(orchestrator: IOrchestratorService) -> Schedule:
     if not orchestrator.has_schedule:
@@ -75,6 +94,8 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     batteries = []
     variable_actions = []
     timeline = _create_timeline(24)
+
+    prices_ct_per_kwh = _collect_hourly_prices_ct_per_kwh(timeline)
 
     plan_start = timeline[0]
     plan_end = timeline[-1] + timedelta(hours = 1)
@@ -160,6 +181,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
         "timeline": [time.isoformat() for time in timeline],
         "batteries": batteries,
         "variableActions": variable_actions,
+        "pricesCtPerKwh": prices_ct_per_kwh,
     }
 
 @router.get("/plan")
@@ -186,6 +208,7 @@ def get_plan_data(
         "timeline": data["timeline"],
         "batteries": data["batteries"],
         "variableActions": data["variableActions"],
+        "pricesCtPerKwh": data["pricesCtPerKwh"],
     }
 
 @router.post("/plan/generate", status_code=status.HTTP_202_ACCEPTED)

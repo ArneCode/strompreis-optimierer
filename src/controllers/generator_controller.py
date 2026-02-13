@@ -3,6 +3,8 @@ from typing import Optional, TYPE_CHECKING
 
 from electricity_price_optimizer_py.units import Watt, WattHour
 
+from external_api_services.api_services import api_services
+from external_api_services.forecast_service.forecast_cache import PVConfiguration
 from .base import DeviceController
 
 from electricity_price_optimizer_py import (
@@ -14,6 +16,14 @@ from electricity_price_optimizer_py import (
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
+def get_pv_configuration(generator) -> PVConfiguration:
+    return PVConfiguration(
+        float(generator.latitude),
+        float(generator.longitude),
+        float(generator.declination),
+        float(generator.azimuth),
+        float(generator.peak_power.get_value())
+    )
 
 class GeneratorPvController(DeviceController):
     """Controller for generator devices (e.g., PV panels).
@@ -25,7 +35,6 @@ class GeneratorPvController(DeviceController):
     def __init__(self, id: "int"):
         self._id = id
         self._schedule: "Optional[Schedule]" = None
-        self.forecast_service = ...
 
     @property
     def device_id(self) -> "int":
@@ -35,15 +44,25 @@ class GeneratorPvController(DeviceController):
         """Store the schedule (generators typically don't act on it)."""
         self._schedule = schedule
 
+    def _forecast_service(self, device_manager: "IDeviceManager"):
+        generator = device_manager.get_device_service().get_generator_pv(self._id)
+        pv_configuration = get_pv_configuration(generator)
+        return api_services.forecast_manager.get_service(pv_configuration)
+
+
     def add_to_optimizer_context(self, context: "OptimizerContext", current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Add generator prognoses to the optimizer context."""
-        device = device_manager.get_device_service().get_generator_pv(
-            self._id)
+        service = self._forecast_service(device_manager)
         prognoses = PrognosesProvider(
             # Mock prognosis: constant 5W generation; replace with real data access
-            lambda t1, t2: WattHour(5)
+            # lambda t1, t2: WattHour(5)
+            lambda t1, t2: WattHour(service.get_total_production(t1, t2))
         )
         context.add_generated_electricity_prognoses(prognoses)
+
+    def get_prognoses(self, device_manager: "IDeviceManager") -> dict[datetime, float]:
+        service = self._forecast_service(device_manager)
+        return service.get_hourly_production(datetime.now())
 
     def update_device(self, current_time: "datetime", device_manager: "IDeviceManager") -> "None":
         """Optional periodic update; for generators we generally don't actuate devices."""

@@ -54,7 +54,7 @@ def test_orchestrator(manager: IDeviceManager = Depends(get_device_manager), orc
     manager.add_variable_action_device(vad)
 
     # 4) PV generator
-    pv = GeneratorPV(name="Roof PV")
+    pv = GeneratorPV(name="Roof PV", latitude = 52.5200, longitude = 13.4050, declination =30, azimuth = 180, peak_power = Watt(8.5))
     manager.add_generator(pv)
 
     # Run orchestrator

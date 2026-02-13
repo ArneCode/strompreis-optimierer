@@ -2,3 +2,8 @@
 *.db-journal
 __pycache__
 .venv
+
+.idea/
+
+*.pyd
+*.pyc

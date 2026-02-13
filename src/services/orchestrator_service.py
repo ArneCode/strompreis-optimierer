@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from concurrent.futures import Future, ThreadPoolExecutor
 from enum import Enum
 
+from external_api_services.api_services import api_services
 from services.interfaces import IOrchestratorService
 
 if TYPE_CHECKING:
@@ -56,9 +57,11 @@ class OrchestratorService(IOrchestratorService):
 
         now = datetime.now(timezone.utc)
 
+
         # Create a simple context with mock price data for demonstration
         price_provider = PrognosesProvider(
-            lambda t1, t2: EuroPerWh(0.20)  # Mock constant price of 0.20 €/Wh
+            #lambda t1, t2: EuroPerWh()  # Mock constant price of 0.20 €/Wh
+            lambda t1, t2: EuroPerWh(api_services.price_service.get_average_price(t1, t2))
         )
         context = OptimizerContext(
             time=now,

@@ -100,7 +100,7 @@ pub fn run_simulated_annealing(context: OptimizerContext) -> (i64, Schedule) {
         if old_cost < min_cost {
             min_cost = old_cost;
         }
-        temperature *= 0.999; // Cool down
+        temperature *= 0.9; // Cool down
         // println!("temperature: {temperature}, cost: {old_cost}");
     }
 
