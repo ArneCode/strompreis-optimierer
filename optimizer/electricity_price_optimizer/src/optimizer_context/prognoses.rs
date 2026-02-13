@@ -1,3 +1,9 @@
+//! # Prognoses Module
+//!
+//! This module defines the `Prognoses` struct, which is a generic container for
+//! time-series data, such as electricity prices, generation, or consumption,
+//! indexed by `Time`.
+
 use std::{
     fmt::Debug,
     ops::{Add, AddAssign},

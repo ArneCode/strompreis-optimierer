@@ -1,3 +1,4 @@
+//! Provides helper functions for generating random values for the simulated annealing changes.
 // --- Required Crates ---
 use rand::Rng;
 

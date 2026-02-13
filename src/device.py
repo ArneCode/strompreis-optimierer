@@ -9,12 +9,13 @@ Includes:
 from datetime import datetime, timedelta
 from sqlalchemy import DateTime, ForeignKey, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
+from typing import List, Optional
 from electricity_price_optimizer_py.units import WattHour, Watt, Euro, EuroPerWh
 from sqlalchemy import Enum, ForeignKey, String, Integer, Float
-from sqlalchemy.orm import Mapped, mapped_column, declared_attr
 from database.base import Base
 import enum
+import random
+from noise import pnoise1
 
 from database.mapper import TimezoneAwareDateMapper, WattHourMapper, WattMapper, EuroMapper, EuroPerWhMapper
 
@@ -25,6 +26,7 @@ class DeviceType(enum.Enum):
     CONSTANT_ACTION_DEVICE = "CONSTANT_ACTION_DEVICE"
     VARIABLE_ACTION_DEVICE = "VARIABLE_ACTION_DEVICE"
     GENERATOR_PV = "GENERATOR_PV"
+    GENERATOR_RANDOM = "GENERATOR_RANDOM"
 
 
 class Device(Base):
@@ -157,6 +159,7 @@ class GeneratorPV(Generator):
 
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    location: Mapped[String] = mapped_column(String, nullable=False)
     declination: Mapped[float] = mapped_column(Float, nullable=False)
     azimuth: Mapped[float] = mapped_column(Float, nullable=False)
     peak_power: Mapped[Watt] = mapped_column(WattMapper, nullable=False)
@@ -164,7 +167,73 @@ class GeneratorPV(Generator):
     """
     Todo: Add specific attributes for PV generators, e.g., max output, efficiency, etc.
     """
-
     __mapper_args__ = {
         "polymorphic_identity": DeviceType.GENERATOR_PV,
     }
+
+
+class GeneratorRandom(Generator):
+    """Random generator device (for testing)."""
+    __tablename__ = "generator_random"
+    id: Mapped[int] = mapped_column(
+        ForeignKey("device.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+    seed: Mapped[int] = mapped_column(Integer, nullable=False)
+    peak_power: Mapped[Watt] = mapped_column(WattMapper, nullable=False)
+
+    __mapper_args__ = {
+        "polymorphic_identity": DeviceType.GENERATOR_RANDOM,
+    }
+
+    def __init__(self, seed: Optional[int], **kwargs):
+        super().__init__(**kwargs)
+
+        self.seed = seed if seed is not None else random.randint(0, int(65535))
+
+    def new_random_seed(self):
+        """Generate a new random seed for this generator."""
+        self.seed = random.randint(0, int(65535))
+
+    def get_generation(self, time: datetime) -> Watt:
+        """Get the generation at a specific time with realistic variation."""
+        # mit ki generiert
+        # 1. Use a relative offset to keep the numbers small for the C-extension
+        # We'll use seconds since Jan 1, 2025 as a reference point.
+        reference_ts = 1735689600
+        ts_offset = time.timestamp() - reference_ts
+
+        # 2. Define a 'wavelength' (how fast the noise changes).
+        # Let's say one full 'feature' of noise occurs every 12 hours.
+        wavelength = 12 * 3600.0
+        x = ts_offset / wavelength
+
+        # 3. Use 'octaves' to add detail.
+        # octaves=3 adds two smaller, faster waves on top of the main one.
+        # persistence=0.5 means each smaller wave is half as strong as the previous.
+        raw_noise: float = pnoise1(
+            x,
+            octaves=3,
+            persistence=0.5,
+            lacunarity=2.0,
+            base=self.seed % 1024  # Keep seed small to avoid Segfaults
+        )
+
+        # 4. Scale from [-1, 1] to [0, 1]
+        # We use a slight clip to ensure we don't get negative power
+        noise_scaled = max(0, (raw_noise + 1) / 2)
+
+        return noise_scaled * self.peak_power
+
+
+if __name__ == "__main__":
+    # Example usage
+    gen = GeneratorRandom(
+        seed=42, name="Test Random Generator", peak_power=Watt(1000))
+    # print generation for the next 24 hours in 1-hour intervals
+    now = datetime.now()
+    print(f"Generation for '{gen.name}' with seed {gen.seed}:")
+    for i in range(24):
+        current_time = now + timedelta(hours=i)
+        generation = gen.get_generation(current_time)
+        print(f"  {current_time.strftime('%Y-%m-%d %H:%M')}: {generation}")

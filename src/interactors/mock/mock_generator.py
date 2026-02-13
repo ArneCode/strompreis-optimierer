@@ -3,6 +3,8 @@ import math
 from ..interfaces import GeneratorInteractor
 
 from electricity_price_optimizer_py import units
+from external_api_services.api_services import api_services
+from external_api_services.forecast_service.pv_configuration import get_pv_configuration
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
@@ -32,6 +34,10 @@ class MockGeneratorInteractor(GeneratorInteractor):
         _current_power. The generator model in the device service may be used
         by callers to set the interactor's max_power initially.
         """
+        interactor = device_manager.get_interactor_service().get_generator_interactor(self._id)
+        pv_configuration = get_pv_configuration(interactor)
+        service = api_services.forecast_manager.get_service(pv_configuration)
+        self._current_power = service.get_current_power()
         return self._current_power
 
     def set_simulated_power(self, power: "units.Watt", device_manager: "IDeviceManager" = None) -> None:
@@ -76,7 +82,7 @@ class MockGeneratorInteractor(GeneratorInteractor):
             max_p = self._max_power.value
         else:
             try:
-                gen = device_manager.get_device_service().get_generator(self.id)
+                gen = device_manager.get_device_service().get_generator_pv(self.id)
                 if gen is not None and hasattr(gen, "max_power"):
                     gp = getattr(gen, "max_power")
                     try:

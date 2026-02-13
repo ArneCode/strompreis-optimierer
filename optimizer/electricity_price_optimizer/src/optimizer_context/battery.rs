@@ -76,13 +76,17 @@ impl Battery {
     }
 }
 
+/// Represents a battery whose charge and discharge schedule has been determined.
 #[derive(Clone, Debug)]
 pub struct AssignedBattery {
+    /// The underlying battery definition.
     battery: Arc<Battery>,
+    /// The prognosis of the battery's charge level over time.
     charge_level: Prognoses<i64>,
 }
 
 impl AssignedBattery {
+    /// Creates a new `AssignedBattery`.
     pub fn new(battery: Arc<Battery>, charge_level: Prognoses<i64>) -> Self {
         Self {
             battery,
@@ -90,10 +94,12 @@ impl AssignedBattery {
         }
     }
 
+    /// Returns a reference to the underlying `Battery`.
     pub fn get_battery(&self) -> &Arc<Battery> {
         &self.battery
     }
 
+    /// Returns the charge level of the battery at a specific `Time`.
     pub fn get_charge_level(&self, time: Time) -> Option<&i64> {
         self.charge_level.get(time)
     }

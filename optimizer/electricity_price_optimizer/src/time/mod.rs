@@ -1,3 +1,9 @@
+//! # Time Module
+//!
+//! This module provides representations and utilities for handling time within the optimizer.
+//! It defines the `Time` struct, which abstracts time into discrete steps, and constants
+//! that govern the resolution of these steps (e.g., `MINUTES_PER_TIMESTEP`).
+
 use std::{
     fmt::Debug,
     ops::{Add, Range, Sub},
@@ -80,8 +86,11 @@ impl Sub<Time> for Time {
     }
 }
 
+/// A trait for iterating over a range of `Time` in discrete steps.
 pub trait TimeIterator {
+    /// The type of the iterator.
     type T: Iterator<Item = Time>;
+    /// Returns an iterator that yields `Time` instances for each step in the range.
     fn iter_steps(&self) -> Self::T;
 }
 impl TimeIterator for Range<Time> {

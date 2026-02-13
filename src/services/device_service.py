@@ -10,7 +10,7 @@ Notes:
 from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from device import Device, Battery, Generator, ConstantActionDevice, GeneratorPV, VariableActionDevice
+from device import Device, Battery, GeneratorPV, ConstantActionDevice, GeneratorPV, GeneratorRandom, VariableActionDevice
 from services.interfaces import IDeviceService
 
 
@@ -26,8 +26,11 @@ class SqlAlchemyDeviceService(IDeviceService):
     def get_battery(self, device_id: "int") -> "Battery | None":
         return self.session.get(Battery, device_id)
 
-    def get_generator_pv(self, device_id: "int") -> "Generator | None":
-        return self.session.get(Generator, device_id)
+    def get_generator_pv(self, device_id: "int") -> "GeneratorPV | None":
+        return self.session.get(GeneratorPV, device_id)
+
+    def get_generator_random(self, device_id: "int") -> "GeneratorRandom | None":
+        return self.session.get(GeneratorRandom, device_id)
 
     def get_constant_action_device(self, device_id: "int") -> "ConstantActionDevice | None":
         return self.session.get(ConstantActionDevice, device_id)
@@ -41,7 +44,7 @@ class SqlAlchemyDeviceService(IDeviceService):
     def get_all_batteries(self) -> "list[Battery]":
         return self.session.query(Battery).all()
 
-    def get_all_generators(self) -> "list[Generator]":
+    def get_all_generators(self) -> "list[GeneratorPV]":
         return self.session.query(GeneratorPV).all()
 
     def get_all_constant_action_devices(self) -> "list[ConstantActionDevice]":
@@ -69,7 +72,7 @@ class SqlAlchemyDeviceService(IDeviceService):
         return [row[0] for row in self.session.execute(stmt).all()]
 
     def get_all_generator_ids(self) -> "list[int]":
-        stmt = select(Generator.id)
+        stmt = select(GeneratorPV.id)
         return [row[0] for row in self.session.execute(stmt).all()]
 
     def get_all_constant_action_device_ids(self) -> "list[int]":

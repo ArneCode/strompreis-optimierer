@@ -1,3 +1,10 @@
+"""Custom SQLAlchemy type mappers.
+
+This module provides custom `TypeDecorator` implementations to map application-specific
+unit types (e.g., Watt, Euro) to standard SQL types (e.g., Float). This allows
+the application to work with strong types while ensuring correct persistence
+in the database. It also includes a mapper for timezone-aware datetimes.
+"""
 from datetime import datetime, timezone
 from sqlalchemy import DateTime, Float, TypeDecorator
 from electricity_price_optimizer_py.units import Watt, WattHour, Euro, EuroPerWh

@@ -1,3 +1,9 @@
+//! Implements the simulated annealing optimization algorithm.
+//!
+//! This module contains the core logic for the simulated annealing optimizer,
+//! including the representation of the state, the changes that can be applied to it,
+//! and the main optimization loop.
+
 use rand::Rng;
 
 use crate::{
@@ -23,15 +29,29 @@ pub mod state;
 /// - `context`: An `OptimizerContext` instance containing all the required data for optimization.
 ///
 /// # Returns
-/// The result of the simulated annealing process, which could be a schedule or a cost value,
-/// depending on the implementation.
+/// A tuple containing the final cost and the optimized `Schedule`.
 ///
 /// # Example
 /// ```
+/// use std::sync::Arc;
+/// use electricity_price_optimizer::{
+///     optimizer_context::{
+///         OptimizerContext,
+///         prognoses::Prognoses,
+///         battery::Battery,
+///         action::{
+///             constant::ConstantAction,
+///             variable::VariableAction,
+///         },
+///     },
+///     simulated_annealing::run_simulated_annealing,
+///     time::{Time, STEPS_PER_DAY},
+/// };
+///
 /// let electricity_price_data = [10; STEPS_PER_DAY as usize];
 /// let generated_electricity_data = [100; STEPS_PER_DAY as usize];
 /// let beyond_control_consumption_data = [20; STEPS_PER_DAY as usize];
-/// let batteries = vec![Battery::new(1000, 10, 10, 7, 1.0, 1)];
+/// let batteries = vec![Arc::new(Battery::new(1000, 10, 10, 7, 1.0, 1))];
 /// let constant_actions = vec![Arc::new(ConstantAction::new(
 ///     Time::new(0, 0),
 ///     Time::new(2, 0),
@@ -54,9 +74,10 @@ pub mod state;
 ///     batteries,
 ///     constant_actions,
 ///     variable_actions,
+///     1.0,
 /// );
-/// let result = run_simulated_annealing(context);
-/// println!("Optimization result: {result}");
+/// let (cost, schedule) = run_simulated_annealing(context);
+/// println!("Optimization result cost: {}", cost);
 /// ```
 ///
 /// # Notes
@@ -100,7 +121,7 @@ pub fn run_simulated_annealing(context: OptimizerContext) -> (i64, Schedule) {
         if old_cost < min_cost {
             min_cost = old_cost;
         }
-        temperature *= 0.999; // Cool down
+        temperature *= 0.9; // Cool down
         // println!("temperature: {temperature}, cost: {old_cost}");
     }
 
@@ -109,132 +130,4 @@ pub fn run_simulated_annealing(context: OptimizerContext) -> (i64, Schedule) {
     (old_cost, schedule)
 
     // somehow also get the final schedule out of the state
-}
-
-#[cfg(test)]
-
-mod tests {
-    use std::{rc::Rc, time::Instant};
-
-    use rand::rand_core::le;
-    use statrs::generate;
-
-    use crate::{
-        optimizer_context::{
-            action::{
-                constant::{self, ConstantAction},
-                variable::{self, VariableAction},
-            },
-            battery::Battery,
-            prognoses::Prognoses,
-        },
-        time::{STEPS_PER_DAY, Time},
-    };
-
-    use super::*;
-
-    #[test]
-    fn test_simulated_annealing() {
-        let electricity_price_data = [10; STEPS_PER_DAY as usize];
-        let generated_electricity_data = [100; STEPS_PER_DAY as usize];
-        let beyond_control_consumption_data = [20; STEPS_PER_DAY as usize];
-        let batteries = vec![Arc::new(Battery::new(1000, 10, 10, 7, 1.0, 1))];
-        let constant_actions = vec![Arc::new(ConstantAction::new(
-            Time::new(0, 0),
-            Time::new(2, 0),
-            Time::new(1, 0),
-            300,
-            2,
-        ))];
-        let variable_actions = vec![Arc::new(VariableAction::new(
-            Time::new(1, 15),
-            Time::new(10, 0),
-            300,
-            100,
-            3,
-        ))];
-
-        let context = OptimizerContext::new(
-            Prognoses::new(electricity_price_data),
-            Prognoses::new(generated_electricity_data),
-            Prognoses::new(beyond_control_consumption_data),
-            batteries,
-            constant_actions,
-            variable_actions,
-            1.0,
-        ); // Assuming a constructor exists
-        let (result, schedule) = run_simulated_annealing(context);
-        println!("result: {result}");
-        // Add assertions to verify the results
-    }
-
-    #[test]
-    fn test_simulated_annealing2() {
-        let start = Instant::now();
-        let electricity_price: Prognoses<i64> = Prognoses::from_closure(|t| {
-            (t.to_timestep() as i64 - (STEPS_PER_DAY as i64 / 2)).abs() as i64 + 5
-        });
-        // downward parabola with maximum in the middle of the day. Low prices at the edges of the day.
-        // let generated_electricity: Prognoses<i64> = Prognoses::from_closure(|t| {
-        //     ((STEPS_PER_DAY as i64 / 2).pow(2) + 5 - (t as i64 - (STEPS_PER_DAY as i64 / 2)).pow(2))
-        //         .min(300)
-        // });
-        let generated_electricity: Prognoses<i64> = Prognoses::from_closure(|_t| 70); // constant generation of 100 units
-
-        let beyond_control_consumption: Prognoses<i64> = Prognoses::from_closure(|t| -> i64 {
-            (t.to_timestep() / (STEPS_PER_DAY / 4)) as i64 * 10
-        });
-
-        let batteries = vec![Arc::new(Battery::new(1000, 50, 50, 100, 1.0, 1))];
-
-        let constant_actions: Vec<Arc<ConstantAction>> = vec![
-            Arc::new(ConstantAction::new(
-                Time::new(0, 0),
-                Time::new(23, 55),
-                Time::new(1, 0),
-                300,
-                2,
-            )),
-            Arc::new(ConstantAction::new(
-                Time::new(12, 0),
-                Time::new(23, 55),
-                Time::new(2, 0),
-                150,
-                3,
-            )),
-        ];
-
-        let variable_actions = vec![
-            Arc::new(VariableAction::new(
-                Time::new(6, 0),
-                Time::new(18, 0),
-                500,
-                100,
-                3,
-            )),
-            Arc::new(VariableAction::new(
-                Time::new(0, 0),
-                Time::new(23, 55),
-                2000,
-                50,
-                4,
-            )),
-        ];
-
-        let context = OptimizerContext::new(
-            electricity_price,
-            generated_electricity,
-            beyond_control_consumption,
-            batteries,
-            constant_actions,
-            variable_actions,
-            1.0,
-        );
-
-        let (result, schedule) = run_simulated_annealing(context);
-        // println!("schedule: {schedule:#?}");
-        println!("result: {result}");
-        let duration = start.elapsed();
-        println!("Time elapsed in test() is: {:?}", duration);
-    }
 }

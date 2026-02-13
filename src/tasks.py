@@ -1,3 +1,9 @@
+"""Background tasks for the application.
+
+This module contains functions designed to be run periodically as background tasks,
+such as updating device states from interactors and initializing services from the
+database on startup.
+"""
 from datetime import datetime, timezone
 from api.scopes import device_manager_scope
 from controllers.battery_controller import BatteryController
@@ -21,6 +27,7 @@ from controllers import (
 
 
 def update_controllers():
+    """Update all device states from their controllers."""
     current_time = datetime.now(timezone.utc)
     with device_manager_scope() as dm:
         for controller in dm.get_controller_service().get_all_controllers():
@@ -28,6 +35,7 @@ def update_controllers():
 
 
 def update_mock_interactors():
+    """Update the state of all mock interactors."""
     current_time = datetime.now(timezone.utc)
     with device_manager_scope() as dm:
         for battery_interactor in dm.get_interactor_service().get_all_battery_interactors():

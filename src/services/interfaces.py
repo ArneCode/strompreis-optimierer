@@ -1,13 +1,20 @@
+"""Service layer interfaces.
+
+This module defines the abstract base classes (interfaces) for the various
+services used in the application, such as device, controller, interactor, and
+orchestrator services. These interfaces enforce a consistent API across different
+implementations (e.g., in-memory vs. database-backed).
+"""
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional
 
-from device import GeneratorPV
+from device import GeneratorPV, GeneratorPV
 if TYPE_CHECKING:
     from electricity_price_optimizer_py import Schedule
     from controllers.base import DeviceController
     from controllers.battery_controller import BatteryController
     from controllers.constant_action_controller import ConstantActionController
-    from controllers.generator_controller import GeneratorPvController
+    from controllers.generator_pv_controller import GeneratorPvController
     from controllers.variable_action_controller import VariableActionController
     from device import Battery, ConstantActionDevice, Device, VariableActionDevice
     from device_manager import IDeviceManager
@@ -181,6 +188,11 @@ class IDeviceServiceReader(ABC):
         ...
 
     @abstractmethod
+    def get_generator_random(self, device_id: "int") -> "GeneratorPV | None":
+        """Retrieve random generator details by ID."""
+        ...
+
+    @abstractmethod
     def get_constant_action_device(self, device_id: "int") -> "ConstantActionDevice | None":
         """Retrieve constant action device details by ID."""
         ...
@@ -201,7 +213,7 @@ class IDeviceServiceReader(ABC):
         ...
 
     @abstractmethod
-    def get_all_generators(self) -> "list[Generator]":
+    def get_all_generators(self) -> "list[GeneratorPV]":
         """Retrieve all generators."""
         ...
 
