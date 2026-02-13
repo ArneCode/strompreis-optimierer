@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, TYPE_CHECKING
 
 from electricity_price_optimizer_py.units import Watt, WattHour
@@ -34,7 +34,7 @@ class GeneratorRandomController(GeneratorController):
     def use_schedule(self, schedule, device_manager):
         pass
 
-    def _get_generation(self, generator: GeneratorRandom, start: datetime, end: datetime) -> Watt:
+    def _get_generation(self, generator: GeneratorRandom, start: datetime, end: datetime) -> WattHour:
         # Compute random generation for the interval [start, end] using the generator's random generator.
         # uses noise function with generator's seed and the timestamps to produce a deterministic random generation value for the interval.
         # For simplicity, we can just take the average of the generation at the start and end timestamps.
@@ -54,7 +54,8 @@ class GeneratorRandomController(GeneratorController):
         # Average generation over the interval
         avg_generation = (gen_start + gen_end) / 2
 
-        return Watt(avg_generation)
+        result = Watt(avg_generation) * timedelta(seconds=(end_ts - start_ts))
+        return result
 
     def add_to_optimizer_context(self, context: OptimizerContext, current_time: datetime, device_manager: "IDeviceManager"):
         generator = device_manager.get_device_service().get_generator_random(self._id)
@@ -68,18 +69,18 @@ class GeneratorRandomController(GeneratorController):
     def update_device(self, current_time, device_manager):
         pass
 
-    def get_prognoses(self, dm: "IDeviceManager", timestamps: list[datetime], end: datetime):
+    def get_prognoses(self, dm: "IDeviceManager", timestamps: list[datetime], end: datetime) -> list[WattHour]:
         generator = dm.get_device_service().get_generator_random(self._id)
         if generator is None:
             raise ValueError(f"Generator with id {self._id} not found")
 
-        prognoses = []
+        prognoses: list[WattHour] = []
         all_timestamps = timestamps + [end]
         for i in range(len(all_timestamps) - 1):
             start_interval = all_timestamps[i]
             end_interval = all_timestamps[i+1]
             generation = self._get_generation(
                 generator, start_interval, end_interval)
-            prognoses.append(generation.value)
+            prognoses.append(generation)
 
         return prognoses
