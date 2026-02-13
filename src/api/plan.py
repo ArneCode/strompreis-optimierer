@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from external_api_services.api_services import api_services
+from controllers.base import GeneratorController
 from external_api_services.forecast_service.forecast_cache import PVConfiguration
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
@@ -22,42 +23,33 @@ router = APIRouter(prefix="/api", tags=["plan"])
 
 def _collect_total_generation_kw(
     manager: IDeviceManager,
-    timeline: list[datetime]
+    timeline: list[datetime],
 ) -> list[float]:
-    """
-    Compute the total generation for all configured generators for each timestamp in a timeline.
+    controllers = manager.get_controller_service().get_all_controllers()
+    generator_controllers = [
+        c for c in controllers if isinstance(c, GeneratorController)
+    ]
 
-    Args:
-        manager: Device manager providing access to generators and services.
-        timeline: List of timestamps (typically 24 hourly points) for which generation is computed.
-
-    Returns: 
-        A list of floats (length equals len(timeline)) containing total generation in kW per hour.
-    """
-    generators = manager.get_device_service().get_all_generators()
-    total_kw: list[float] = []
-
-    services = []
-    for g in generators:
-        cfg = PVConfiguration(
-            latitude=float(g.latitude),
-            longitude=float(g.longitude),
-            declination=float(g.declination),
-            azimuth=float(g.azimuth),
-            peak_power=float(Watt.get_value(g.peak_power)) / 1000.0,
-        )
-        services.append(api_services.forecast_manager.get_service(cfg))
-
-    for t in timeline:
-        hour = t.astimezone(BERLIN).replace(minute=0, second=0, microsecond=0)
-        total_wh = 0.0
-
-        for svc in services:
-            blocks = svc._cache.get_blocks()
-            total_wh += float(blocks.get(hour, 0.0))
-
-        total_kw.append(total_wh / 1000.0)
+    if not generator_controllers:
+        return [0.0 for _ in timeline]
     
+    end = timeline[-1] + timedelta(hours=1)
+    total_kw: list[float] = []
+    
+    all_series = [
+        controller.get_prognoses(manager, timeline, end)
+        for controller in generator_controllers
+    ]
+
+    for i in range(len(timeline)):
+        total_wh_this_hour = 0.0
+
+        for series in all_series:
+            if i < len(series):
+                total_wh_this_hour += WattHour.get_value(series[i])
+
+        total_kw.append(total_wh_this_hour / 1000.0)
+
     return total_kw
 
 def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | None]:
