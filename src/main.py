@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from database import engine, init_db
 from device import *
 from electricity_price_optimizer_py import OptimizerContext, run_simulated_annealing
-#from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 
 from tasks import initialize_services_from_db, update_controllers, update_mock_interactors
@@ -26,7 +26,27 @@ initialize_services_from_db()
 
 # main.py
 
-app = FastAPI()
+scheduler = AsyncIOScheduler()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # This happens on Startup
+    scheduler.add_job(update_controllers, 'interval', seconds=2)
+    scheduler.add_job(update_mock_interactors, 'interval', seconds=0.5)
+    scheduler.start()
+    print("Scheduler started...")
+
+    try:
+        yield  # Server runs here
+
+    # This happens on Shutdown
+    finally:
+        scheduler.shutdown()
+        print("Scheduler shut down...")
+
+app = FastAPI(lifespan=lifespan)
+
 
 origins = [
     "http://localhost:5173",
@@ -52,4 +72,3 @@ app.include_router(plan_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=5000)
-
