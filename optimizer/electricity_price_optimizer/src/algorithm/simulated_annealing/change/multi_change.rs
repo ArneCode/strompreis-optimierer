@@ -1,5 +1,5 @@
 //! Defines `MultiChange`, a mechanism for bundling multiple `Change`s into a single operation.
-use crate::simulated_annealing::{
+use crate::algorithm::simulated_annealing::{
     change::{Change, random_move::RandomMoveChange},
     state::State,
 };

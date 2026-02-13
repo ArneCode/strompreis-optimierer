@@ -1,39 +1,46 @@
+//! Conversion utilities between `chrono::DateTime<Utc>` and the optimizer's
+//! internal `Time` representation.
+//!
+//! The optimizer works in discrete timesteps of `MINUTES_PER_TIMESTEP` minutes.
+//! These helpers translate wall-clock datetimes into that discrete domain and
+//! back, enforcing alignment to timestep boundaries where required.
+
 use chrono::{DateTime, Datelike, TimeZone, Timelike, Utc};
 use electricity_price_optimizer::time::{MINUTES_PER_TIMESTEP, Time};
 use pyo3::{PyErr, PyResult, exceptions::PyValueError};
 
-/// Convert optimizer Time to a DateTime<Utc>, aligned to the timestep boundary relative to start_time.
-/// Rounds down to the nearest timestep and never before start_time.
+/// Convert optimizer `Time` to a `DateTime<Utc>`, aligned to the timestep
+/// boundary relative to `start_time`.
+///
+/// The result is rounded *down* to the nearest timestep and is guaranteed to
+/// be ≥ `start_time`.
 pub fn time_to_datetime(time: Time, start_time: DateTime<Utc>) -> PyResult<DateTime<Utc>> {
-    // 1. Get starting point in nanoseconds
-    // .expect() is used here because Utc timestamps usually fit in i64 nanos
-    // unless you're dealing with years far in the future/past.
     let start_ns = start_time
         .timestamp_nanos_opt()
         .expect("Timestamp out of range");
 
-    // 2. Define our interval in nanoseconds
     let ns_per_minute: i64 = 60 * 1_000_000_000;
-    let interval_ns = (MINUTES_PER_TIMESTEP as i64 * ns_per_minute);
+    let interval_ns = MINUTES_PER_TIMESTEP as i64 * ns_per_minute;
 
-    // 3. Calculate target time in nanoseconds
+    // Offset from start in nanoseconds corresponding to `time.get_minutes()`
     let added_ns = time.get_minutes() as i64 * ns_per_minute;
     let target_ns = start_ns + added_ns;
 
-    // 4. Round down to the nearest timestep
-    // The modulo operation gives us the "overflow" past the last clean interval
+    // Snap down to the nearest clean interval boundary
     let rounded_ns = target_ns - (target_ns % interval_ns);
 
-    // 5. Ensure we don't round back to a time before the start_time
+    // Never produce a result before the start
     let res_ns = rounded_ns.max(start_ns);
-    // 6. Convert nanoseconds back into a DateTime object
     let result = Utc.timestamp_nanos(res_ns);
 
     Ok(result)
 }
 
-/// Validate that a DateTime<Utc> is on a timestep boundary relative to start_time.
-/// Returns error if before start_time or not aligned to the timestep.
+/// Validate that `dt` sits exactly on a timestep boundary relative to
+/// `start_time`.
+///
+/// A boundary is defined as a datetime whose minute is a multiple of
+/// `MINUTES_PER_TIMESTEP` and whose seconds and sub-second components are zero.
 pub fn check_on_timestep_boundary(dt: DateTime<Utc>, start_time: DateTime<Utc>) -> PyResult<()> {
     if dt < start_time {
         return Err(PyValueError::new_err(format!(
@@ -42,7 +49,7 @@ pub fn check_on_timestep_boundary(dt: DateTime<Utc>, start_time: DateTime<Utc>) 
         )));
     }
     if dt == start_time {
-        return Ok(());
+        return Ok(()); // start_time itself is always considered valid
     }
     if !dt.minute().is_multiple_of(MINUTES_PER_TIMESTEP)
         || dt.second() != 0
@@ -58,8 +65,11 @@ pub fn check_on_timestep_boundary(dt: DateTime<Utc>, start_time: DateTime<Utc>) 
     Ok(())
 }
 
-/// Convert a DateTime<Utc> to optimizer Time, assuming dt is on a timestep boundary.
-/// Errors if dt < start_time or cannot construct the base alignment.
+/// Convert a `DateTime<Utc>` back to an optimizer `Time`.
+///
+/// `dt` is assumed to be on a timestep boundary (call
+/// `check_on_timestep_boundary` first).  The returned `Time` is expressed in
+/// timesteps relative to `start_time`.
 pub fn datetime_to_time(dt: DateTime<Utc>, start_time: DateTime<Utc>) -> Result<Time, PyErr> {
     if dt == start_time {
         return Ok(Time::from_timestep(0));
@@ -70,7 +80,8 @@ pub fn datetime_to_time(dt: DateTime<Utc>, start_time: DateTime<Utc>) -> Result<
             dt, start_time
         )));
     }
-    // the first datetime before or equal to start_time that is on a timestep boundary
+    // Find the latest datetime ≤ start_time that is on a clean timestep boundary.
+    // This serves as the reference point for counting timesteps.
     let base_dt = {
         let minute = start_time.minute() - (start_time.minute() % MINUTES_PER_TIMESTEP);
         Utc.with_ymd_and_hms(
@@ -87,6 +98,7 @@ pub fn datetime_to_time(dt: DateTime<Utc>, start_time: DateTime<Utc>) -> Result<
         })?
     };
 
+    // Count whole timesteps between base_dt and dt
     let duration = dt.signed_duration_since(base_dt);
     let total_minutes = duration.num_minutes() as u32;
     let timesteps = total_minutes / MINUTES_PER_TIMESTEP;

@@ -4,4 +4,4 @@
 //! separating the core flow logic from the smart home model representation.
 pub mod flow;
 
-use crate::optimizer::flow_optimizer::flow::FlowWrapper;
+use crate::algorithm::flow::flow_optimizer::flow::FlowWrapper;

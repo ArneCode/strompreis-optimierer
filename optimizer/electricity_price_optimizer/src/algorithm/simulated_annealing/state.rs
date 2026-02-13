@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    optimizer::{SmartHomeFlow, SmartHomeFlowBuilder},
+    algorithm::flow::{SmartHomeFlow, SmartHomeFlowBuilder},
     optimizer_context::{
         OptimizerContext,
         action::{

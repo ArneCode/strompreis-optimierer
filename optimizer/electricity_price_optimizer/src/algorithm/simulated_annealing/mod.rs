@@ -6,14 +6,8 @@
 
 use rand::Rng;
 
-use crate::{
-    optimizer_context::OptimizerContext,
-    schedule::{self, Schedule},
-    simulated_annealing::{
-        change::{Change, multi_change::MultiChange},
-        state::State,
-    },
-};
+use crate::{optimizer_context::OptimizerContext, schedule::{self, Schedule}};
+use crate::algorithm::simulated_annealing::{change::{Change, multi_change::MultiChange}, state::State};
 
 mod change;
 pub mod state;

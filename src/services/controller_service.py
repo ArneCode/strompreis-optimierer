@@ -61,6 +61,18 @@ class ControllerService(IControllerService):
     def add_variable_action_controller(self, controller: VariableActionController) -> int:
         return self.variable_action_controllers.set(controller.device_id, controller)
 
+    def get_all_battery_controllers(self):
+        return self.variable_action_controllers.values()
+
+    def get_all_generator_controllers(self):
+        return self.generator_controllers.values()
+
+    def get_all_constant_action_controllers(self):
+        return self.constant_action_controllers.values()
+
+    def get_all_variable_action_controllers(self):
+        return self.variable_action_controllers.values()
+
     def remove_controller(self, controller_id: int) -> None:
         self.battery_controllers.delete(controller_id)
         self.generator_controllers.delete(controller_id)

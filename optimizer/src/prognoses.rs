@@ -1,3 +1,9 @@
+//! Python-facing prognoses provider.
+//!
+//! `PrognosesProvider` wraps a Python callable and converts its return values
+//! into a `Prognoses<T>` array that the Rust optimizer can consume.  The
+//! callable is invoked once per timestep with `(current_dt, next_dt)` arguments.
+
 use std::fmt::Debug;
 
 use chrono::{DateTime, Utc};

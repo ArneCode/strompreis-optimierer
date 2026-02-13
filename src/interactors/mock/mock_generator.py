@@ -45,7 +45,7 @@ class MockGeneratorInteractor(GeneratorInteractor):
         # If max power is available, clamp; otherwise accept as-is
         if self._max_power is not None and self._max_power != units.Watt(0):
             # use numeric min via .value
-            val = min(power.value, self._max_power.value)
+            val = min(power.get_value(), self._max_power.value)
             self._current_power = units.Watt(val)
         else:
             self._current_power = units.Watt(power)
@@ -79,7 +79,7 @@ class MockGeneratorInteractor(GeneratorInteractor):
         # If max power is not configured, try to read it from the device model
         max_p = 0
         if self._max_power is not None and self._max_power != units.Watt(0):
-            max_p = self._max_power.value
+            max_p = self._max_power.get_value()
         else:
             try:
                 gen = device_manager.get_device_service().get_generator_pv(self.id)

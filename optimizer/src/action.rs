@@ -1,3 +1,14 @@
+//! Python-facing action types.
+//!
+//! **Constant actions** have a fixed power draw and duration; the optimizer
+//! decides *when* to run them.
+//!
+//! **Variable actions** have a total energy requirement and per-timestep power
+//! cap; the optimizer decides *how much* power to allocate each timestep.
+//!
+//! Each type has an `Assigned*` counterpart produced by the optimizer that
+//! carries the concrete schedule.
+
 use chrono::{DateTime, TimeDelta, Utc};
 use electricity_price_optimizer::{
     optimizer_context::action::{
@@ -23,7 +34,10 @@ use crate::units::{Watt, WattHour};
 #[pyclass]
 #[derive(Clone)]
 /// A fixed-duration action with constant consumption per timestep.
-/// Times must be on timestep boundaries.
+///
+/// `start_from` and `end_before` define the window in which the optimizer may
+/// place the action.  `duration` must be a positive multiple of
+/// `MINUTES_PER_TIMESTEP`.
 pub struct ConstantAction {
     /// Earliest action start (inclusive).
     pub start_from: DateTime<Utc>,
@@ -92,7 +106,7 @@ impl ConstantAction {
 }
 
 #[pyclass]
-/// A constant action assigned by the optimizer, exposing start/end times and ID.
+/// Result of the optimizer for a constant action: start/end times are now fixed.
 pub struct AssignedConstantAction {
     inner: RustAssignedConstantAction,
     start_timestamp: DateTime<Utc>,
@@ -113,21 +127,25 @@ impl AssignedConstantAction {
     }
 }
 impl AssignedConstantAction {
+    /// Wrap a Rust `AssignedConstantAction` with a start timestamp.
     pub fn new(inner: RustAssignedConstantAction, start_timestamp: DateTime<Utc>) -> Self {
         AssignedConstantAction {
             inner,
             start_timestamp,
         }
     }
-    // getters
+    /// Access the underlying Rust assigned constant action.
     pub fn get_inner(&self) -> &RustAssignedConstantAction {
         &self.inner
     }
 }
 #[pyclass]
 #[derive(Clone)]
-/// A variable action with total energy and per-timestep max consumption constraints.
-/// Times must be on timestep boundaries.
+/// A variable action with total energy and per-timestep max consumption
+/// constraints.
+///
+/// The optimizer distributes `total_consumption` across the `[start, end)`
+/// window, never exceeding `max_consumption` in any single timestep.
 pub struct VariableAction {
     /// Earliest time the action can start (inclusive).
     pub start: DateTime<Utc>,

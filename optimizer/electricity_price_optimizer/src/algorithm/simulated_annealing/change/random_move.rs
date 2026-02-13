@@ -1,5 +1,5 @@
 use crate::{
-    simulated_annealing::{
+    algorithm::simulated_annealing::{
         change::{Change, random_helpers::sample_centered_int},
         state::State,
     },

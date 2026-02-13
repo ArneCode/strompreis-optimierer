@@ -1,3 +1,9 @@
+//! Python-facing battery types.
+//!
+//! `Battery` is the user-facing definition (capacity, rates, etc.).
+//! `AssignedBattery` is the optimizer's result, exposing the planned charge
+//! level and charge/discharge speed at every timestep.
+
 use chrono::{DateTime, Utc};
 use electricity_price_optimizer::{
     optimizer_context::{
@@ -14,6 +20,7 @@ use crate::units::{Watt, WattHour};
 
 #[pyclass]
 #[derive(Clone)]
+/// Battery definition with capacity, charge/discharge limits, and initial state.
 pub struct Battery {
     /// Maximum capacity.
     pub capacity: WattHour,
@@ -29,7 +36,7 @@ pub struct Battery {
 #[pymethods]
 impl Battery {
     #[new]
-    /// Create a Battery definition.
+    /// Create a battery definition with the given parameters.
     fn new(
         capacity: WattHour,
         max_charge_rate: Watt,
@@ -47,7 +54,9 @@ impl Battery {
     }
 }
 impl Battery {
-    /// Convert to internal RustBattery with losses fixed at 1.0 (no loss).
+    /// Convert to the internal `RustBattery`.
+    ///
+    /// Efficiency is currently hard-coded to 1.0 (lossless).
     pub fn to_rust(&self) -> RustBattery {
         RustBattery::new(
             self.capacity.to_milli_wh() as i64,
@@ -61,7 +70,8 @@ impl Battery {
 }
 
 #[pyclass]
-/// A battery assignment exposing charge level and instantaneous charge speed at timesteps.
+/// An optimizer-assigned battery exposing charge level and charge speed over
+/// the scheduling horizon.
 pub struct AssignedBattery {
     inner: RustAssignedBattery,
     start_timestamp: DateTime<Utc>,
@@ -79,12 +89,15 @@ impl AssignedBattery {
             ))
         }
     }
-    /// Get charge speed (delta between timestep and next). Returns 0 at end-of-day.
+    /// Get the charge speed (power flowing into or out of the battery) at a
+    /// given time.
+    ///
+    /// Computed as the difference in charge level between the current and the
+    /// next timestep.  Positive means charging, negative means discharging.
+    /// Returns 0 W at end-of-day since there is no next timestep.
     fn get_charge_speed(&self, time: DateTime<Utc>) -> PyResult<Watt> {
         let time_converted = datetime_to_time(time, self.start_timestamp)?;
         let next_time = time_converted.get_next_timestep();
-        // get charge levels at time and next_time
-        // next time might be end of day in which case we return 0
         let curr_level = if let Some(level) = self.inner.get_charge_level(time_converted) {
             *level
         } else {
@@ -92,6 +105,7 @@ impl AssignedBattery {
                 "Time out of range for battery charge level FIXME",
             ));
         };
+        // At end-of-day there is no next timestep, so we report zero speed
         let next_level = if let Some(level) = self.inner.get_charge_level(next_time) {
             *level
         } else if next_time == Time::get_day_end() {
@@ -102,6 +116,7 @@ impl AssignedBattery {
             ));
         };
 
+        // delta > 0 → charging, delta < 0 → discharging
         let delta_charge = next_level - curr_level;
         Ok(Watt::from_milli_watt_hour_per_timestep(delta_charge as f64))
     }
@@ -110,7 +125,7 @@ impl AssignedBattery {
         self.inner.get_battery().get_id()
     }
 
-    /// Get the charge level over the full day as a time series.
+    /// Get the charge level over the full day as a `TimeSeries` of `WattHour` values.
     fn get_charge_level_time_series<'py>(&self, py: Python<'py>) -> PyResult<TimeSeries> {
         let prognoses = Prognoses::from_closure(|t| {
             self.inner
@@ -120,11 +135,12 @@ impl AssignedBattery {
         TimeSeries::from_prognoses(py, &prognoses, self.start_timestamp)
     }
 
-    /// Get the charge speed over the full day as a time series.
+    /// Get the charge speed over the full day as a `TimeSeries` of `Watt` values.
     fn get_charge_speed_time_series<'py>(&self, py: Python<'py>) -> PyResult<TimeSeries> {
         let prognoses = Prognoses::from_closure(|time| {
             let curr_level = *self.inner.get_charge_level(time)?;
             let next_time = time.get_next_timestep();
+            // At end-of-day there is no next timestep; treat level as 0
             let next_level = if let Some(level) = self.inner.get_charge_level(next_time) {
                 *level
             } else if next_time == Time::get_day_end() {
@@ -139,13 +155,14 @@ impl AssignedBattery {
     }
 }
 impl AssignedBattery {
+    /// Wrap a Rust `AssignedBattery` with a start timestamp for datetime conversion.
     pub fn new(inner: RustAssignedBattery, start_timestamp: DateTime<Utc>) -> Self {
         AssignedBattery {
             inner,
             start_timestamp,
         }
     }
-    // getters
+    /// Access the underlying Rust assigned battery.
     pub fn get_inner(&self) -> &RustAssignedBattery {
         &self.inner
     }
