@@ -8,9 +8,6 @@ export const geoService = {
      * @param {number} lng - Longitude (-180 to 180)
      * @returns {Promise<object>} Nominatim response with display_name and address components
      * @throws {Error} If HTTP response is not ok (network error, API unavailable)
-     * @example
-     * const result = await geoService.getAddressFromCoords(52.52, 13.40);
-     * console.log(result.display_name); // "Berlin, Germany"
      */
     async getAddressFromCoords(lat, lng) {
         const response = await fetch(

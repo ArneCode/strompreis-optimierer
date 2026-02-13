@@ -6,8 +6,6 @@
  * Round date to next 5-minute interval.
  * @param {Date} date - Input date
  * @returns {Date} New date rounded up to next 5-minute mark
- * @example
- * roundToNext5Min(new Date(2026, 0, 13, 14, 23, 0)) // Returns 14:25
  */
 export const roundToNext5Min = (date) => {
     const rounded = new Date(date);
@@ -26,8 +24,6 @@ export const roundToNext5Min = (date) => {
  * @param {number} timeOffset - Time offset from midnight in minutes
  * @returns {string} Time in HH:MM format (e.g., "14:30")
  * @throws {TypeError} If parameters are not numbers
- * @example
- * sliderToTime(300, 600) // Returns "14:00"
  */
 export const sliderToTime = (sliderMins, timeOffset) => {
     const totalMins = (sliderMins + timeOffset) % 1440;
@@ -43,8 +39,6 @@ export const sliderToTime = (sliderMins, timeOffset) => {
  * @param {number} timeOffset - Time offset from midnight in minutes
  * @returns {number} Slider position (0-1440)
  * @throws {TypeError} If timeOffset is not a number
- * @example
- * timeToSlider("14:00", 600) // Returns 300
  */
 export const timeToSlider = (timeStr, timeOffset) => {
     if (!timeStr) return 0;
@@ -68,9 +62,6 @@ export const timeToSlider = (timeStr, timeOffset) => {
  * @param {number} timeOffset - Time offset from midnight
  * @param {boolean} [isEdit=false] - Skip deviceId requirement if editing
  * @returns {Object} Validation errors {fieldName: errorMessage}
- * @example
- * const errors = validateActionForm(form, devices, 600, false);
- * if (errors.startTime) { // Error exists }
  */
 export const validateActionForm = (form, devices, timeOffset, isEdit = false) => {
     const errors = {};
@@ -124,13 +115,12 @@ export const getDateLabel = (timeStr, timeOffset) => {
 };
 
 /**
+ * AI
  * Combine HH:MM time string with offset into ISO 8601 timestamp.
  * Automatically adjusts to next day if needed based on offset.
  * @param {string} timeStr - Time in HH:MM format
  * @param {number} timeOffset - Time offset from midnight in minutes
  * @returns {string|null} ISO 8601 timestamp string, or null if timeStr invalid
- * @example
- * combineToISO("14:30", 600) // Returns ISO timestamp for 14:30
  */
 export const combineToISO = (timeStr, timeOffset) => {
     if (!timeStr) return null;
@@ -150,11 +140,10 @@ export const combineToISO = (timeStr, timeOffset) => {
 };
 
 /**
+ * AI
  * Extract HH:MM time string from ISO 8601 timestamp.
  * @param {string} isoString - ISO 8601 timestamp (e.g., "2026-02-13T14:30:00Z")
  * @returns {string} Time in HH:MM format, or empty string if invalid
- * @example
- * extractTimeFromISO("2026-02-13T14:30:00Z") // Returns "14:30"
  */
 export const extractTimeFromISO = (isoString) => {
     if (!isoString) return "";

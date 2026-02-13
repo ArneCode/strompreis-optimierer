@@ -1,4 +1,5 @@
 /**
+ * Created AI supported.
  * TimeRangeSlider - Reusable dual-slider for selecting start and end times within 24h.
  * Uses Material-UI Slider with minimum distance enforcement between handles.
  * @param {object} props

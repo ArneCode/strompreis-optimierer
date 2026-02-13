@@ -11,7 +11,6 @@ const TABLE_COLUMNS = ["ID", "Name", "Beschreibung", "Start", "Ende"];
  * Escape CSV special characters (quotes, commas, newlines).
  * @param {*} value - Value to escape
  * @returns {string} Escaped CSV value
- * @private
  */
 const escapeCSV = (value) => {
     if (value === null || value === undefined) return '';
@@ -26,7 +25,6 @@ const escapeCSV = (value) => {
  * Format Date object to German date-time string.
  * @param {Date} date - Date to format
  * @returns {string} Formatted date string (DD.MM.YYYY HH:MM) or empty if invalid
- * @private
  */
 const formatDateTime = (date) => {
     if (!date || !(date instanceof Date)) return '';
@@ -43,7 +41,6 @@ const formatDateTime = (date) => {
  * Validate export data is non-empty array.
  * @param {*} data - Data to validate
  * @returns {object} {isValid: boolean, error?: string}
- * @private
  */
 const validateExportData = (data) => {
     if (!Array.isArray(data)) {
@@ -84,8 +81,6 @@ const transformTaskData = (data) => {
  * @param {Function} [onError=null] - Error callback(errorMessage)
  * @throws {Error} Silently caught, passed to onError callback
  * @returns {void}
- * @example
- * downloadCSV(tasks, "schedule.csv", (error) => console.error(error));
  */
 export const downloadCSV = (data, fileName = "ablaufplan.csv", onError = null) => {
     try {
@@ -128,8 +123,6 @@ export const downloadCSV = (data, fileName = "ablaufplan.csv", onError = null) =
  * @param {Function} [onError=null] - Error callback(errorMessage)
  * @throws {Error} Silently caught, passed to onError callback
  * @returns {void}
- * @example
- * downloadPDF(tasks, "schedule.pdf", (error) => console.error(error));
  */
 export const downloadPDF = (data, fileName = "ablaufplan.pdf", onError = null) => {
     try {

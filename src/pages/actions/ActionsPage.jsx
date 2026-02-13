@@ -56,7 +56,6 @@ function ActionsPage() {
         return () => clearTimeout(timer);
     }, [errorMessage]);
 
-    // Geräte laden mit useCallback für Stabilität
     const refreshData = useCallback(async () => {
         setIsLoading(true);
         try {

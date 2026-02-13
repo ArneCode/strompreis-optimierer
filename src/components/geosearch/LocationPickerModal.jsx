@@ -1,4 +1,5 @@
 /**
+ * Ccreated AI supported.
  * Modal dialog to pick geographic location on Leaflet map
  * Supports both search (via OpenStreetMap Nominatim) and direct map click interactions.
  * Returns selected location via callback with {lat, lng, label} structure.
