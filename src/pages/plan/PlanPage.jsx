@@ -36,6 +36,7 @@ function PlanPage() {
   });
   const [error, setError] = useState(null);
   
+  /*
   const [priceData, setPriceData] = useState([
     { hour: '00:00', price: 22.4 },
     { hour: '01:00', price: 21.9 },
@@ -62,6 +63,7 @@ function PlanPage() {
     { hour: '22:00', price: 25.1 },
     { hour: '23:00', price: 23.6 },
   ]);
+  */
   
   const [pvData, setPvData] = useState([
     { hour: '00:00', generation: 0 },
@@ -238,6 +240,15 @@ function PlanPage() {
       : tasks.length > 0
         ? new Date(Math.max(...tasks.map((t) => t.end.getTime()))) 
         : new Date(Date.now() + 6 * 60 * 60 * 1000);
+
+  const priceDataFromBackend = (planData.timeline ?? []).map((iso, i) => {
+    const d = new Date(iso);
+
+    return {
+      hour: String(d.getHours()).padStart(2, "0") + ":00",
+      price: planData.pricesCtPerKwh?.[i] ?? null,
+    };
+  });
     
 
   useEffect(() => {
@@ -387,7 +398,7 @@ function PlanPage() {
           <div className="diagram">
             <LineChart 
               style={{ width: '100%', aspectRatio: 1.5, maxWidth: 700}} 
-              data={priceData}
+              data={priceDataFromBackend}
               responsive
               margin={{bottom: 30}}
             >
