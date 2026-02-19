@@ -255,7 +255,7 @@ function PlanPage() {
             </div>
             {selectedBattery && (
               <>
-                <p className="graph-y-axis">Battery SOC (Wh)</p>
+                <p className="graph-y-axis">Speicherladung (Wh)</p>
                 <LineChart width={600} height={300} data={buildBatterySeries(selectedBattery)} margin={{ bottom: 20 }}>
                   <CartesianGrid strokeDasharray="1 1" />
                   <XAxis
@@ -274,7 +274,7 @@ function PlanPage() {
 
             {!selectedBattery && selectedVA && (
               <>
-                <p className="graph-y-axis">Power (W)</p>
+                <p className="graph-y-axis">Leistung (W)</p>
                 <LineChart width={600} height={300} data={buildVariableActionSeries(selectedVA)} margin={{ bottom: 20 }}>
                   <CartesianGrid strokeDasharray="1 1" />
                   <XAxis
