@@ -101,6 +101,31 @@ export const validateActionForm = (form, devices, timeOffset, isEdit = false) =>
 export const getCurrentTimeStr = () => roundToNext5Min(new Date()).toTimeString().slice(0, 5);
 
 /**
+ * AI
+ * Round an HH:MM time string to the nearest 5-minute mark.
+ * Handles hour roll-over when minutes round to 60.
+ * @param {string} timeStr - Time in HH:MM format
+ * @returns {string} Rounded time in HH:MM format or original if invalid
+ */
+export const roundTimeToNearest5 = (timeStr) => {
+    if (!timeStr) return timeStr;
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return timeStr;
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return timeStr;
+
+    let rounded = Math.round(minutes / 5) * 5;
+    let newHours = hours;
+    if (rounded === 60) {
+        rounded = 0;
+        newHours = (hours + 1) % 24;
+    }
+
+    return `${String(newHours).padStart(2, '0')}:${String(rounded).padStart(2, '0')}`;
+};
+
+/**
  * Return date label (Today/Tomorrow) based on time and offset.
  * Determines if time is in current day or next day based on midnight offset.
  * @param {string} timeStr - Time in HH:MM format

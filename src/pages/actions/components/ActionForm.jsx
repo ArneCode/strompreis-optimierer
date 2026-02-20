@@ -22,15 +22,10 @@ const FormField = ({ label, error, children }) => (
 /**
  * ActionForm - Form for creating/editing device actions with time range selector
  * Supports both constant and variable flexibility actions with dynamic field rendering.
- * @param {object} props
- * @param {object} props.actionForm - Current form values
- * @param {string} props.actionForm.deviceId - Selected device ID
- * @param {string} props.actionForm.startTime - Start time in HH:MM format
- * @param {string} props.actionForm.endTime - End time in HH:MM format
- * @param {string} props.actionForm.duration - Duration in minutes (constant flexibility only)
- * @param {string} props.actionForm.consumption - Power consumption in W
- * @param {string} props.actionForm.totalConsumption - Total energy in Wh (variable only)
+ * @param {object} props - Component props
+ * @param {object} props.actionForm - Current form values (deviceId, startTime, endTime, duration, consumption, totalConsumption)
  * @param {Function} props.onChange - Callback(fieldName, value) for field changes
+ * @param {Function} props.onTimeBlur - Called when time input loses focus
  * @param {Array} [props.devices=[]] - Available devices to select from
  * @param {boolean} [props.isEdit=false] - Edit mode (cannot change device)
  * @param {Object} [props.errors={}] - Validation errors {fieldName: errorMessage}
@@ -43,18 +38,19 @@ const FormField = ({ label, error, children }) => (
  * @returns {JSX.Element} Form container
  */
 function ActionForm({
-                        actionForm,
-                        onChange,
-                        devices = [],
-                        isEdit = false,
-                        errors = {},
-                        disabled = false,
-                        sliderToTime,
-                        timeToSlider,
-                        startLabel,
-                        endLabel,
-                        currentTimeStr
-                    }) {
+                         actionForm,
+                         onChange,
+                         onTimeBlur,
+                         devices = [],
+                         isEdit = false,
+                         errors = {},
+                         disabled = false,
+                         sliderToTime,
+                         timeToSlider,
+                         startLabel,
+                         endLabel,
+                         currentTimeStr
+                     }) {
 
     const selectedDevice = devices?.find(d => String(d.id) === String(actionForm.deviceId));
     const isVariable = selectedDevice?.flexibility === "variable";
@@ -90,8 +86,10 @@ function ActionForm({
                     name="startTime"
                     value={actionForm.startTime}
                     onChange={onChange}
+                    onBlur={onTimeBlur}
                     disabled={disabled}
                     className={errors.startTime ? "input-error" : ""}
+                    step={300}
                 />
             </FormField>
 
@@ -101,8 +99,10 @@ function ActionForm({
                     name="endTime"
                     value={actionForm.endTime}
                     onChange={onChange}
+                    onBlur={onTimeBlur}
                     disabled={disabled}
                     className={errors.endTime ? "input-error" : ""}
+                    step={300}
                 />
             </FormField>
 

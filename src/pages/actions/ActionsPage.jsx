@@ -16,7 +16,7 @@ import {
     getCurrentTimeStr,
     getDateLabel,
     combineToISO,
-    extractTimeFromISO
+    extractTimeFromISO, roundTimeToNearest5
 } from "./Actionslogic";
 
 import "../../styles/pages/Actions.css";
@@ -95,6 +95,14 @@ function ActionsPage() {
         });
     };
 
+    // AI
+    const handleTimeBlur = (e) => {
+        const { name, value } = e.target;
+        if (name !== 'startTime' && name !== 'endTime') return;
+        const rounded = roundTimeToNearest5(value);
+        setActionForm(prev => ({ ...prev, [name]: rounded }));
+    };
+
     const handleOpenCreate = () => {
         setActionForm({
             deviceId: "",
@@ -160,7 +168,8 @@ function ActionsPage() {
                 const oldAction = device.actions[editIndex.actionIndex];
                 try {
                     await apiService.deleteAction(device.id, oldAction.id);
-                } catch (error) {
+                } catch (err) {
+                    console.error("Error deleting old action:", err);
                     setErrorMessage("Löschen der alten Aktion fehlgeschlagen.");
                     setIsLoading(false);
                     return;
@@ -232,9 +241,10 @@ function ActionsPage() {
                 startLabel={getDateLabel(actionForm.startTime, timeOffset)}
                 endLabel={getDateLabel(actionForm.endTime, timeOffset)}
                 currentTimeStr={getCurrentTimeStr()}
-            />
-        </div>
-    );
-}
+                onTimeBlur={handleTimeBlur}
+             />
+         </div>
+     );
+ }
 
-export default ActionsPage;
+ export default ActionsPage;
