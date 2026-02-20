@@ -9,6 +9,7 @@ import apiService from "../../services/apiService";
 import plusIcon from "../../assets/images/plus.png";
 import { INITIAL_DEVICE_FORM, validateDevice } from './DevicesLogic';
 import '../../styles/pages/Devices.css';
+import { prepareDeviceForForm } from '../../services/deviceMapper.js';
 
 const MODAL_MODES = {
     CREATE: 'create',
@@ -41,7 +42,8 @@ function DevicesPage() {
         setIsLoading(true);
         try {
             const data = await apiService.fetchDevices();
-            setDevices(data);
+            const prepared = Array.isArray(data) ? data.map(d => prepareDeviceForForm(d)) : [];
+            setDevices(prepared);
         } catch {
             setErrorMessage("Fehler beim Laden.");
         } finally {
@@ -174,4 +176,3 @@ function DevicesPage() {
 }
 
 export default DevicesPage;
-
