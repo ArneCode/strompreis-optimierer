@@ -16,6 +16,7 @@ from services.interactor_service import IInteractorService
 from services.orchestrator_service import IOrchestratorService
 from instances import controller_service_instance, interactor_service_instance, orchestrator_service_instance
 from device_manager import IDeviceManager, DeviceManager
+from services.interfaces import ISettingsService
 
 
 def get_controller_service() -> IControllerService:
@@ -45,3 +46,8 @@ def get_uow(
 def get_device_manager(uow: IUnitOfWork = Depends(get_uow)) -> IDeviceManager:
     """FastAPI dependency for DeviceManager."""
     return DeviceManager(uow=uow)
+
+
+def get_settings_service(uow: IUnitOfWork = Depends(get_uow)) -> ISettingsService:
+    """FastAPI dependency for the Settings Service."""
+    return uow.settings_service

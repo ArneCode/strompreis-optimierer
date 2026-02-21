@@ -16,11 +16,13 @@ from typing import Protocol
 from services.controller_service import IControllerService
 from services.device_service import IDeviceService, SqlAlchemyDeviceService
 from services.interactor_service import IInteractorService
+from services.settings_service import ISettingsService, SqlAlchemySettingsService
 
 
 class IUnitOfWork(ABC):
     """Interface for a unit of work coordinating services and transactions."""
     device_service: IDeviceService
+    settings_service: ISettingsService
     interactor_service: IInteractorService
     controller_service: IControllerService
 
@@ -75,6 +77,7 @@ class SqlAlchemyUnitOfWork(IUnitOfWork):
         self.session_factory = session_factory
         self.session: Optional[Session] = None
         self.device_service: Optional[IDeviceService] = None
+        self.settings_service: Optional[ISettingsService] = None
         self.interactor_service = interactor_service
         self.controller_service = controller_service
 
@@ -83,11 +86,13 @@ class SqlAlchemyUnitOfWork(IUnitOfWork):
 
         - Creates a Session using session_factory.
         - Instantiates SqlAlchemyDeviceService bound to the session.
+        - Instantiates SqlAlchemySettingsService bound to the session.
         - Returns self for use within the with-block.
         """
         super().__enter__()
         self.session = self.session_factory()
         self.device_service = SqlAlchemyDeviceService(self.session)
+        self.settings_service = SqlAlchemySettingsService(self.session)
         return self
 
     def _rollback(self) -> None:

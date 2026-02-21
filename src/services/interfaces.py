@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING, Optional
 
 from devices import GeneratorPV, GeneratorPV, GeneratorRandom
 if TYPE_CHECKING:
-    from electricity_price_optimizer_py import Schedule
+    from api.settings import SimulatedAnnealingSettingsUpdate
+    from electricity_price_optimizer_py import Schedule, SimulatedAnnealingSettings as SimulatedAnnealingSettingsOptimizer
     from controllers.base import DeviceController
     from controllers.battery_controller import BatteryController
     from controllers.constant_action_controller import ConstantActionController
@@ -20,6 +21,7 @@ if TYPE_CHECKING:
     from device_manager import IDeviceManager
     from interactors.interfaces import BatteryInteractor, GeneratorInteractor, ConstantActionInteractor, VariableActionInteractor
     from rollback_map import RollbackMap
+    from settings import SimulatedAnnealingSettings
 
 
 class IInteractorServiceReader(ABC):
@@ -315,4 +317,23 @@ class IOrchestratorService(ABC):
     @abstractmethod
     def currently_running(self) -> bool:
         """Check if optimization is currently running."""
+        ...
+
+
+class ISettingsService(ABC):
+    """Settings service interface."""
+
+    @abstractmethod
+    def get_simulated_annealing_settings(self) -> "SimulatedAnnealingSettings":
+        """Retrieve the current simulated annealing optimization settings."""
+        ...
+
+    @abstractmethod
+    def update_simulated_annealing_settings(self, settings_payload: "SimulatedAnnealingSettingsUpdate") -> None:
+        """Update the simulated annealing optimization settings."""
+        ...
+
+    @abstractmethod
+    def get_optimizer_settings(self) -> "SimulatedAnnealingSettingsOptimizer":
+        """Get settings in the format required by the optimizer."""
         ...

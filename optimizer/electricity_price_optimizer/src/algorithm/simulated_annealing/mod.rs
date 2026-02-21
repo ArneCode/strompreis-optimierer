@@ -6,8 +6,26 @@
 
 use rand::Rng;
 
-use crate::{optimizer_context::OptimizerContext, schedule::{self, Schedule}};
-use crate::algorithm::simulated_annealing::{change::{Change, multi_change::MultiChange}, state::State};
+use crate::{
+    algorithm::simulated_annealing::{
+        change::{Change, multi_change::MultiChange},
+        state::State,
+    },
+    optimizer_context::action::constant,
+};
+use crate::{
+    optimizer_context::OptimizerContext,
+    schedule::{self, Schedule},
+};
+
+/// Settings for the simulated annealing algorithm.
+pub struct SimulatedAnnealingSettings {
+    pub initial_temperature: f64,
+    pub cooling_rate: f64,
+    pub final_temperature: f64,
+    pub constant_action_move_factor: f64,
+    pub num_moves_per_step: usize,
+}
 
 mod change;
 pub mod state;
@@ -70,7 +88,14 @@ pub mod state;
 ///     variable_actions,
 ///     1.0,
 /// );
-/// let (cost, schedule) = run_simulated_annealing(context);
+/// let settings = SimulatedAnnealingSettings {
+///     initial_temperature: 100.0,
+///     cooling_rate: 0.95,
+///     final_temperature: 1.0,
+///     constant_action_move_factor: 0.1,
+///     num_moves_per_step: 10,
+/// };
+/// let (cost, schedule) = run_simulated_annealing(context, settings);
 /// println!("Optimization result cost: {}", cost);
 /// ```
 ///
@@ -81,20 +106,28 @@ pub mod state;
 ///
 /// # Panics
 /// This function may panic if the `OptimizerContext` contains invalid or inconsistent data.
-pub fn run_simulated_annealing(context: OptimizerContext) -> (i64, Schedule) {
+pub fn run_simulated_annealing(
+    context: OptimizerContext,
+    settings: SimulatedAnnealingSettings,
+) -> (i64, Schedule) {
     let mut rng = rand::rng();
 
     let mut state = State::new_random(context, &mut rng);
-    let mut temperature: f64 = 40.0;
+    let mut temperature: f64 = settings.initial_temperature;
 
     let mut old_cost = state.get_cost();
     let mut n_iterations = 0;
     let mut min_cost = old_cost;
-    while temperature > 0.1 {
+    while temperature > settings.final_temperature {
         n_iterations += 1;
         // Determine random_move_sigma based on temperature
-        let random_move_sigma = 30.0 * temperature.sqrt();
-        let change = MultiChange::new_random(&mut rng, &state, random_move_sigma, 2);
+        let random_move_sigma = settings.constant_action_move_factor * temperature.sqrt();
+        let change = MultiChange::new_random(
+            &mut rng,
+            &state,
+            random_move_sigma,
+            settings.num_moves_per_step,
+        );
         change.apply(&mut state);
         // Evaluate the new state and decide whether to accept or reject the change
         let new_cost = state.get_cost();
@@ -115,7 +148,7 @@ pub fn run_simulated_annealing(context: OptimizerContext) -> (i64, Schedule) {
         if old_cost < min_cost {
             min_cost = old_cost;
         }
-        temperature *= 0.9; // Cool down
+        temperature *= settings.cooling_rate; // Cool down
         // println!("temperature: {temperature}, cost: {old_cost}");
     }
 

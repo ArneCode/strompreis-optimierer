@@ -18,6 +18,7 @@ from api.orchestrator import router as orchestrator_router
 from api.devices import router as devices_router
 from api.actions import router as actions_router
 from api.plan import router as plan_router
+from api.settings import router as settings_router
 from fastapi.middleware.cors import CORSMiddleware
 
 init_db()
@@ -71,6 +72,7 @@ app.include_router(devices_router)
 app.include_router(actions_router)
 app.include_router(plan_router)
 app.include_router(example_price_24h_request_router)
+app.include_router(settings_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=5000)

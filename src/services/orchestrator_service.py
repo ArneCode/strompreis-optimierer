@@ -13,7 +13,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from enum import Enum
 
 from external_api_services.api_services import api_services
-from services.interfaces import IOrchestratorService
+from services.interfaces import IOrchestratorService, ISettingsService
 
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
@@ -56,7 +56,7 @@ class OrchestratorService(IOrchestratorService):
         finally:
             self._currently_running = False
 
-    def run_optimization(self, device_manager: "IDeviceManager") -> "None":
+    def run_optimization(self, device_manager: "IDeviceManager", settings_service: ISettingsService) -> "None":
         """Run the optimization algorithm."""
         if self._currently_running:
             raise RuntimeError("Optimization is already running.")
@@ -79,7 +79,9 @@ class OrchestratorService(IOrchestratorService):
             controller.add_to_optimizer_context(context, now, device_manager)
 
         print("Starting optimization...")
-        future = self.executor.submit(run_simulated_annealing, context)
+        settings = settings_service.get_optimizer_settings()
+        future = self.executor.submit(
+            run_simulated_annealing, context, settings)
         self._currently_running = True
 
         print("Optimization task submitted...")

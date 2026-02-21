@@ -9,9 +9,9 @@ from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from electricity_price_optimizer_py.units import WattHour, Watt
-from api.dependencies import get_device_manager, get_orchestrator_service
+from api.dependencies import get_device_manager, get_orchestrator_service, get_settings_service
 from device_manager import IDeviceManager
-from services.interfaces import IOrchestratorService
+from services.interfaces import IOrchestratorService, ISettingsService
 from devices import ConstantActionDevice
 from devices import VariableActionDevice
 from devices import Battery
@@ -342,6 +342,7 @@ def get_plan_data(
 def generate_plan(
     device_manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
+    settings_service: ISettingsService = Depends(get_settings_service)
 ):
     """
     Start plan generation by running the optimization algorithm.
@@ -360,7 +361,7 @@ def generate_plan(
         )
 
     try:
-        orchestrator.run_optimization(device_manager)
+        orchestrator.run_optimization(device_manager, settings_service)
     except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

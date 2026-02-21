@@ -254,12 +254,40 @@ class Schedule:
         ...
 
 
-def run_simulated_annealing(context: OptimizerContext) -> Tuple[units.Euro, Schedule]:
+class SimulatedAnnealingSettings:
+    """Settings for the simulated annealing algorithm."""
+    initial_temperature: float
+    cooling_rate: float
+    final_temperature: float
+    constant_action_move_factor: float
+    num_moves_per_step: int
+
+    def __init__(
+        self,
+        initial_temperature: float = 40.0,
+        cooling_rate: float = 0.95,
+        final_temperature: float = 0.1,
+        constant_action_move_factor: float = 30.0,
+        num_moves_per_step: int = 2,
+    ) -> None:
+        """
+        Args:
+            initial_temperature: The starting temperature for the annealing process.
+            cooling_rate: The rate at which the temperature decreases.
+            final_temperature: The temperature at which the algorithm stops.
+            constant_action_move_factor: Influences much constant actions are moved in each simulated annealing step (higher means more movement).
+            num_moves_per_step: Number of moves to attempt at each temperature step.
+        """
+        ...
+
+
+def run_simulated_annealing(context: OptimizerContext, settings: SimulatedAnnealingSettings) -> Tuple[units.Euro, Schedule]:
     """
     Runs the simulated annealing optimization algorithm.
 
     Args:
         context: The optimization context containing prices, actions, and batteries.
+        settings: The settings for the simulated annealing algorithm.
 
     Returns:
         A tuple of (total_cost, optimized_schedule).

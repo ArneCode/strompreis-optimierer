@@ -13,5 +13,6 @@ __all__ = [
     "AssignedBattery",
     "OptimizerContext",
     "Schedule",
+    "SimulatedAnnealingSettings",
     "run_simulated_annealing",
 ]
