@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, status
 from api.dependencies import get_device_manager, get_orchestrator_service
 from device_manager import IDeviceManager
-from device import Battery, GeneratorRandom, VariableActionDevice, VariableAction, ConstantActionDevice, ConstantAction, GeneratorPV
+from devices import Battery, GeneratorRandom, VariableActionDevice, VariableAction, ConstantActionDevice, ConstantAction, GeneratorPV
 from electricity_price_optimizer_py.units import WattHour, Watt
 from services.orchestrator_service import IOrchestratorService, OrchestratorService
 

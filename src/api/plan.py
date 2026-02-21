@@ -12,9 +12,9 @@ from electricity_price_optimizer_py.units import WattHour, Watt
 from api.dependencies import get_device_manager, get_orchestrator_service
 from device_manager import IDeviceManager
 from services.interfaces import IOrchestratorService
-from device import ConstantActionDevice
-from device import VariableActionDevice
-from device import Battery
+from devices import ConstantActionDevice
+from devices import VariableActionDevice
+from devices import Battery
 from electricity_price_optimizer_py import Schedule
 
 BERLIN = ZoneInfo("Europe/Berlin")

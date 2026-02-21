@@ -4,7 +4,7 @@ from typing import Optional, TYPE_CHECKING
 from electricity_price_optimizer_py.units import Watt, WattHour
 from noise import pnoise1
 
-from device import GeneratorRandom
+from devices import GeneratorRandom
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
 

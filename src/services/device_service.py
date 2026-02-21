@@ -10,7 +10,7 @@ Notes:
 from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from device import Device, Battery, GeneratorPV, ConstantActionDevice, GeneratorPV, GeneratorRandom, VariableActionDevice
+from devices import Device, Battery, GeneratorPV, ConstantActionDevice, GeneratorPV, GeneratorRandom, VariableActionDevice
 from services.interfaces import IDeviceService
 
 

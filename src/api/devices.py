@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from electricity_price_optimizer_py.units import WattHour, Watt
 from api.dependencies import get_device_manager
 from device_manager import IDeviceManager
-from device import (
+from devices import (
     Device,
     ConstantActionDevice,
     GeneratorRandom,

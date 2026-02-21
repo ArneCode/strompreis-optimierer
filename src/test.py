@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from database import engine, init_db
-from device import (
+from devices import (
     Battery,
     ConstantActionDevice, ConstantAction,
     VariableActionDevice, VariableAction
@@ -154,7 +154,8 @@ def main():
         # Constant action interactor (dishwasher)
         dishwasher_interactor = MockConstantActionInteractor(dishwasher.id)
         dishwasher_interactor.id = dishwasher.id
-        interactor_service.add_constant_action_interactor(dishwasher_interactor)
+        interactor_service.add_constant_action_interactor(
+            dishwasher_interactor)
 
         # Variable action interactor (EV charger)
         ev_interactor = MockVariableActionInteractor(ev_charger.id)
@@ -173,7 +174,8 @@ def main():
         controller_service.add_battery_controller(battery_controller)
 
         dishwasher_controller = ConstantActionController(dishwasher.id)
-        controller_service.add_constant_action_controller(dishwasher_controller)
+        controller_service.add_constant_action_controller(
+            dishwasher_controller)
 
         ev_controller = VariableActionController(ev_charger.id)
         controller_service.add_variable_action_controller(ev_controller)
@@ -181,7 +183,8 @@ def main():
         controller_service.commit()
         print("    Controllers registered.")
 
-        controllers = [battery_controller, dishwasher_controller, ev_controller]
+        controllers = [battery_controller,
+                       dishwasher_controller, ev_controller]
 
         # =====================================================================
         # STEP 5: Build Optimizer Context
@@ -224,7 +227,8 @@ def main():
             print(f"    Battery ({battery.id}): Scheduled ✓")
             try:
                 charge_speed = assigned_battery.get_charge_speed(now)
-                print(f"        Charge speed at {now.hour}:00 = {charge_speed} W")
+                print(
+                    f"        Charge speed at {now.hour}:00 = {charge_speed} W")
             except Exception as e:
                 print(f"        Could not get charge speed: {e}")
         else:
@@ -246,9 +250,11 @@ def main():
                 check_time = now + timedelta(hours=hour_offset)
                 try:
                     consumption = assigned_ev.get_consumption(check_time)
-                    print(f"        Power at +{hour_offset}h = {consumption} W")
+                    print(
+                        f"        Power at +{hour_offset}h = {consumption} W")
                 except Exception as e:
-                    print(f"        Could not get consumption at +{hour_offset}h: {e}")
+                    print(
+                        f"        Could not get consumption at +{hour_offset}h: {e}")
         else:
             print(f"    EV Charger ({ev_charger.id}): Not in schedule")
 
@@ -269,13 +275,16 @@ def main():
         # Battery state
         battery_charge = battery_interactor.get_charge(device_manager)
         battery_current = battery_interactor.get_current(device_manager)
-        print(f"    Battery: charge={battery_charge}, current={battery_current}")
+        print(
+            f"    Battery: charge={battery_charge}, current={battery_current}")
 
         # Dishwasher state
-        dishwasher_state = dishwasher_interactor.get_action_state(device_manager)
+        dishwasher_state = dishwasher_interactor.get_action_state(
+            device_manager)
         dishwasher_power = dishwasher_interactor.get_current(device_manager)
         dishwasher_start = dishwasher_interactor.get_start_time(device_manager)
-        print(f"    Dishwasher: state={dishwasher_state.value}, power={dishwasher_power}, started={dishwasher_start}")
+        print(
+            f"    Dishwasher: state={dishwasher_state.value}, power={dishwasher_power}, started={dishwasher_start}")
 
         # EV state
         ev_power = ev_interactor.get_current(device_manager)
@@ -286,22 +295,25 @@ def main():
         # STEP 11: Simulate Time Passing (Optional)
         # =====================================================================
         print("\n[11] Simulating 2 hours passing...")
-        
+
         future_time = now + timedelta(hours=2)
-        
+
         # Update mock interactor states
         battery_interactor.update(future_time, device_manager)
         dishwasher_interactor.update(future_time, device_manager)
         ev_interactor.update(future_time, device_manager)
-        
+
         # Update controllers with new time
         for controller in controllers:
             controller.update_device(future_time, device_manager)
-        
+
         print(f"    Time now: {future_time}")
-        print(f"    Battery: charge={battery_interactor.get_charge(device_manager)}, current={battery_interactor.get_current(device_manager)}")
-        print(f"    Dishwasher: state={dishwasher_interactor.get_action_state(device_manager).value}")
-        print(f"    EV Charger: consumed={ev_interactor.get_total_consumed(device_manager)}")
+        print(
+            f"    Battery: charge={battery_interactor.get_charge(device_manager)}, current={battery_interactor.get_current(device_manager)}")
+        print(
+            f"    Dishwasher: state={dishwasher_interactor.get_action_state(device_manager).value}")
+        print(
+            f"    EV Charger: consumed={ev_interactor.get_total_consumed(device_manager)}")
 
     print("\n" + "=" * 60)
     print("TEST COMPLETED SUCCESSFULLY")

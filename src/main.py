@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from sqlalchemy.orm import Session
 from database import engine, init_db
-from device import *
+from devices import *
 from electricity_price_optimizer_py import OptimizerContext, run_simulated_annealing
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager

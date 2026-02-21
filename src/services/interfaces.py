@@ -8,7 +8,7 @@ implementations (e.g., in-memory vs. database-backed).
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional
 
-from device import GeneratorPV, GeneratorPV, GeneratorRandom
+from devices import GeneratorPV, GeneratorPV, GeneratorRandom
 if TYPE_CHECKING:
     from electricity_price_optimizer_py import Schedule
     from controllers.base import DeviceController
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from controllers.constant_action_controller import ConstantActionController
     from controllers.generator_pv_controller import GeneratorPvController
     from controllers.variable_action_controller import VariableActionController
-    from device import Battery, ConstantActionDevice, Device, VariableActionDevice
+    from devices import Battery, ConstantActionDevice, Device, VariableActionDevice
     from device_manager import IDeviceManager
     from interactors.interfaces import BatteryInteractor, GeneratorInteractor, ConstantActionInteractor, VariableActionInteractor
     from rollback_map import RollbackMap

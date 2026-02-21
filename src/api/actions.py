@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import timedelta
 from api.dependencies import get_device_manager
 from device_manager import IDeviceManager
-from device import (
+from devices import (
     Device,
     ConstantActionDevice,
     VariableActionDevice,
@@ -21,11 +21,11 @@ from electricity_price_optimizer_py.units import Watt, WattHour
 router = APIRouter(prefix="/api", tags=["actions"])
 
 
-
 class ActionBase(BaseModel):
     start: datetime
     end: datetime
     consumption: float
+
 
 class ConstantActionIn(ActionBase):
     """
@@ -33,7 +33,8 @@ class ConstantActionIn(ActionBase):
     """
     duration_minutes: float
 
-class VariableActionIn(ActionBase):#
+
+class VariableActionIn(ActionBase):
     """
     Schema for actions where power can vary over time.
     Defined by a total energy amount (Wh) and a maximum power limit (W).
@@ -102,9 +103,11 @@ def create_action(
         device.actions.append(new_action)
 
     else:
-        raise HTTPException(status_code=400, detail="Gerätetyp unterstützt keine Aktionen")
+        raise HTTPException(
+            status_code=400, detail="Gerätetyp unterstützt keine Aktionen")
 
     return {"success": True, "type": device.type.value}
+
 
 @router.delete("/devices/{device_id}/actions/{action_id}")
 def delete_action(
@@ -139,7 +142,8 @@ def delete_action(
             detail="Dieses Gerät unterstützt keine Aktionen"
         )
 
-    action_to_remove = next((a for a in device.actions if a.id == action_id), None)
+    action_to_remove = next(
+        (a for a in device.actions if a.id == action_id), None)
 
     if action_to_remove is None:
         raise HTTPException(status_code=404, detail="Aktion nicht gefunden")
@@ -147,5 +151,3 @@ def delete_action(
     device.actions.remove(action_to_remove)
 
     return {"success": True, "message": f"Aktion {action_id} wurde gelöscht"}
-
-

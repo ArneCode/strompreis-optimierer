@@ -7,12 +7,12 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from controllers.generator_random_controller import GeneratorRandomController
-from device import GeneratorRandom
+from devices import GeneratorRandom
 from interactors.mock import MockConstantActionInteractor, MockBatteryInteractor, MockGeneratorInteractor, MockVariableActionInteractor
 from controllers import ConstantActionController, VariableActionController, BatteryController, GeneratorPvController
 
 if TYPE_CHECKING:
-    from device import Battery, VariableActionDevice, GeneratorPV, ConstantActionDevice
+    from devices import Battery, VariableActionDevice, GeneratorPV, ConstantActionDevice
     from services.interfaces import IControllerServiceReader, IDeviceServiceReader, IInteractorServiceReader
     from uow import IUnitOfWork
 
