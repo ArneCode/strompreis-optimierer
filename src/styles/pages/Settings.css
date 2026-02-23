@@ -9,13 +9,8 @@
 }
 
 .settings-container {
-    /*
-    margin-left: 50px;
-    margin-right: 100px;
-    */
     margin: 0 auto;
     margin-left: 3rem;
-    /*padding-bottom: 25px;*/
     padding: 0 0 1.5rem;
     border-bottom: solid;
     border-width: 1px;
@@ -64,11 +59,9 @@
 
 .reset-popup-window {
     background: white;
-    /*padding: 30px;*/
     padding: 2rem;
     border-radius: 12px;
     width: min(90%, 400px);
-    /*max-width: 90%;*/
     text-align: center;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
@@ -103,7 +96,6 @@
     background-color: #d52418;
     color: white;
 }
-/* Simulated Annealing Settings Styles */
 .settings-item {
     display: flex;
     align-items: center;
@@ -254,4 +246,3 @@
     border-radius: 4px;
     font-style: italic;
 }
-

@@ -151,16 +151,20 @@ class ApiService {
     /**
      * Update simulated annealing settings on the backend.
      * @param {object} settings - Settings object with properties to update (all optional)
-     * @param {number} [settings.initial_temperature] - Initial temperature
-     * @param {number} [settings.cooling_rate] - Cooling rate factor
-     * @param {number} [settings.final_temperature] - Final temperature
-     * @param {number} [settings.constant_action_move_factor] - Action move factor
-     * @param {number} [settings.num_moves_per_step] - Number of moves per step
      * @returns {Promise<object>} Success message
      * @throws {Error} If backend fails
      */
     updateSimulatedAnnealingSettings(settings) {
         return this.request('settings/simulated-annealing', 'PUT', settings);
+    }
+
+    /**
+     * Reset simulated annealing settings on the backend to default values.
+     * Calls POST /settings/simulated-annealing/reset and returns the default settings object.
+     * @returns {Promise<object>} Default simulated annealing settings
+     */
+    resetSimulatedAnnealingSettings() {
+        return this.request('settings/simulated-annealing/reset', 'POST');
     }
 
 }

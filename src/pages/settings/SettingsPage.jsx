@@ -7,6 +7,7 @@ import apiService from "../../services/apiService.js";
 
 function SettingsPage() {
     const [openReset, setOpenReset] = useState(false);
+    const [openSaReset, setOpenSaReset] = useState(false);
     const [settings, setSettings] = useState({
         initial_temperature: '',
         cooling_rate: '',
@@ -85,7 +86,7 @@ function SettingsPage() {
             ...prev,
             [field]: value === '' ? '' : parseFloat(value)
         }));
-        
+
         if (fieldErrors[field]) {
             setFieldErrors(prev => ({
                 ...prev,
@@ -114,7 +115,6 @@ function SettingsPage() {
             newErrors.constant_action_move_factor = 'Aktions-Bewegungsfaktor erforderlich (> 0)';
         }
 
-        // Validate num_moves_per_step: integer and <= constant actions count
         if (editSettings.num_moves_per_step === '' || editSettings.num_moves_per_step <= 0) {
             newErrors.num_moves_per_step = 'Bewegungen pro Schritt erforderlich (> 0)';
         } else if (!Number.isInteger(editSettings.num_moves_per_step)) {
@@ -123,7 +123,6 @@ function SettingsPage() {
             newErrors.num_moves_per_step = `Bewegungen pro Schritt darf nicht größer als ${constantActionsCount} konstante Aktionen sein`;
         }
 
-        // Validate that final_temperature is less than initial_temperature
         if (editSettings.initial_temperature > 0 && editSettings.final_temperature > 0 &&
             editSettings.final_temperature >= editSettings.initial_temperature) {
             newErrors.final_temperature = 'Endtemperatur muss kleiner als Starttemperatur sein';
@@ -158,6 +157,32 @@ function SettingsPage() {
 
     function toggleResetPopUp() {
         setOpenReset(!openReset);
+    }
+
+    function toggleSaResetPopUp() {
+        setOpenSaReset(!openSaReset);
+    }
+
+    /**
+     * Confirmed action: call backend to reset simulated annealing settings
+     */
+    async function handleSaReset() {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const defaults = await apiService.resetSimulatedAnnealingSettings();
+            // Aktualisiere UI mit den zurückgesetzten Werten
+            setSettings(defaults);
+            setEditSettings(defaults);
+            setSuccessMessage('Simulated Annealing Einstellungen zurückgesetzt');
+            setTimeout(() => setSuccessMessage(null), 3000);
+            setOpenSaReset(false);
+        } catch (err) {
+            console.error('Fehler beim Zurücksetzen der SA-Einstellungen:', err);
+            setError('Fehler beim Zurücksetzen der SA-Einstellungen');
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     /**
@@ -219,6 +244,36 @@ function SettingsPage() {
                       >
                           Parameter bearbeiten
                       </button>
+
+                      <button
+                          className="settings-reset-button"
+                          onClick={toggleSaResetPopUp}
+                      >
+                          SA-Einstellungen zurücksetzen
+                      </button>
+
+                      {openSaReset && (
+                          <div className="reset-popup-overlay">
+                              <div className="reset-popup-window">
+                                  <p>Möchten Sie die Simulated Annealing Einstellungen wirklich auf die Standardwerte zurücksetzen?</p>
+
+                                  <div className="reset-popup-buttons">
+                                      <button
+                                          className="reset-cancel-button"
+                                          onClick={toggleSaResetPopUp}
+                                      >
+                                          Abbrechen
+                                      </button>
+                                      <button
+                                          className="reset-confirm-button"
+                                          onClick={handleSaReset}
+                                      >
+                                          Zurücksetzen
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      )}
                   </>
               )}
 
