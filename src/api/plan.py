@@ -21,6 +21,55 @@ BERLIN = ZoneInfo("Europe/Berlin")
 
 router = APIRouter(prefix="/api", tags=["plan"])
 
+def _collect_generation_by_generator_kw(
+    manager: IDeviceManager,
+    timeline: list[datetime],
+) -> list[dict[str, Any]]:
+    """Calculate generation time series per generator.
+
+    Returns:
+        A list of objects of the form:
+            {
+              "id": <generator device id>,
+              "name": <device name>,
+              "generationKw": [ ... ],
+            }
+        Where "generationKw" aligns with the given timeline (same length).
+    """
+
+    step = (timeline[1] - timeline[0]) if len(timeline) > 1 else timedelta(hours=1)
+    end = timeline[-1] + step
+
+    gen_controllers = manager.get_controller_service().get_all_generator_controllers()
+
+    result: list[dict[str, Any]] = []
+
+    for ctrl in gen_controllers:
+        try:
+            device = manager.get_device_service().get_device(ctrl.device_id)
+        except Exception:
+            device = None
+
+        name = device.name if device is not None else f"Generator {ctrl.device_id}"
+
+        series: list[float] = [0.0 for _ in timeline]
+
+        try:
+            prognoses = ctrl.get_prognoses(manager, timeline, end)
+        except Exception:
+            prognoses = []
+
+        if prognoses:
+            for i in range(min(len(prognoses), len(timeline))):
+                try:
+                    wh = WattHour.get_value(prognoses[i])
+                except Exception:
+                    continue
+                series[i] += float(wh) / 1000.0
+
+        result.append({"id": ctrl.device_id, "name": name, "generationKw": series})
+
+    return result
 
 def _collect_total_generation_kw(
     manager: IDeviceManager,
@@ -193,6 +242,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     timeline = _create_timeline(24)
 
     generation_kw = _collect_total_generation_kw(manager, timeline)
+    generation_by_generator_kw = _collect_generation_by_generator_kw(manager, timeline)
     prices_ct_per_kwh = _collect_hourly_prices_ct_per_kwh(timeline)
 
     plan_start = timeline[0]
@@ -278,6 +328,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
         "variableActions": variable_actions,
         "pricesCtPerKwh": prices_ct_per_kwh,
         "generationKw": generation_kw,
+        "generationByGeneratorKw": generation_by_generator_kw,
     }
 
 
@@ -334,7 +385,8 @@ def get_plan_data(
         "batteries": data["batteries"],
         "variableActions": data["variableActions"],
         "pricesCtPerKwh": data["pricesCtPerKwh"],
-        "generationKw": data["generationKw"]
+        "generationKw": data["generationKw"],
+        "generationByGeneratorKw": data["generationByGeneratorKw"],
     }
 
 
