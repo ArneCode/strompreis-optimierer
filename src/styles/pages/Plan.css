@@ -50,6 +50,11 @@
   cursor: pointer;
 }
 
+.generator-select {
+  margin-left: 3rem;
+  padding: 6px 8px;
+}
+
 .graph-title {
   font-weight: 700;
 }

@@ -25,6 +25,7 @@ function PlanPage() {
     timeline: [],
     batteries: [],
     variableActions: [],
+    generationByGeneratorKw: [],
   });
   const [status, setStatus] = useState({
     currentlyRunning: false,
@@ -34,6 +35,9 @@ function PlanPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  // 'total' for total prognoses. Else generator id.
+  const [selectedGeneratorId, setSelectedGeneratorId] = useState("total");
 
   /** Map variable actions to their id for fast lookup of detail data */
   const variableActionById = useMemo(() => {
@@ -53,6 +57,13 @@ function PlanPage() {
     return m;
   }, [planData.batteries]);
 
+  const generatorOptions = useMemo(() => {
+    return (planData.generationByGeneratorKw ?? []).map((g) => ({
+      id: String(g.id),
+      name: g.name ?? `Generator ${g.id}`,
+    }));
+  }, [planData.generationByGeneratorKw]);
+
   /** Transform backend timeline/prices to chart-friendly format */
   const priceDataFromBackend = (planData.timeline ?? []).map((iso, i) => {
     const d = new Date(iso);
@@ -62,12 +73,26 @@ function PlanPage() {
       price: planData.pricesCtPerKwh?.[i] ?? null,
     };
   });
+  const selectedGenerationSeries = useMemo(() => {
+    // total
+    if (selectedGeneratorId === "total") {
+      return planData.generationKw ?? [];
+    }
+
+    // single generator
+    const g = (planData.generationByGeneratorKw ?? []).find(
+      (x) => String(x.id) === String(selectedGeneratorId)
+    );
+
+    return g?.generationKw ?? [];
+  }, [planData.generationKw, planData.generationByGeneratorKw, selectedGeneratorId]);
+
   /** Transform backend timeline/generation to chart-friendly format */
   const generatorDataFromBackend = (planData.timeline ?? []).map((iso, i) => {
     const d = new Date(iso);
     return {
       hour: String(d.getHours()).padStart(2, "0") + ":00",
-      generation: planData.generationKw?.[i] ?? 0,
+      generation: selectedGenerationSeries?.[i] ?? 0,
     };
   });
 
@@ -239,6 +264,14 @@ function PlanPage() {
   useEffect(() => {
     return () => stopPolling();
   }, []);
+  useEffect(() => {
+    if (selectedGeneratorId === "total") return;
+    
+    const exists = (planData.generationByGeneratorKw ?? []).some(
+      (g) => String(g.id) === String(selectedGeneratorId)
+    );
+    if (!exists) setSelectedGeneratorId("total");
+  }, [planData.generationByGeneratorKw, selectedGeneratorId]);
 
   const selectedId = selectedTask ? String(selectedTask.id) : null;
   const selectedBattery = selectedId ? batteryById.get(selectedId) : null;
@@ -398,7 +431,28 @@ function PlanPage() {
         </div>
         
         <div className="chart">
-          <p>Gesamte Stromerzeugung</p>
+          <div>
+            <p>
+              {selectedGeneratorId === "total" 
+                ? "Gesamte Stromerzeugung" 
+                : `Stromerzeugung ${
+                  generatorOptions.find((g) => g.id === selectedGeneratorId)?.name ?? "Generator"
+                }`}
+            </p>
+
+            <select
+              value={selectedGeneratorId}
+              onChange={(e) => setSelectedGeneratorId(e.target.value)}
+              className="generator-select"
+            >
+              <option value="total">Gesamt</option>
+              {generatorOptions.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="diagram">
             <LineChart 
               style={{ width: '100%', aspectRatio: 1.5, maxWidth: 700}} 
