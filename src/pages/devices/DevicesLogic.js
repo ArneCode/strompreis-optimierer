@@ -5,7 +5,7 @@ export const INITIAL_DEVICE_FORM = {
     name: "", type: "Generator", ratedPower: "", angleOfInclination: "",
     alignment: "Süd", location: "", lat: null, lng: null, forecast: "",
     flexibility: "constant", capacity: "", maxDischarge: "",
-    maxChargeRate: "", currentCharge: "", efficiency: "",
+    maxChargeRate: "", currentCharge: "", efficiency: "", peakPower: "",
 };
 
 const deviceTranslations = {
@@ -13,6 +13,7 @@ const deviceTranslations = {
     "Consumer": "Verbraucher",
     "Generator": "Erzeuger",
     "PVGenerator": "PV-Anlage",
+    "RandomGenerator": "Zufallsgenerator",
 };
 
 /**
@@ -40,6 +41,9 @@ export const DEVICE_VALIDATION_SCHEME = {
         angleOfInclination: [RULES.required, RULES.number, RULES.angleRange],
         alignment: [RULES.required],
         location: [RULES.required],
+    },
+    RandomGenerator: {
+        peakPower: [RULES.required, RULES.number, RULES.positive],
     },
     Consumer: { flexibility: [RULES.required] },
     Battery: {

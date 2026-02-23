@@ -68,7 +68,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
             {!isEdit ? (
                 <FormField label="Gerätetyp" error={errors.type}>
                     <select name="type" value={deviceForm.type} onChange={onChange} disabled={disabled}>
-                        {["Generator", "PVGenerator", "Consumer", "Battery"].map(t => (
+                        {["Generator", "RandomGenerator", "PVGenerator", "Consumer", "Battery"].map(t => (
                             <option key={t} value={t}>{translateDevice(t)}</option>
                         ))}
                     </select>
@@ -94,6 +94,12 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
                 <FormField label="Prognose" error={errors.forecast} className="upload-section">
                     <input type="file" accept=".csv" onChange={handleFileUpload} disabled={disabled} />
                     {deviceForm.forecast && <p className="file-info">📄 {deviceForm.forecast.name}</p>}
+                </FormField>
+            )}
+
+            {deviceForm.type === "RandomGenerator" && (
+                <FormField label="Nennleistung (kW)" error={errors.peakPower}>
+                    <input name="peakPower" type="number" value={deviceForm.peakPower} onChange={onChange} disabled={disabled} />
                 </FormField>
             )}
 

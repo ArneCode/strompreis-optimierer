@@ -43,6 +43,12 @@ export const mapDeviceData = (rawForm) => {
                 longitude: parseFloat(rawForm.lng) || 0
             }; }
 
+        case "RandomGenerator":
+            return {
+                ...cleanData,
+                peakPower: parseFloat(rawForm.peakPower) || 0
+            };
+
         default:
             return cleanData;
     }

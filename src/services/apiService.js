@@ -52,7 +52,7 @@ class ApiService {
      * Automatically converts form data to API-ready payload (e.g., % to decimal for efficiency).
      * @param {object} rawForm - Raw form values from DeviceForm UI
      * @param {string} rawForm.name - Device display name
-     * @param {string} rawForm.type - Device type (Battery|Consumer|Generator|PVGenerator)
+     * @param {string} rawForm.type - Device type (Battery|Consumer|Generator|PVGenerator|RandomGenerator)
      * @returns {Promise<object>} Created device object with backend-assigned ID
      * @throws {Error} If validation fails or backend rejects
      */
@@ -137,6 +137,30 @@ class ApiService {
      */
     generatePlan() {
         return this.request('plan/generate', 'POST');
+    }
+
+    /**
+     * Fetch the current simulated annealing settings.
+     * @returns {Promise<object>} Settings with initial_temperature, cooling_rate, final_temperature, constant_action_move_factor, num_moves_per_step
+     * @throws {Error} If backend fails
+     */
+    fetchSimulatedAnnealingSettings() {
+        return this.request('settings/simulated-annealing');
+    }
+
+    /**
+     * Update simulated annealing settings on the backend.
+     * @param {object} settings - Settings object with properties to update (all optional)
+     * @param {number} [settings.initial_temperature] - Initial temperature
+     * @param {number} [settings.cooling_rate] - Cooling rate factor
+     * @param {number} [settings.final_temperature] - Final temperature
+     * @param {number} [settings.constant_action_move_factor] - Action move factor
+     * @param {number} [settings.num_moves_per_step] - Number of moves per step
+     * @returns {Promise<object>} Success message
+     * @throws {Error} If backend fails
+     */
+    updateSimulatedAnnealingSettings(settings) {
+        return this.request('settings/simulated-annealing', 'PUT', settings);
     }
 
 }
