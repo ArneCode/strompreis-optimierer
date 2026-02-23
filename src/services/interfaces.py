@@ -334,6 +334,11 @@ class ISettingsService(ABC):
         ...
 
     @abstractmethod
+    def reset_simulated_annealing_settings(self) -> "SimulatedAnnealingSettings":
+        """Reset the optimization settings to their default values."""
+        ...
+
+    @abstractmethod
     def get_optimizer_settings(self) -> "SimulatedAnnealingSettingsOptimizer":
         """Get settings in the format required by the optimizer."""
         ...

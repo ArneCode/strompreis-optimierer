@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel
-from api.dependencies import get_uow
+from api.dependencies import get_settings_service, get_uow
 from uow import IUnitOfWork
+from services.interfaces import ISettingsService
 
 
 router = APIRouter(
@@ -28,17 +29,24 @@ class SimulatedAnnealingSettingsUpdate(BaseModel):
 
 
 @router.get("/", response_model=SimulatedAnnealingSettingsRead)
-def get_settings(uow: IUnitOfWork = Depends(get_uow)):
+def get_settings(settings_service: ISettingsService = Depends(get_settings_service)):
     """Retrieve the current optimization settings."""
-    settings = uow.settings_service.get_simulated_annealing_settings()
+    settings = settings_service.get_simulated_annealing_settings()
     return SimulatedAnnealingSettingsRead.model_validate(settings)
 
 
 @router.put("/", status_code=status.HTTP_200_OK)
 def update_settings(
     settings_payload: SimulatedAnnealingSettingsUpdate,
-    uow: IUnitOfWork = Depends(get_uow)
+    settings_service: ISettingsService = Depends(get_settings_service)
 ):
     """Update the optimization settings."""
-    uow.settings_service.update_simulated_annealing_settings(settings_payload)
+    settings_service.update_simulated_annealing_settings(settings_payload)
     return {"message": "Settings updated successfully."}
+
+
+@router.post("/reset", status_code=status.HTTP_200_OK, response_model=SimulatedAnnealingSettingsRead)
+def reset_settings(settings_service: ISettingsService = Depends(get_settings_service)):
+    """Reset the optimization settings to their default values."""
+    settings = settings_service.reset_simulated_annealing_settings()
+    return SimulatedAnnealingSettingsRead.model_validate(settings)

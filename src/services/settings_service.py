@@ -29,6 +29,14 @@ class SqlAlchemySettingsService(ISettingsService):
             setattr(settings, key, value)
         self._session.add(settings)
 
+    def reset_simulated_annealing_settings(self) -> SimulatedAnnealingSettings:
+        """Reset the optimization settings to their default values."""
+        settings = self._session.get(SimulatedAnnealingSettings, 1)
+        if settings:
+            self._session.delete(settings)
+            self._session.flush()  # Ensure the deletion is processed before the get
+        return self.get_simulated_annealing_settings()
+
     def get_optimizer_settings(self) -> "SimulatedAnnealingSettingsOptimizer":
         """Get settings in the format required by the optimizer."""
         settings = self.get_simulated_annealing_settings()
