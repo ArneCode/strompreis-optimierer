@@ -11,6 +11,7 @@ export const INITIAL_DEVICE_FORM = {
 const deviceTranslations = {
     "Battery": "Speicher",
     "Consumer": "Verbraucher",
+    "ScheduledGenerator": "Erzeuger",
     "Generator": "Erzeuger",
     "PVGenerator": "PV-Anlage",
     "RandomGenerator": "Zufallsgenerator",
@@ -73,4 +74,3 @@ export function validateDevice(form) {
     });
     return errors;
 }
-

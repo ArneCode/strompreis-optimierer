@@ -39,6 +39,8 @@ const FormField = ({ label, error, children, className = "" }) => (
 
 function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disabled = false }) {
     const [isMapOpen, setIsMapOpen] = useState(false);
+    const isGeneratorType = deviceForm.type === "Generator" || deviceForm.type === "ScheduledGenerator";
+    const isGeneratorEdit = isEdit && isGeneratorType;
 
 
     /**
@@ -85,16 +87,23 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
                     name="name"
                     value={deviceForm.name}
                     onChange={onChange}
-                    disabled={disabled || (isEdit && deviceForm.type === "Consumer")}
-                    readOnly={isEdit && deviceForm.type === "Consumer"}
-                    className={`${errors.name ? "input-error" : ""} ${isEdit && deviceForm.type === "Consumer" ? "device-type-readonly" : ""}`}
+                    disabled={disabled || isGeneratorEdit || (isEdit && deviceForm.type === "Consumer")}
+                    readOnly={isGeneratorEdit || (isEdit && deviceForm.type === "Consumer")}
+                    className={`${errors.name ? "input-error" : ""} ${(isGeneratorEdit || (isEdit && deviceForm.type === "Consumer")) ? "device-type-readonly" : ""}`}
                 />
             </FormField>
 
-            {deviceForm.type === "Generator" && (
+            {isGeneratorType && (
                 <FormField label="Prognose" error={errors.forecast} className="upload-section">
-                    <input type="file" accept=".csv" onChange={handleFileUpload} disabled={disabled} />
+                    <input type="file" accept=".csv" onChange={handleFileUpload} disabled={disabled || isGeneratorEdit} />
                     {deviceForm.forecast && <p className="file-info">📄 {deviceForm.forecast.name}</p>}
+                    <a
+                        href="/beispiel-generator.csv"
+                        download="beispiel-generator.csv"
+                        className="devices-save-button download-example-csv-button"
+                    >
+                        Beispiel-CSV herunterladen
+                    </a>
                 </FormField>
             )}
 
@@ -176,3 +185,4 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
 }
 
 export default DeviceForm;
+

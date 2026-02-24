@@ -285,7 +285,23 @@
     cursor: not-allowed;
 }
 
+.file-info {
+  margin: 8px auto 0;
+  width: 230px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #333;
+}
 
-  
-
-
+.download-example-csv-button {
+  display: block;
+  width: 230px;
+  margin: 10px auto 0;
+  text-align: center;
+  text-decoration: none;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+}

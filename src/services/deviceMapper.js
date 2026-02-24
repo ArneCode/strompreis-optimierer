@@ -91,6 +91,9 @@ export const azimuthToAlignment = (deg) => {
  */
 export const prepareDeviceForForm = (device = {}) => {
     const out = { ...device };
+    if (device.type === "ScheduledGenerator") {
+        out.type = "Generator";
+    }
     if (device.azimuth !== undefined) {
         out.alignment = azimuthToAlignment(device.azimuth);
     } else if (device.alignment !== undefined && typeof device.alignment === 'number') {
