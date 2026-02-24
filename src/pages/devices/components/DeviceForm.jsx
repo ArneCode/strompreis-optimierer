@@ -95,7 +95,9 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
 
             {isGeneratorType && (
                 <FormField label="Prognose" error={errors.forecast} className="upload-section">
-                    <input type="file" accept=".csv" onChange={handleFileUpload} disabled={disabled || isGeneratorEdit} />
+                    <input type="file" accept=".csv" onChange={handleFileUpload} disabled={disabled || isGeneratorEdit}
+                           className={`${errors.name ? "input-error" : ""} ${(isGeneratorEdit || (isEdit && deviceForm.type === "Consumer")) ? "device-type-readonly" : ""}`}
+                    />
                     {deviceForm.forecast && <p className="file-info">📄 {deviceForm.forecast.name}</p>}
                     <a
                         href="/beispiel-generator.csv"

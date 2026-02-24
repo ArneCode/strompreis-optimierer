@@ -103,7 +103,6 @@ function DevicesPage() {
             }
 
             try {
-                // Special handling for Generator type with CSV upload
                 if (deviceForm.type === "Generator" && deviceForm.forecast) {
                     await apiService.createScheduledGenerator(deviceForm.name, deviceForm.forecast);
                 } else {
@@ -144,6 +143,7 @@ function DevicesPage() {
         } finally {
             setIsDeleting(false);
         }
+        refreshDevices();
     };
 
     return (
