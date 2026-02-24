@@ -148,6 +148,7 @@ function ActionForm({
                                 disabled={disabled}
                                 className={errors.duration ? "input-error" : ""}
                                 placeholder="z.B. 60"
+                                step="5"
                             />
                         </FormField>
                     )}

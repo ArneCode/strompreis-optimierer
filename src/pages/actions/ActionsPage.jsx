@@ -84,8 +84,15 @@ function ActionsPage() {
             let newErrors = { ...actionErrors };
             if (endMins <= startMins) newErrors.startTime = "Ungültig"; else delete newErrors.startTime;
 
-            if (!isVariable && updated.duration && (endMins - startMins) < Number(updated.duration)) {
-                newErrors.duration = "Zeitfenster zu klein";
+            if (!isVariable && updated.duration) {
+                const durNum = Number(updated.duration);
+                if ((endMins - startMins) < durNum) {
+                    newErrors.duration = "Zeitfenster zu klein";
+                } else if (durNum % 5 !== 0) {
+                    newErrors.duration = "Dauer muss in 5-Minuten-Schritten sein";
+                } else {
+                    delete newErrors.duration;
+                }
             } else {
                 delete newErrors.duration;
             }

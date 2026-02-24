@@ -28,10 +28,6 @@
 
 .device {
   background-color: rgb(52, 123, 255);
-  /*
-  height: 200px;
-  width: 200px;
-  */
   width: 100%;
   aspect-ratio: 1 / 1;
   max-width: 200px;
@@ -59,10 +55,6 @@
 }
 
 .devices-head {
-  /*
-  margin-left: 50px;
-  margin-right: 50px;
-  */
   margin: 0 auto;
   padding: 0 3rem;
 }

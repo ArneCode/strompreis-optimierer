@@ -88,6 +88,7 @@ export const validateActionForm = (form, devices, timeOffset, isEdit = false) =>
         const durationNum = Number(form.duration);
         if (!form.duration || durationNum <= 0) errors.duration = "Ungültig";
         else if (windowSize < durationNum) errors.duration = "Dauer passt nicht!";
+        else if (durationNum % 5 !== 0) errors.duration = "Dauer muss in 5-Minuten-Schritten sein";
 
         if (!form.consumption || Number(form.consumption) <= 0) errors.consumption = "Pflichtfeld";
     }
