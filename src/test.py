@@ -147,7 +147,7 @@ def main():
         print("\n[3] Creating mock interactors...")
 
         # Battery interactor
-        battery_interactor = MockBatteryInteractor(battery.id)
+        battery_interactor = MockBatteryInteractor(battery.id, battery.current_charge)
         battery_interactor.id = battery.id  # InteractorService expects .id
         interactor_service.add_battery_interactor(battery_interactor)
 

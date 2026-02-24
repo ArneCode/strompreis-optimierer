@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from electricity_price_optimizer_py.units import Watt
+from electricity_price_optimizer_py.units import Watt, WattHour
+from interactors.interfaces import DeviceStatus
 
 from .base import DeviceController
 
@@ -141,3 +142,66 @@ class VariableActionController(DeviceController):
         except:
             # Time is outside schedule range, stop consumption
             interactor.set_current(Watt(0), device_manager)
+
+    # ------------------------------------------------------------------
+    # Getter helpers (consistent signatures)
+    # ------------------------------------------------------------------
+
+    def get_current_power(self, device_manager: "IDeviceManager") -> "Watt":
+        """
+        Return the current instantaneous consumption in Watts (positive = consuming)
+        by delegating to the VariableActionInteractor. Returns Watt(0) if no interactor.
+        """
+        interactor = device_manager.get_interactor_service().get_variable_action_interactor(self._id)
+        if interactor is None:
+            return Watt(0)
+        return interactor.get_current(device_manager)
+
+    def get_total_consumed(self, device_manager: "IDeviceManager") -> "WattHour":
+        """
+        Return total energy consumed so far (Wh) from the interactor.
+        """
+        interactor = device_manager.get_interactor_service().get_variable_action_interactor(self._id)
+        if interactor is None:
+            return WattHour(0)
+        return interactor.get_total_consumed(device_manager)
+
+    def get_assigned_consumption(self, current_time: "datetime", device_manager: "IDeviceManager") -> "Watt | None":
+        """
+        If a schedule is present, return the assigned instantaneous consumption
+        (W) for the provided time. Returns None when there is no schedule or
+        no assignment for this device.
+        """
+        if self._schedule is None:
+            return None
+        assigned = self._schedule.get_variable_action(self._id)
+        if assigned is None:
+            return None
+        try:
+            return assigned.get_consumption(current_time)
+        except Exception:
+            return None
+
+    def get_status(self, current_time: "datetime", device_manager: "IDeviceManager") -> "DeviceStatus":
+        """
+        Derived status for the variable action: RUNNING when the current
+        consumption > 0, otherwise IDLE. Caller must provide current_time.
+        """
+        cur = None
+        try:
+            cur = self.get_current_power(device_manager)
+        except Exception:
+            cur = Watt(0)
+
+        try:
+            val = cur.get_value()
+        except Exception:
+            try:
+                val = float(cur)
+            except Exception:
+                return DeviceStatus.UNKNOWN
+
+        return DeviceStatus.RUNNING if val > 0 else DeviceStatus.IDLE
+
+    def get_status_str(self, current_time: "datetime", device_manager: "IDeviceManager") -> str:
+        return self.get_status(current_time, device_manager).value

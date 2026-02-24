@@ -12,6 +12,8 @@ from electricity_price_optimizer_py import (
     OptimizerContext,
     Battery as OptimizerBattery
 )
+from electricity_price_optimizer_py import units
+from interactors.interfaces import DeviceStatus
 
 
 class BatteryController(DeviceController):
@@ -112,3 +114,84 @@ class BatteryController(DeviceController):
             interactor.set_current(charge_rate, device_manager)
         except ValueError:
             return
+
+    # ------------------------------------------------------------------
+    # Getter helpers (delegating to the interactor)
+    # These are convenient, backend-facing accessors that expose current
+    # device state (power, charge) and higher-level derived info such as
+    # charging status or the currently assigned schedule rate. Low-level
+    # IO stays in the BatteryInteractor; the controller simply forwards
+    # and interprets values for use by API layers / frontend.
+    # ------------------------------------------------------------------
+
+    def get_current_power(self, device_manager: "IDeviceManager") -> "units.Watt":
+        """
+        Return the current charge/discharge power in Watts (positive = charging,
+        negative = discharging) by delegating to the BatteryInteractor.
+
+        Args:
+            device_manager: Device manager used to locate the interactor.
+
+        Returns:
+            units.Watt: current power.
+        """
+        interactor = device_manager.get_interactor_service().get_battery_interactor(self._id)
+        return interactor.get_current(device_manager)
+
+    def get_charge(self, device_manager: "IDeviceManager") -> "units.WattHour":
+        """
+        Return the current stored energy (Wh) by delegating to the interactor.
+        """
+        interactor = device_manager.get_interactor_service().get_battery_interactor(self._id)
+        return interactor.get_charge(device_manager)
+
+    def get_status(self, device_manager: "IDeviceManager") -> "str":
+        """
+        High-level status derived from current power:
+            - "charging": current power > 0
+            - "discharging": current power < 0
+            - "idle": current power == 0
+
+        Args:
+            device_manager: Device manager used to locate the interactor.
+
+        Returns:
+            str: one of "charging", "discharging", "idle".
+        """
+        cur = self.get_current_power(device_manager)
+        try:
+            val = cur.get_value()
+        except Exception:
+            # If unit wrapper doesn't support get_value, try numeric conversion
+            try:
+                val = float(cur)
+            except Exception:
+                return DeviceStatus.UNKNOWN
+
+        if val > 0:
+            return DeviceStatus.CHARGING
+        if val < 0:
+            return DeviceStatus.DISCHARGING
+        return DeviceStatus.IDLE
+
+    def get_status_str(self, device_manager: "IDeviceManager") -> str:
+        """Compatibility helper returning the status as a plain string."""
+        return self.get_status(device_manager).value
+
+    def get_assigned_charge_rate(self, current_time: "datetime", device_manager: "IDeviceManager") -> "units.Watt | None":
+        """
+        If a schedule is present, return the assigned charge rate (W) for the
+        provided time. Returns None when there is no schedule or no assignment
+        for this battery.
+        """
+        if self._schedule is None:
+            return None
+
+        assigned = self._schedule.get_battery(self._id)
+        if assigned is None:
+            return None
+
+        try:
+            return assigned.get_charge_speed(current_time)
+        except ValueError:
+            return None

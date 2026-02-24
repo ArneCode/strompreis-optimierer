@@ -15,6 +15,7 @@ from electricity_price_optimizer_py import (
     OptimizerContext,
     PrognosesProvider
 )
+from interactors.interfaces import DeviceStatus
 
 
 class GeneratorScheduledController(GeneratorController):
@@ -62,3 +63,53 @@ class GeneratorScheduledController(GeneratorController):
             prognoses.append(generation)
 
         return prognoses
+
+    # ------------------------------------------------------------------
+    # Getter helpers (always accept device_manager)
+    # ------------------------------------------------------------------
+
+    def get_current_power(self, current_time: "datetime", device_manager: "IDeviceManager") -> "Watt":
+        """
+        Return the current instantaneous generation in Watts using the
+        generator device model (scheduled profile). The caller must pass
+        the desired evaluation time as `current_time`. Returns Watt(0) if
+        the device is not found.
+        """
+        device = device_manager.get_device_service().get_generator_scheduled(self._id)
+        if device is None:
+            return Watt(0)
+        return device.get_generation(current_time)
+
+    def get_peak_power(self, device_manager: "IDeviceManager") -> "Watt":
+        """
+        Return the peak power from the stored daily schedule (max of values).
+        """
+        device = device_manager.get_device_service().get_generator_scheduled(self._id)
+        if device is None:
+            return Watt(0)
+        try:
+            vals = list(device.schedule.values())
+            if not vals:
+                return Watt(0)
+            return Watt(max(vals))
+        except Exception:
+            return Watt(0)
+
+    def get_status(self, current_time: "datetime", device_manager: "IDeviceManager") -> "str":
+        """
+        Derived status for the scheduled generator: "producing" when current
+        power > 0, otherwise "idle". Caller must provide `current_time`.
+        """
+        cur = self.get_current_power(current_time, device_manager)
+        try:
+            val = cur.get_value()
+        except Exception:
+            try:
+                val = float(cur)
+            except Exception:
+                return "unknown"
+
+        return DeviceStatus.PRODUCING if val > 0 else DeviceStatus.IDLE
+
+    def get_status_str(self, current_time: "datetime", device_manager: "IDeviceManager") -> str:
+        return self.get_status(current_time, device_manager).value

@@ -81,7 +81,7 @@ class DeviceManager(IDeviceManager):
     def add_battery(self, device: "Battery") -> "int":
         id = self._uow.device_service.add_device(device)
         self._uow.interactor_service.add_battery_interactor(
-            MockBatteryInteractor(device.id))
+            MockBatteryInteractor(device.id, device.current_charge))
         self._uow.controller_service.add_battery_controller(
             BatteryController(device.id))
         return id

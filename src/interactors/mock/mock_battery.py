@@ -23,9 +23,23 @@ class MockBatteryInteractor(BatteryInteractor):
     def __init__(
         self,
         id: "int",
+        initial_charge: "Optional[units.WattHour]" = None,
     ):
         self._id = id
-        self._charge = units.WattHour(0)
+        # Allow initializing the mock battery with a provided charge.
+        # Accept either a WattHour unit-wrapped value or numeric; default to 0 Wh.
+        if initial_charge is None:
+            self._charge = units.WattHour(0)
+        else:
+            try:
+                # If it's already a WattHour instance, use it; otherwise wrap numeric value
+                if hasattr(initial_charge, "get_value"):
+                    self._charge = initial_charge
+                else:
+                    self._charge = units.WattHour(initial_charge)
+            except Exception:
+                # Fallback to zero on unexpected input
+                self._charge = units.WattHour(0)
         self._current = units.Watt(0)
 
         # Initialized on first update() call to avoid mixing in wall-clock time.

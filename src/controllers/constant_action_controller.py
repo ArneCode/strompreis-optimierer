@@ -4,12 +4,14 @@ from typing import Optional, TYPE_CHECKING
 from .base import DeviceController
 # from interactors import ConstantActionInteractor  # removed: unused type-only import
 from interactors.interfaces import ActionState
+from interactors.interfaces import DeviceStatus
 
 from electricity_price_optimizer_py import (
     Schedule,
     OptimizerContext,
     ConstantAction as OptimizerConstantAction,
 )
+from electricity_price_optimizer_py import units
 
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
@@ -179,3 +181,77 @@ class ConstantActionController(DeviceController):
             assigned_start = self.assigned_start_time
             if assigned_start and current_time >= assigned_start:
                 interactor.start_action(device_manager)
+
+    # ------------------------------------------------------------------
+    # Getter helpers (delegating to the interactor / schedule)
+    # These expose convenient, backend-facing information for API layers.
+    # ------------------------------------------------------------------
+
+    def get_current_power(self, device_manager: "IDeviceManager") -> "units.Watt":
+        """
+        Return current power consumption in Watts for this constant-action device
+        by delegating to the interactor.
+        """
+        interactor = device_manager.get_interactor_service().get_constant_action_interactor(self._id)
+        return interactor.get_current(device_manager)
+
+    def get_action_state(self, device_manager: "IDeviceManager") -> "ActionState":
+        """
+        Return the interactor-reported action state (IDLE/RUNNING/COMPLETED).
+        """
+        interactor = device_manager.get_interactor_service().get_constant_action_interactor(self._id)
+        return interactor.get_action_state(device_manager)
+
+    def get_status(self, device_manager: "IDeviceManager") -> "DeviceStatus":
+        """
+        Map the interactor ActionState to a generic DeviceStatus enum.
+        """
+        state = self.get_action_state(device_manager)
+        if state == ActionState.IDLE:
+            return DeviceStatus.IDLE
+        if state == ActionState.RUNNING:
+            return DeviceStatus.RUNNING
+        if state == ActionState.COMPLETED:
+            return DeviceStatus.COMPLETED
+        return DeviceStatus.UNKNOWN
+
+    def get_status_str(self, device_manager: "IDeviceManager") -> str:
+        return self.get_status(device_manager).value
+
+    def get_assigned_end_time(self, device_manager: "IDeviceManager") -> "Optional[datetime]":
+        """
+        Return the scheduled end time for the assigned constant action (if any).
+        """
+        if self._schedule is None:
+            return None
+        assigned = self._schedule.get_constant_action(self._id)
+        if assigned is None:
+            return None
+        return assigned.get_end_time()
+
+    def get_assigned_consumption(self, device_manager: "IDeviceManager") -> "Optional[units.Watt]":
+        """
+        Return the scheduled consumption (W) for this device from the stored schedule,
+        or None if no assignment exists.
+        """
+        if self._schedule is None:
+            return None
+        assigned = self._schedule.get_constant_action(self._id)
+        if assigned is None:
+            return None
+        # Assigned constant action exposes get_consumption()
+        try:
+            return assigned.get_consumption()
+        except Exception:
+            return None
+
+    def get_assigned_duration(self, device_manager: "IDeviceManager") -> "Optional[timedelta]":
+        """
+        Return the duration of the assigned action (end - start) if assigned,
+        otherwise None.
+        """
+        start = self.assigned_start_time
+        end = self.get_assigned_end_time()
+        if start is None or end is None:
+            return None
+        return end - start

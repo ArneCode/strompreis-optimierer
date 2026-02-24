@@ -64,7 +64,7 @@ def initialize_services_from_db() -> None:
         # Batteries
         for dev in ds.get_all_batteries():
             interactor_service_instance.add_battery_interactor(
-                MockBatteryInteractor(dev.id)
+                MockBatteryInteractor(dev.id, dev.current_charge)
             )
             controller_service_instance.add_battery_controller(
                 BatteryController(dev.id)

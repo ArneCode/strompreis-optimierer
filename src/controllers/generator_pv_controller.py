@@ -12,6 +12,7 @@ from electricity_price_optimizer_py import (
     OptimizerContext,
     PrognosesProvider
 )
+from interactors.interfaces import DeviceStatus
 
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
@@ -67,3 +68,46 @@ class GeneratorPvController(DeviceController):
         except Exception:
             # Not all interactors implement update; ignore quietly
             pass
+
+    # ------------------------------------------------------------------
+    # Getter helpers (always accept device_manager)
+    # ------------------------------------------------------------------
+
+    def get_current_power(self, device_manager: "IDeviceManager") -> "Watt":
+        """
+        Return the current instantaneous generation in Watts by delegating
+        to the GeneratorInteractor. Returns Watt(0) if no interactor is
+        available.
+        """
+        interactor = device_manager.get_interactor_service().get_generator_interactor(self._id)
+        if interactor is None:
+            return Watt(0)
+        return interactor.get_current(device_manager)
+
+    def get_peak_power(self, device_manager: "IDeviceManager") -> "Watt":
+        """
+        Return the rated/peak power of the PV generator from the device model.
+        """
+        device = device_manager.get_device_service().get_generator_pv(self._id)
+        if device is None:
+            return Watt(0)
+        return device.peak_power
+
+    def get_status(self, device_manager: "IDeviceManager") -> "str":
+        """
+        Derived status for the generator: "producing" when current power > 0,
+        otherwise "idle". Always accepts device_manager for consistency.
+        """
+        cur = self.get_current_power(device_manager)
+        try:
+            val = cur.get_value()
+        except Exception:
+            try:
+                val = float(cur)
+            except Exception:
+                return "unknown"
+
+        return DeviceStatus.PRODUCING if val > 0 else DeviceStatus.IDLE
+
+    def get_status_str(self, device_manager: "IDeviceManager") -> str:
+        return self.get_status(device_manager).value

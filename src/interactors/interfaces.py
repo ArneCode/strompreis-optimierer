@@ -14,6 +14,22 @@ class ActionState(Enum):
     COMPLETED = "completed"
 
 
+class DeviceStatus(Enum):
+    """Generic device status enum used by controllers for frontend-facing state.
+
+    Values cover common device states across batteries, generators and actions.
+    Controllers should return this enum from their status getters. Callers that
+    need a string can use .value.
+    """
+    UNKNOWN = "unknown"
+    IDLE = "idle"
+    CHARGING = "charging"
+    DISCHARGING = "discharging"
+    PRODUCING = "producing"
+    RUNNING = "running"
+    COMPLETED = "completed"
+
+
 class BatteryInteractor(ABC):
     """Interface for battery device communication."""
 
