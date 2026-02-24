@@ -73,3 +73,4 @@ export function validateDevice(form) {
     });
     return errors;
 }
+

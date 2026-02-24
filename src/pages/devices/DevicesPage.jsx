@@ -103,12 +103,18 @@ function DevicesPage() {
             }
 
             try {
-                const { id: _id, ...deviceDataWithoutId } = deviceForm;
-                await apiService.saveDevice(deviceDataWithoutId);
+                // Special handling for Generator type with CSV upload
+                if (deviceForm.type === "Generator" && deviceForm.forecast) {
+                    await apiService.createScheduledGenerator(deviceForm.name, deviceForm.forecast);
+                } else {
+                    const { id: _id, ...deviceDataWithoutId } = deviceForm;
+                    await apiService.saveDevice(deviceDataWithoutId);
+                }
                 await refreshDevices();
                 closeModal();
-            } catch {
-                setErrorMessage("Speichern fehlgeschlagen.");
+            } catch (error) {
+                console.error("Save error:", error);
+                setErrorMessage(error.message || "Speichern fehlgeschlagen.");
             }
         } finally {
             setIsLoading(false);

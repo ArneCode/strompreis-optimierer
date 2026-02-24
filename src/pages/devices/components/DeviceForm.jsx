@@ -40,6 +40,7 @@ const FormField = ({ label, error, children, className = "" }) => (
 function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disabled = false }) {
     const [isMapOpen, setIsMapOpen] = useState(false);
 
+
     /**
      * Receive a selected location and push values into the form via onChange.
      * @param {object|null} location - {label, lat, lng}

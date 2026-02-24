@@ -167,6 +167,39 @@ class ApiService {
         return this.request('settings/simulated-annealing/reset', 'POST');
     }
 
+    /**
+     * Create a new scheduled generator device by uploading a CSV file.
+     * The CSV must contain 'timestamp' and 'value' columns.
+     * @param {string} name - Name of the generator device
+     * @param {File} file - CSV file with schedule data
+     * @returns {Promise<object>} Created scheduled generator device
+     * @throws {Error} If validation fails or backend rejects
+     */
+    async createScheduledGenerator(name, file) {
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('file', file);
+
+        try {
+            const res = await fetch(`${this.baseURL}/devices/scheduled-generator`, {
+                method: 'POST',
+                body: formData
+                // Note: Do NOT set Content-Type header - browser will set it with boundary
+            });
+
+            if (!res.ok) {
+                const errorDetail = await res.json().catch(() => ({}));
+                console.error(`[ApiService] Backend Error (${res.status}):`, errorDetail);
+                throw new Error(errorDetail.detail || 'Fehler beim Erstellen des Generators');
+            }
+
+            return res.json();
+        } catch (err) {
+            console.error(`[ApiService] Request failed:`, err);
+            throw err;
+        }
+    }
+
 }
 
 export default new ApiService();
