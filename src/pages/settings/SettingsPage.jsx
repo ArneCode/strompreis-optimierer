@@ -248,7 +248,7 @@ function SettingsPage() {
                           className="settings-reset-button"
                           onClick={toggleSaResetPopUp}
                       >
-                          SA-Einstellungen zurücksetzen
+                          Einstellungen zurücksetzen
                       </button>
 
                       {openSaReset && (
