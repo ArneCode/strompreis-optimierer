@@ -148,7 +148,7 @@ function SettingsPage() {
             setTimeout(() => setSuccessMessage(null), 3000);
             setError(null);
             setFieldErrors({});
-        } catch (err) {
+        } catch {
             setError("Fehler beim Speichern der Einstellungen");
         }
     }
@@ -193,7 +193,7 @@ function SettingsPage() {
             setOpenReset(false);
 
             setSuccessMessage("Haushalt erfolgreich zurückgesetzt");
-        } catch (error) {
+        } catch {
             alert("Fehler beim Löschen der Daten auf dem Server.");
         }
     }
@@ -360,7 +360,7 @@ function SettingsPage() {
               )}
           </div>
 
-          <div className="settings-container">
+          <div className="settings-container reset-section">
               <p className="title">
                 <b>Haushalt zurücksetzen</b>
               </p>
