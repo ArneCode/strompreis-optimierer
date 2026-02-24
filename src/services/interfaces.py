@@ -8,7 +8,8 @@ implementations (e.g., in-memory vs. database-backed).
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional
 
-from devices import GeneratorPV, GeneratorPV, GeneratorRandom
+from controllers.base import GeneratorController
+from devices import GeneratorPV, GeneratorPV, GeneratorRandom, GeneratorScheduled
 if TYPE_CHECKING:
     from api.settings import SimulatedAnnealingSettingsUpdate
     from electricity_price_optimizer_py import Schedule, SimulatedAnnealingSettings as SimulatedAnnealingSettingsOptimizer
@@ -139,7 +140,7 @@ class IControllerServiceReader(ABC):
         ...
 
     @abstractmethod
-    def get_all_generator_controllers(self) -> list["GeneratorPvController"]:
+    def get_all_generator_controllers(self) -> list["GeneratorController"]:
         """Retrieve all generator controllers."""
         ...
 
@@ -215,6 +216,11 @@ class IDeviceServiceReader(ABC):
         ...
 
     @abstractmethod
+    def get_generator_scheduled(self, device_id: "int") -> "GeneratorScheduled | None":
+        """Retrieve scheduled generator details by ID."""
+        ...
+
+    @abstractmethod
     def get_constant_action_device(self, device_id: "int") -> "ConstantActionDevice | None":
         """Retrieve constant action device details by ID."""
         ...
@@ -242,6 +248,11 @@ class IDeviceServiceReader(ABC):
     @abstractmethod
     def get_all_generators_random(self) -> "list[GeneratorRandom]":
         """Retrieve all random generators."""
+        ...
+
+    @abstractmethod
+    def get_all_generators_scheduled(self) -> "list[GeneratorScheduled]":
+        """Retrieve all scheduled generators."""
         ...
 
     @abstractmethod

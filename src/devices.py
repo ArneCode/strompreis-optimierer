@@ -6,8 +6,8 @@ Includes:
 - ConstantActionDevice and VariableActionDevice with related actions
 - Generator hierarchy (e.g., PV)
 """
-from datetime import datetime, timedelta
-from sqlalchemy import DateTime, ForeignKey, Interval
+from datetime import date, datetime, time, timedelta, timezone
+from sqlalchemy import JSON, DateTime, ForeignKey, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 from electricity_price_optimizer_py.units import WattHour, Watt, Euro, EuroPerWh
@@ -27,6 +27,7 @@ class DeviceType(enum.Enum):
     VARIABLE_ACTION_DEVICE = "VARIABLE_ACTION_DEVICE"
     GENERATOR_PV = "GENERATOR_PV"
     GENERATOR_RANDOM = "GENERATOR_RANDOM"
+    GENERATOR_SCHEDULED = "GENERATOR_SCHEDULED"
 
 
 class Device(Base):
@@ -220,3 +221,91 @@ class GeneratorRandom(Generator):
         noise_scaled = max(0, (raw_noise + 1) / 2)
 
         return noise_scaled * self.peak_power
+
+
+class GeneratorScheduled(Generator):
+    """Scheduled generator device with predefined generation profile."""
+    __tablename__ = "generator_scheduled"
+    id: Mapped[int] = mapped_column(
+        ForeignKey("device.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+
+    # For simplicity, we can store a JSON string of time-to-generation mappings
+    # In a real implementation, this would likely be a separate table for efficiency
+    schedule: Mapped[dict[str, float]] = mapped_column(JSON)
+
+    __mapper_args__ = {
+        "polymorphic_identity": DeviceType.GENERATOR_SCHEDULED,
+    }
+
+    def __init__(self, schedule: dict[time, Watt], **kwargs):
+        super().__init__(**kwargs)
+        # Convert time keys to string for JSON storage
+        self.schedule = {t.strftime("%H:%M"): g.get_value()
+                         for t, g in schedule.items()}
+
+    def _get_day_schedule(self, d: date) -> list[tuple[datetime, Watt]]:
+        """
+        Returns a sorted list of (datetime, value) for a specific date.
+        Converts the internal "HH:MM" JSON strings into full datetime objects.
+        """
+        day_points = []
+        for t_str, val in self.schedule.items():
+            # Convert "HH:MM" -> time object -> datetime on date 'd'
+            t_obj = datetime.strptime(t_str, "%H:%M").time()
+            dt_obj = datetime.combine(d, t_obj)
+            # use timezone-aware datetime (utc)
+            dt_obj = dt_obj.replace(tzinfo=timezone.utc)
+            day_points.append((dt_obj, Watt(val)))
+
+        day_points.sort(key=lambda x: x[0])
+        return day_points
+
+    def get_generation(self, date_time: datetime) -> Watt:
+        """Get the scheduled power generation at a specific time."""
+        sorted_schedule = self._get_day_schedule(date_time.date())
+
+        current_value = Watt(0)
+        for dt, val in sorted_schedule:
+            if date_time >= dt:
+                current_value = val
+            else:
+                break
+        return current_value
+
+    def get_generation_between(self, t1: datetime, t2: datetime) -> WattHour:
+        """Calculates energy between two datetimes, supporting multi-day spans."""
+        if t1 >= t2:
+            return WattHour(0)
+
+        total_energy = WattHour(0)
+        current_date = t1.date()
+
+        # Iterate through every date involved in the range [t1, t2]
+        while current_date <= t2.date():
+            day_points = self._get_day_schedule(current_date)
+
+            for i in range(len(day_points)):
+                start_dt, val = day_points[i]
+
+                # Determine when this specific segment ends
+                if i + 1 < len(day_points):
+                    next_dt = day_points[i + 1][0]
+                else:
+                    # End of the day segment goes to midnight of the next day
+                    next_dt = datetime.combine(
+                        current_date + timedelta(days=1), time(0, 0))
+                    next_dt = next_dt.replace(tzinfo=timezone.utc)
+
+                # Intersection of [start_dt, next_dt] and [t1, t2]
+                overlap_start = max(start_dt, t1)
+                overlap_end = min(next_dt, t2)
+
+                if overlap_start < overlap_end:
+                    duration = overlap_end - overlap_start
+                    total_energy += val * duration
+
+            current_date += timedelta(days=1)
+
+        return total_energy

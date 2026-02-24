@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from api.scopes import device_manager_scope
 from controllers.battery_controller import BatteryController
 from controllers.generator_random_controller import GeneratorRandomController
+from controllers.generator_scheduled_controller import GeneratorScheduledController
 from interactors.mock.mock_battery import MockBatteryInteractor
 from interactors.mock.mock_generator import MockGeneratorInteractor
 from interactors.mock.mock_constant_action import MockConstantActionInteractor
@@ -82,6 +83,13 @@ def initialize_services_from_db() -> None:
             )
             controller_service_instance.add_generator_controller(
                 GeneratorRandomController(dev.id)
+            )
+        for dev in ds.get_all_generators_scheduled():
+            interactor_service_instance.add_generator_interactor(
+                MockGeneratorInteractor(dev.id)
+            )
+            controller_service_instance.add_generator_controller(
+                GeneratorScheduledController(dev.id)
             )
         # Constant actions
         for dev in ds.get_all_constant_action_devices():

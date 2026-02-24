@@ -10,7 +10,7 @@ Notes:
 from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from devices import Device, Battery, GeneratorPV, ConstantActionDevice, GeneratorPV, GeneratorRandom, VariableActionDevice
+from devices import Device, Battery, GeneratorPV, ConstantActionDevice, GeneratorPV, GeneratorRandom, GeneratorScheduled, VariableActionDevice
 from services.interfaces import IDeviceService
 
 
@@ -32,6 +32,9 @@ class SqlAlchemyDeviceService(IDeviceService):
     def get_generator_random(self, device_id: "int") -> "GeneratorRandom | None":
         return self.session.get(GeneratorRandom, device_id)
 
+    def get_generator_scheduled(self, device_id: "int") -> "GeneratorScheduled | None":
+        return self.session.get(GeneratorScheduled, device_id)
+
     def get_constant_action_device(self, device_id: "int") -> "ConstantActionDevice | None":
         return self.session.get(ConstantActionDevice, device_id)
 
@@ -49,6 +52,9 @@ class SqlAlchemyDeviceService(IDeviceService):
 
     def get_all_generators_random(self) -> "list[GeneratorRandom]":
         return self.session.query(GeneratorRandom).all()
+
+    def get_all_generators_scheduled(self) -> "list[GeneratorScheduled]":
+        return self.session.query(GeneratorScheduled).all()
 
     def get_all_constant_action_devices(self) -> "list[ConstantActionDevice]":
         return self.session.query(ConstantActionDevice).all()

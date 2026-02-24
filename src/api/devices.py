@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any, Union, Literal
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field
 
 from electricity_price_optimizer_py.units import WattHour, Watt
@@ -10,10 +10,14 @@ from devices import (
     Device,
     ConstantActionDevice,
     GeneratorRandom,
+    GeneratorScheduled,
     VariableActionDevice,
     GeneratorPV,
     Battery,
 )
+
+import pandas as pd
+import io
 
 router = APIRouter(prefix="/api", tags=["devices"])
 
@@ -138,6 +142,12 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
         })
         return base
 
+    if isinstance(d, GeneratorScheduled):
+        base.update({
+            "type": "ScheduledGenerator",
+        })
+        return base
+
     if isinstance(d, Battery):
         base.update({
             "type": "Battery",
@@ -225,6 +235,46 @@ def create_device(
         raise HTTPException(status_code=400, detail="Ungültiger Gerätetyp")
 
     return _device_to_frontend_dict(model)
+
+
+@router.post("/devices/scheduled-generator", status_code=status.HTTP_201_CREATED)
+async def create_scheduled_generator(
+    name: str = Form(..., description="Name des Generators"),
+    file: UploadFile = File(...,
+                            description="CSV-Datei mit Zeitstempel und Prognosewerten"),
+    manager: IDeviceManager = Depends(get_device_manager)
+) -> dict[str, Any]:
+    """
+    Create a new scheduled generator device based on an uploaded CSV file.
+    """
+    try:
+        # Read file content asynchronously
+        content = await file.read()
+        df = pd.read_csv(io.BytesIO(content))
+
+        # Basic Validation
+        if "timestamp" not in df.columns or "value" not in df.columns:
+            raise ValueError(
+                "CSV muss 'timestamp' und 'value' Spalten enthalten")
+
+        # Parse into dict: timestamp (time object) -> value (Watt)
+        # Note: .time() discards the date, which is correct for a daily recurring schedule
+        schedule = {
+            pd.to_datetime(row["timestamp"]).time(): Watt(row["value"])
+            for _, row in df.iterrows()
+        }
+
+        model = GeneratorScheduled(name=name, schedule=schedule)
+        manager.add_generator_scheduled(model)
+
+        return _device_to_frontend_dict(model)
+
+    except Exception as e:
+        # It's better to log the error here as well
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Fehler beim Verarbeiten der Datei: {str(e)}"
+        )
 
 
 @router.post("/devices/{device_id}/new_seed", status_code=status.HTTP_200_OK)

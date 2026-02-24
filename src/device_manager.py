@@ -7,7 +7,8 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from controllers.generator_random_controller import GeneratorRandomController
-from devices import GeneratorRandom
+from controllers.generator_scheduled_controller import GeneratorScheduledController
+from devices import GeneratorRandom, GeneratorScheduled
 from interactors.mock import MockConstantActionInteractor, MockBatteryInteractor, MockGeneratorInteractor, MockVariableActionInteractor
 from controllers import ConstantActionController, VariableActionController, BatteryController, GeneratorPvController
 
@@ -35,10 +36,17 @@ class IDeviceManager(ABC):
         """Add a new random generator device and return its ID."""
         ...
 
+    @abstractmethod
+    def add_generator_scheduled(self, device: "GeneratorScheduled") -> "int":
+        """Add a new scheduled generator device and return its ID."""
+        ...
+
+    @abstractmethod
     def add_constant_action_device(self, device: "ConstantActionDevice") -> "int":
         """Add a new constant action device and return its ID."""
         ...
 
+    @abstractmethod
     def add_variable_action_device(self, device: "VariableActionDevice") -> "int":
         """Add a new variable action device and return its ID."""
         ...
@@ -92,6 +100,14 @@ class DeviceManager(IDeviceManager):
             MockGeneratorInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorRandomController(device.id))
+        return id
+
+    def add_generator_scheduled(self, device: "GeneratorScheduled") -> "int":
+        id = self._uow.device_service.add_device(device)
+        self._uow.interactor_service.add_generator_interactor(
+            MockGeneratorInteractor(device.id))
+        self._uow.controller_service.add_generator_controller(
+            GeneratorScheduledController(device.id))
         return id
 
     def add_constant_action_device(self, device: "ConstantActionDevice") -> "int":
