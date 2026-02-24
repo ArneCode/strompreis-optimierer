@@ -52,7 +52,6 @@ function SettingsPage() {
             });
             setConstantActionsCount(constantCount);
         } catch (err) {
-            console.error("Error loading settings:", err);
             setError("Fehler beim Laden der Einstellungen: " + err.message);
         } finally {
             setIsLoading(false);
@@ -151,7 +150,6 @@ function SettingsPage() {
             setFieldErrors({});
         } catch (err) {
             setError("Fehler beim Speichern der Einstellungen");
-            console.error("Error saving settings:", err);
         }
     }
 
@@ -171,7 +169,6 @@ function SettingsPage() {
         setError(null);
         try {
             const defaults = await apiService.resetSimulatedAnnealingSettings();
-            // Aktualisiere UI mit den zurückgesetzten Werten
             setSettings(defaults);
             setEditSettings(defaults);
             setSuccessMessage('Simulated Annealing Einstellungen zurückgesetzt');
@@ -194,9 +191,9 @@ function SettingsPage() {
             await apiService.resetAllDevices();
 
             setOpenReset(false);
-            console.log("Haushalt erfolgreich zurückgesetzt");
+
+            setSuccessMessage("Haushalt erfolgreich zurückgesetzt");
         } catch (error) {
-            console.error("Fehler beim Zurücksetzen des Haushalts:", error);
             alert("Fehler beim Löschen der Daten auf dem Server.");
         }
     }
@@ -208,12 +205,14 @@ function SettingsPage() {
           </div>
 
           <div className="settings-container">
+
+              {successMessage && <div className="settings-success">{successMessage}</div>}
+
               <p className="title">
                 <b>Simulated Annealing Parameter</b>
               </p>
 
               {error && <div className="settings-error">{error}</div>}
-              {successMessage && <div className="settings-success">{successMessage}</div>}
               {isLoading && <div className="settings-loading">Einstellungen werden geladen...</div>}
 
               {!isLoading && !isEditingSettings && (
@@ -365,7 +364,7 @@ function SettingsPage() {
               <p className="title">
                 <b>Haushalt zurücksetzen</b>
               </p>
-              
+
               <p className="description">
                   Setzen Sie den gesamten Haushalt, samt Geräten, Aktionen und Ablaufplan zurück.
               </p>
