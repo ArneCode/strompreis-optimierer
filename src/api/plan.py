@@ -21,6 +21,14 @@ BERLIN = ZoneInfo("Europe/Berlin")
 
 router = APIRouter(prefix="/api", tags=["plan"])
 
+def _collect_constant_power_series(
+    start: datetime,
+    end: datetime,
+    power_w: float,
+    timeline: list[datetime],
+) -> list[float]:
+    return [float(power_w) if start <= t < end else 0.0 for t in timeline]
+
 def _collect_generation_by_generator_kw(
     manager: IDeviceManager,
     timeline: list[datetime],
@@ -191,6 +199,28 @@ def _create_timeline(hours: int):
 
     return timeline
 
+def _collect_power_values_timeline_aligned(
+    action,
+    assigned_action,
+    timeline: list[datetime],
+) -> list[float]:
+    """Return power values aligned exactly to the plan timeline."""
+    start = action.start
+    end = action.end
+
+    values: list[float] = []
+
+    for t in timeline:
+        if start <= t < end:
+            try:
+                power = assigned_action.get_consumption(t)
+                values.append(float(Watt.get_value(power)))
+            except Exception:
+                values.append(0.0)
+        else:
+            values.append(0.0)
+
+    return values
 
 def _collect_power_values(action, assigned_action, step_minutes):
     power_values = []
@@ -239,6 +269,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     tasks = []
     batteries = []
     variable_actions = []
+    constant_actions = []
     timeline = _create_timeline(24)
 
     generation_kw = _collect_total_generation_kw(manager, timeline)
@@ -251,24 +282,35 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     i = 1
     for device in manager.get_device_service().get_all_devices():
         if isinstance(device, ConstantActionDevice):
-            for action in device.actions:
-                assigned = schedule.get_constant_action(device.id)
-                if assigned is None:
-                    continue
+            assigned = schedule.get_constant_action(device.id)
+            if assigned is None:
+                continue
 
-                start = assigned.get_start_time().isoformat()
-                end = assigned.get_end_time().isoformat()
+            action = device.actions[0] if device.actions else None
+            power_w = float(Watt.get_value(action.consumption)) if action is not None else 0.0
 
-                tasks.append(
-                    {
-                        "id": str(i),
-                        "name": device.name,
-                        "text": device.name,
-                        "start": start,
-                        "end": end,
-                    }
-                )
-                i += 1
+            start_dt = assigned.get_start_time()
+            end_dt = assigned.get_end_time()
+
+            tasks.append(
+                {
+                    "id": str(i),
+                    "name": device.name,
+                    "text": device.name,
+                    "start": start_dt.isoformat(),
+                    "end": end_dt.isoformat(),
+                }
+            )
+
+            constant_actions.append(
+                {
+                    "id": str(i),
+                    "name": device.name,
+                    "powerW": _collect_constant_power_series(start_dt, end_dt, power_w, timeline),
+                }
+            )
+
+            i += 1
 
         if isinstance(device, VariableActionDevice):
             for action in device.actions:
@@ -290,9 +332,11 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                     {
                         "id": str(i),
                         "name": device.name,
-                        "powerW": _collect_power_values(action, assigned_action, 30),
-                        "start": action.start.isoformat(),
-                        "stepMinutes": 30,
+                        "powerW": _collect_power_values_timeline_aligned(
+                            action,
+                            assigned_action,
+                            timeline,
+                        ),
                     }
                 )
                 i += 1
@@ -329,6 +373,7 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
         "pricesCtPerKwh": prices_ct_per_kwh,
         "generationKw": generation_kw,
         "generationByGeneratorKw": generation_by_generator_kw,
+        "constantActions": constant_actions,
     }
 
 
@@ -387,6 +432,7 @@ def get_plan_data(
         "pricesCtPerKwh": data["pricesCtPerKwh"],
         "generationKw": data["generationKw"],
         "generationByGeneratorKw": data["generationByGeneratorKw"],
+        "constantActions": data["constantActions"],
     }
 
 
