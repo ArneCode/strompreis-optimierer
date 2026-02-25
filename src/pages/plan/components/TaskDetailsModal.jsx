@@ -1,0 +1,71 @@
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { buildBatterySeries, buildVariableActionSeries } from "../utils/planTransform.js";
+
+function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, selectedVA, planData }) {
+  if (!open) return null;
+
+  return (
+    <div className="data-popup">
+      <div className="data-popup-window">
+        <div className="data-popup-head">
+          <p className="graph-title">{selectedTask?.name}</p>
+          <button onClick={onClose}>✕</button>
+        </div>
+
+        {selectedBattery && (
+          <>
+            <p className="graph-y-axis">Speicherladung (Wh)</p>
+            <LineChart
+              width={600}
+              height={300}
+              data={buildBatterySeries(planData, selectedBattery)}
+              margin={{ bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="1 1" />
+              <XAxis
+                dataKey="time"
+                tickFormatter={(iso) => {
+                  const d = new Date(iso);
+                  return String(d.getHours()).padStart(2, "0") + ":00";
+                }}
+                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+              />
+              <YAxis />
+              <Line dataKey="value" strokeWidth={2} dot={false} />
+            </LineChart>
+          </>
+        )}
+
+        {!selectedBattery && selectedVA && (
+          <>
+            <p className="graph-y-axis">Leistung (W)</p>
+            <LineChart
+              width={600}
+              height={300}
+              data={buildVariableActionSeries(planData, selectedVA)}
+              margin={{ bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="1 1" />
+              <XAxis
+                dataKey="time"
+                tickFormatter={(iso) => {
+                  const d = new Date(iso);
+                  return String(d.getHours()).padStart(2, "0") + ":00";
+                }}
+                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+              />
+              <YAxis />
+              <Line dataKey="value" strokeWidth={2} dot={false} />
+            </LineChart>
+          </>
+        )}
+
+        {!selectedBattery && !selectedVA && (
+          <div>Für diese Aufgabe sind keine Detaildaten verfügbar.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default TaskDetailsModal;

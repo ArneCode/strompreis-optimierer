@@ -1,0 +1,44 @@
+function PlanHeader({ status, error, onGenerate, onRefresh, compareView, setCompareView }) {
+  return (
+    <div className="plan-header">
+      <p>Ablaufplan</p>
+
+      <div className="plan-header-info">
+        <button
+          className={status.currentlyRunning ? "generate-plan-button-running" : "generate-plan-button"}
+          onClick={onGenerate}
+          disabled={status.currentlyRunning}
+        >
+          {status.currentlyRunning ? "Plan wird generiert..." : "Plan generieren"}
+        </button>
+
+        <button
+          className={status.currentlyRunning ? "plan-refresh-button-running" : "plan-refresh-button"}
+          onClick={onRefresh}
+          disabled={status.currentlyRunning}
+        >
+          Aktualisieren
+          <img src="./src/assets/images/refresh.png" />
+        </button>
+
+        <button
+          className="plan-compare-button"
+          onClick={() => setCompareView((v) => !v)}
+          disabled={status.currentlyRunning}
+        >
+          {compareView ? "Vergleichsansicht aus" : "Vergleichsansicht an"}
+        </button>
+
+        {!status.hasSchedule && !status.currentlyRunning && (
+          <div>Noch kein Plan vorhanden. Klicke "Plan generieren".</div>
+        )}
+
+        {status.currentlyRunning && <div>Optimierung läuft... bitte warten.</div>}
+
+        {error && <div className="error">{error}</div>}
+      </div>
+    </div>
+  );
+}
+
+export default PlanHeader;
