@@ -204,7 +204,7 @@
   margin-right: 50px;
   */
   margin: 0 3rem;
-  margin-bottom: 0rem;
+  margin-bottom: 1rem;
 }
 
 .plan-header p {
@@ -251,4 +251,75 @@
 .plan-refresh-button-running img {
   width: 20px;
   margin-left: 10px;
+}
+
+/* ------------- */
+
+.compare-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /*width: 100%;*/
+  margin-left: 3rem;
+}
+
+.compare-section {
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 10px;
+  background: white;
+  padding: 10px 12px;
+}
+
+.compare-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.compare-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compare-section-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compare-section-body {
+  margin-top: 10px;
+}
+
+.collapse-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.compare-chart {
+  width: 100%;
+  overflow-x: auto; /* falls die LineChart fixed width hat */
+  display: flex;
+  justify-content: center;
+}
+
+.compare-chart-gantt {
+  width: 1080px;
+  padding-left: 200px;
+}
+
+.plan-compare-button {
+  background-color: white;
+  /*padding: 10px 15px;*/
+  padding: 0.6rem 1rem;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
 }

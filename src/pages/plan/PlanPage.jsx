@@ -26,6 +26,7 @@ function PlanPage() {
     batteries: [],
     variableActions: [],
     generationByGeneratorKw: [],
+    constantActions: [],
   });
   const [status, setStatus] = useState({
     currentlyRunning: false,
@@ -38,6 +39,43 @@ function PlanPage() {
 
   // 'total' for total prognoses. Else generator id.
   const [selectedGeneratorId, setSelectedGeneratorId] = useState("total");
+  const [compareView, setCompareView] = useState(false);
+  const [collapsed, setCollapsed] = useState({
+    gantt: false,
+    price: false,
+    generation: false,
+    batteries: false,
+    variableActions: false,
+    constantActions: false,
+  });
+
+  const toggleCollapsed = (key) => setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const CollapsibleSection = ({ id, title, right, children }) => (
+    <div className="compare-section">
+      <div className="compare-section-head">
+        <div className="compare-section-title">
+          <button
+            type="button"
+            className="collapse-button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleCollapsed(id);
+            }}
+            aria-expanded={!collapsed[id]}
+          >
+            {collapsed[id] ? "▸" : "▾"}
+          </button>
+          <p style={{ margin: 0 }}>{title}</p>
+        </div>
+
+        <div className="compare-section-right">{right}</div>
+      </div>
+
+      {!collapsed[id] && <div className="compare-section-body">{children}</div>}
+    </div>
+  );
 
   /** Map variable actions to their id for fast lookup of detail data */
   const variableActionById = useMemo(() => {
@@ -222,14 +260,31 @@ function PlanPage() {
    */
   const buildVariableActionSeries = (va) => {
     if (!va) return [];
-    const start = new Date(va.start);
-    const stepMs = (va.stepMinutes ?? 30) * 60 * 1000;
 
-    return (va.powerW ?? []).map((p, i) => ({
-      time: new Date(start.getTime() + i * stepMs).toISOString(),
-      value: p,
+    const timeline = planData.timeline ?? [];
+    const values = va.powerW ?? [];
+
+    return timeline.map((iso, i) => ({
+      time: iso,
+      value: values[i] ?? 0,
     }));
   };
+
+  const buildConstantActionSeries = (ca) => {
+    if (!ca) return [];
+
+    const timeline = planData.timeline ?? [];
+    const values = ca.powerW ?? [];
+
+    return timeline.map((iso, i) => ({
+      time: iso,
+      value: values[i] ?? 0,
+    }));
+  };
+
+  const compareViewRef = useRef(compareView);
+  useEffect(() => { compareViewRef.current = compareView; }, [compareView]);
+
   /**
    * Hook into Gantt events. On task select, open modal with detail data.
    * @param {object} api Svar Gantt API instance.
@@ -238,6 +293,7 @@ function PlanPage() {
     api.on("select-task", (task) => {
       const clicked = tasksRef.current.find((t) => String(t.id) === String(task.id));
       if (clicked) {
+        if (compareViewRef.current) return;
         openTaskModal(clicked);
       }
     });
@@ -279,7 +335,7 @@ function PlanPage() {
 
   return (
     <>
-      {modalOpen && (
+      {modalOpen && !compareView && (
         <div className="data-popup">
           <div className="data-popup-window">
             <div className="data-popup-head">
@@ -314,7 +370,7 @@ function PlanPage() {
                     dataKey="time"
                     tickFormatter={(iso) => {
                       const d = new Date(iso);
-                      return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+                      return String(d.getHours()).padStart(2, "0") + ":00";
                     }}
                     label={{value: "Uhrzeit", position: "insideBottom", offset: -15}}
                   />
@@ -352,6 +408,14 @@ function PlanPage() {
             <img src="./src/assets/images/refresh.png" />
           </button>
 
+          <button
+            className="plan-compare-button"
+            onClick={() => setCompareView((v) => !v)}
+            disabled={status.currentlyRunning}
+          >
+            {compareView ? "Vergleichsansicht aus" : "Vergleichsansicht an"}
+          </button>
+
           {!status.hasSchedule && !status.currentlyRunning && (
             <div>Noch kein Plan vorhanden. Klicke "Plan generieren".</div>
           )}
@@ -364,116 +428,338 @@ function PlanPage() {
         </div>
 
       </div>
-      <div className="plan">
-        <div className="plan-chart">
+      {!compareView ? (
+  <>
+    {/* NORMALANSICHT – dein bisheriges Layout */}
+    <div className="plan">
+      <div className="plan-chart">
+        <Willow>
+          <Gantt
+            tasks={tasks}
+            scales={SCALES}
+            autoScale={false}
+            start={ganttStart}
+            end={ganttEnd}
+            cellHeight={65}
+            cellWidth={45}
+            durationUnit="hour"
+            readonly={true}
+            init={initGantt}
+            columns={[
+              { id: "name", label: "", value: (task) => task.name, width: 120 },
+            ]}
+          />
+        </Willow>
+      </div>
+
+      <div className="plan-options">
+        <button
+          className="plan-export-button"
+          onClick={() => downloadCSV(tasks, "ablaufplan.csv", setError)}
+        >
+          Exportieren als CSV
+        </button>
+
+        <button
+          className="plan-export-button"
+          onClick={() => downloadPDF(tasks, "ablaufplan.pdf", setError)}
+        >
+          Exportieren als PDF
+        </button>
+      </div>
+    </div>
+
+    <p className="charts-header">Prognosen</p>
+    <div className="charts">
+      {/* Strompreis */}
+      <div className="chart">
+        <p>Strompreis</p>
+        <div className="diagram">
+          <LineChart
+            style={{ width: "100%", aspectRatio: 1.5, maxWidth: 700 }}
+            data={priceDataFromBackend}
+            responsive
+            margin={{ bottom: 30 }}
+          >
+            <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
+            <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} />
+            <XAxis
+              dataKey="hour"
+              label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+              interval={3}
+            />
+            <YAxis
+              width="auto"
+              label={{ value: "Preis (ct/kWh)", position: "insideLeft", angle: -90 }}
+              domain={[
+                (min) => Math.floor(min * 0.95),
+                (max) => Math.ceil(max),
+              ]}
+            />
+          </LineChart>
+        </div>
+      </div>
+
+      {/* Stromerzeugung */}
+      <div className="chart">
+        <div>
+          <p>
+            {selectedGeneratorId === "total"
+              ? "Gesamte Stromerzeugung"
+              : `Stromerzeugung ${
+                  generatorOptions.find((g) => g.id === selectedGeneratorId)?.name ??
+                  "Generator"
+                }`}
+          </p>
+
+          <select
+            value={selectedGeneratorId}
+            onChange={(e) => setSelectedGeneratorId(e.target.value)}
+            className="generator-select"
+          >
+            <option value="total">Gesamt</option>
+            {generatorOptions.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="diagram">
+          <LineChart
+            style={{ width: "100%", aspectRatio: 1.5, maxWidth: 700 }}
+            data={generatorDataFromBackend}
+            responsive
+            margin={{ bottom: 30 }}
+          >
+            <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
+            <Line dataKey="generation" name="Stromerzeugung (kW)" strokeWidth={2} />
+            <XAxis
+              dataKey="hour"
+              label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+              interval={3}
+            />
+            <YAxis
+              width="auto"
+              label={{
+                value: "Stromerzeugung (kW)",
+                position: "insideLeft",
+                angle: -90,
+              }}
+              domain={[0, (max) => Math.ceil(max * 1.1)]}
+            />
+          </LineChart>
+        </div>
+      </div>
+    </div>
+  </>
+) : (
+  <>
+    {/* VERGLEICHSANSICHT – alles untereinander, gleiche Breite */}
+    <div className="compare-view">
+      <CollapsibleSection id="gantt" title="Ablaufplan (Gantt)">
+        <div className="compare-chart-gantt">
           <Willow>
-            <Gantt 
-              tasks={tasks} 
-              scales={SCALES} 
-              autoScale={false}
+            <Gantt
+              tasks={tasks}
+              scales={SCALES}
+              autoScale={true}
               start={ganttStart}
               end={ganttEnd}
               cellHeight={65}
-              cellWidth={45}
+              cellWidth={41}
               durationUnit="hour"
               readonly={true}
               init={initGantt}
               columns={[
-                {
-                  id: "name",
-                  label: "",
-                  value: (task) => task.name,
-                  width: 120
-                }
+                { id: "name", label: "", value: (task) => task.name, width: 120 },
               ]}
             />
           </Willow>
         </div>
-        <div className="plan-options">
-            <button
-                className="plan-export-button"
-                onClick={() => downloadCSV(tasks, "ablaufplan.csv", setError)}
-            >
-                Exportieren als CSV
-            </button>
+      </CollapsibleSection>
 
-            <button
-                className="plan-export-button"
-                onClick={() => downloadPDF(tasks, "ablaufplan.pdf", setError)}
-            >
-                Exportieren als PDF
-            </button>
+      <CollapsibleSection id="price" title="Strompreis">
+        <div className="compare-chart">
+          <LineChart
+           width={1000}
+            height={320}
+            data={priceDataFromBackend}
+            margin={{ bottom: 30 }}
+          >
+            <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
+            <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} dot={false} />
+            <XAxis
+              dataKey="hour"
+              label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+              interval={1}
+            />
+            <YAxis
+              width="auto"
+              label={{ value: "Preis (ct/kWh)", position: "insideLeft", angle: -90 }}
+              domain={[
+                (min) => Math.floor(min * 0.95),
+                (max) => Math.ceil(max),
+              ]}
+            />
+          </LineChart>
         </div>
-      </div>
-      <p className="charts-header">Prognosen</p>
-      <div className="charts">
-        <div className="chart">
-          <p>Strompreis</p>
-          <div className="diagram">
-            <LineChart 
-              style={{ width: '100%', aspectRatio: 1.5, maxWidth: 700}} 
-              data={priceDataFromBackend}
-              responsive
-              margin={{bottom: 30}}
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        id="generation"
+        title={
+          selectedGeneratorId === "total"
+            ? "Gesamte Stromerzeugung"
+            : `Stromerzeugung ${
+                generatorOptions.find((g) => g.id === selectedGeneratorId)?.name ??
+                "Generator"
+              }`
+        }
+        right={
+          <select
+            value={selectedGeneratorId}
+            onChange={(e) => setSelectedGeneratorId(e.target.value)}
+            className="generator-select"
+          >
+            <option value="total">Gesamt</option>
+            {generatorOptions.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+        }
+      >
+        <div className="compare-chart">
+          <LineChart
+            width={1000}
+            height={320}
+            data={generatorDataFromBackend}
+            margin={{ bottom: 30 }}
+          >
+            <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
+            <Line
+              dataKey="generation"
+              name="Stromerzeugung (kW)"
+              strokeWidth={2}
+              dot={false}
+            />
+            <XAxis
+              dataKey="hour"
+              label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+              interval={1}
+            />
+            <YAxis
+              width="auto"
+              label={{
+                value: "Erzeugung (kW)",
+                position: "insideLeft",
+                angle: -90,
+              }}
+              domain={[0, (max) => Math.ceil(max * 1.1)]}
+            />
+          </LineChart>
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection id="batteries" title="Speicher (alle)">
+        {(planData.batteries ?? []).length === 0 && <div>Keine Speicher vorhanden.</div>}
+
+        {(planData.batteries ?? []).map((b) => (
+          <div key={String(b.id)} className="compare-chart" style={{ marginTop: 12 }}>
+            {/*<p className="graph-y-axis">{b.name ?? `Speicher ${b.id}`} – Speicherladung (Wh)</p>*/}
+            <LineChart
+              width={1000}
+              height={320}
+              data={buildBatterySeries(b)}
+              margin={{ bottom: 20 }}
             >
-              <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-              <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} />
-              <XAxis dataKey="hour" label={{value: 'Uhrzeit', position: 'insideBottom', offset: -15}} interval={3}/>
-              <YAxis width="auto" label={{value: 'Preis (ct/kWh)', position: 'insideLeft', angle: -90}} 
-                domain={[
-                  (min) => Math.floor(min * 0.95),
-                  (max) => Math.ceil(max),
-                ]}
-                /*ticks={priceTicks}*/
+              <CartesianGrid strokeDasharray="1 1" />
+              <XAxis
+                dataKey="time"
+                tickFormatter={(iso) => {
+                  const d = new Date(iso);
+                  return String(d.getHours()).padStart(2, "0") + ":00";
+                }}
+                interval={1}
+                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               />
+              <YAxis 
+                label={{ value: "Ladezustand (kWh)", position: "insideLeft", angle: -90 }}
+              />
+              <Line dataKey="value" strokeWidth={2} dot={false} />
             </LineChart>
           </div>
-        </div>
-        
-        <div className="chart">
-          <div>
-            <p>
-              {selectedGeneratorId === "total" 
-                ? "Gesamte Stromerzeugung" 
-                : `Stromerzeugung ${
-                  generatorOptions.find((g) => g.id === selectedGeneratorId)?.name ?? "Generator"
-                }`}
-            </p>
+        ))}
+      </CollapsibleSection>
 
-            <select
-              value={selectedGeneratorId}
-              onChange={(e) => setSelectedGeneratorId(e.target.value)}
-              className="generator-select"
+      <CollapsibleSection id="variableActions" title="Variable Aktionen (alle)">
+        {(planData.variableActions ?? []).length === 0 && <div>Keine variablen Aktionen vorhanden.</div>}
+
+        {(planData.variableActions ?? []).map((va) => (
+          <div key={String(va.id)} className="compare-chart" style={{ marginTop: 12 }}>
+            {/*<p className="graph-y-axis">{va.name ?? `Aktion ${va.id}`} – Leistung (W)</p>*/}
+            <LineChart
+              width={1000}
+              height={320}
+              data={buildVariableActionSeries(va)}
+              margin={{ bottom: 20 }}
             >
-              <option value="total">Gesamt</option>
-              {generatorOptions.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="diagram">
-            <LineChart 
-              style={{ width: '100%', aspectRatio: 1.5, maxWidth: 700}} 
-              data={generatorDataFromBackend}
-              responsive
-              margin={{bottom: 30}}
-            >
-              <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-              <Line dataKey="generation" name="Stromerzeugung (kW)" strokeWidth={2} />
-              <XAxis dataKey="hour" label={{value: 'Uhrzeit', position: 'insideBottom', offset: -15}} interval={3}/>
-              <YAxis width="auto" label={{value: 'Stromerzeugung (kW)', position: 'insideLeft', angle: -90}} 
-                domain={[
-                  0,
-                  (max) => Math.ceil(max * 1.1)
-                ]}
-                /*ticks={generationTicks}*/
+              <CartesianGrid strokeDasharray="1 1" />
+              <XAxis
+                dataKey="time"
+                tickFormatter={(iso) => {
+                  const d = new Date(iso);
+                  return String(d.getHours()).padStart(2, "0") + ":00";
+                }}
+                interval={1}
+                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               />
+              <YAxis 
+                label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
+              />
+              <Line dataKey="value" strokeWidth={2} dot={false} />
             </LineChart>
           </div>
-        </div>
-      </div>
+        ))}
+      </CollapsibleSection>
+
+      <CollapsibleSection id="constantActions" title="Konstante Aktionen (alle)">
+        {(planData.constantActions ?? []).length === 0 && (
+          <div>Keine konstanten Aktionen vorhanden.</div>
+        )}
+
+        {(planData.constantActions ?? []).map((ca) => (
+          <div key={String(ca.id)} className="compare-chart" style={{ marginTop: 12 }}>
+            <LineChart
+              width={1000}
+              height={320}
+              data={buildConstantActionSeries(ca)}
+              margin={{ bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="1 1" />
+              <XAxis
+                dataKey="time"
+                tickFormatter={(iso) => {
+                  const d = new Date(iso);
+                  return String(d.getHours()).padStart(2, "0") + ":00";
+                }}
+                interval={1}
+                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+              />
+              <YAxis
+                label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
+              />
+              <Line dataKey="value" strokeWidth={2} dot={false} />
+            </LineChart>
+          </div>
+        ))}
+      </CollapsibleSection>
+    </div>
+  </>
+)}
     </>
   );
 }
