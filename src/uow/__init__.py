@@ -19,6 +19,9 @@ from services.interactor_service import IInteractorService
 from services.settings_service import ISettingsService, SqlAlchemySettingsService
 
 
+__all__ = ["IUnitOfWork", "SqlAlchemyUnitOfWork"]
+
+
 class IUnitOfWork(ABC):
     """Interface for a unit of work coordinating services and transactions."""
     device_service: IDeviceService
