@@ -6,14 +6,14 @@ schedule to the device controllers upon completion.
 """
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Tuple
-from electricity_price_optimizer_py import Schedule, OptimizerContext, PrognosesProvider, run_simulated_annealing
+from electricity_price_optimizer_py import Schedule, OptimizerContext, PrognosesProvider
 from electricity_price_optimizer_py.units import Euro, EuroPerWh
 from datetime import datetime, timezone
 from concurrent.futures import Future, ThreadPoolExecutor
 from enum import Enum
 
 from external_api_services.api_services import api_services
-from services.interfaces import IOrchestratorService, ISettingsService
+from services.interfaces import IOptimizerService, IOrchestratorService, ISettingsService
 
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
@@ -56,7 +56,7 @@ class OrchestratorService(IOrchestratorService):
         finally:
             self._currently_running = False
 
-    def run_optimization(self, device_manager: "IDeviceManager", settings_service: ISettingsService) -> "None":
+    def run_optimization(self, device_manager: "IDeviceManager", settings_service: ISettingsService, optimizer_service: IOptimizerService) -> "None":
         """Run the optimization algorithm."""
         if self._currently_running:
             raise RuntimeError("Optimization is already running.")
@@ -81,7 +81,7 @@ class OrchestratorService(IOrchestratorService):
         print("Starting optimization...")
         settings = settings_service.get_optimizer_settings()
         future = self.executor.submit(
-            run_simulated_annealing, context, settings)
+            optimizer_service.run_optimization, context, settings)
         self._currently_running = True
 
         print("Optimization task submitted...")

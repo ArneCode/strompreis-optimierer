@@ -18,6 +18,9 @@ if TYPE_CHECKING:
     from uow import IUnitOfWork
 
 
+__all__ = ["IDeviceManager", "DeviceManager"]
+
+
 class IDeviceManager(ABC):
     """Device manager interface exposing device operations and service accessors."""
 

@@ -14,9 +14,9 @@ from collections.abc import Generator
 from services.controller_service import IControllerService
 from services.interactor_service import IInteractorService
 from services.orchestrator_service import IOrchestratorService
-from instances import controller_service_instance, interactor_service_instance, orchestrator_service_instance
+from instances import controller_service_instance, interactor_service_instance, orchestrator_service_instance, optimizer_service_instance
 from device_manager import IDeviceManager, DeviceManager
-from services.interfaces import ISettingsService
+from services.interfaces import IOptimizerService, ISettingsService
 
 
 def get_controller_service() -> IControllerService:
@@ -32,6 +32,11 @@ def get_interactor_service() -> IInteractorService:
 def get_orchestrator_service() -> IOrchestratorService:
     """Return the application-scoped orchestrator service singleton."""
     return orchestrator_service_instance
+
+
+def get_optimizer_service() -> "IOptimizerService":
+    """Return the application-scoped optimizer service singleton."""
+    return optimizer_service_instance
 
 
 def get_uow(

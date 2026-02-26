@@ -9,9 +9,9 @@ from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from electricity_price_optimizer_py.units import WattHour, Watt
-from api.dependencies import get_device_manager, get_orchestrator_service, get_settings_service
+from api.dependencies import get_device_manager, get_optimizer_service, get_orchestrator_service, get_settings_service
 from device_manager import IDeviceManager
-from services.interfaces import IOrchestratorService, ISettingsService
+from services.interfaces import IOptimizerService, IOrchestratorService, ISettingsService
 from devices import ConstantActionDevice
 from devices import VariableActionDevice
 from devices import Battery
@@ -21,6 +21,7 @@ BERLIN = ZoneInfo("Europe/Berlin")
 
 router = APIRouter(prefix="/api", tags=["plan"])
 
+
 def _collect_constant_power_series(
     start: datetime,
     end: datetime,
@@ -28,6 +29,7 @@ def _collect_constant_power_series(
     timeline: list[datetime],
 ) -> list[float]:
     return [float(power_w) if start <= t < end else 0.0 for t in timeline]
+
 
 def _collect_generation_by_generator_kw(
     manager: IDeviceManager,
@@ -45,7 +47,8 @@ def _collect_generation_by_generator_kw(
         Where "generationKw" aligns with the given timeline (same length).
     """
 
-    step = (timeline[1] - timeline[0]) if len(timeline) > 1 else timedelta(hours=1)
+    step = (timeline[1] - timeline[0]
+            ) if len(timeline) > 1 else timedelta(hours=1)
     end = timeline[-1] + step
 
     gen_controllers = manager.get_controller_service().get_all_generator_controllers()
@@ -75,9 +78,11 @@ def _collect_generation_by_generator_kw(
                     continue
                 series[i] += float(wh) / 1000.0
 
-        result.append({"id": ctrl.device_id, "name": name, "generationKw": series})
+        result.append(
+            {"id": ctrl.device_id, "name": name, "generationKw": series})
 
     return result
+
 
 def _collect_total_generation_kw(
     manager: IDeviceManager,
@@ -199,6 +204,7 @@ def _create_timeline(hours: int):
 
     return timeline
 
+
 def _collect_power_values_timeline_aligned(
     action,
     assigned_action,
@@ -221,6 +227,7 @@ def _collect_power_values_timeline_aligned(
             values.append(0.0)
 
     return values
+
 
 def _collect_power_values(action, assigned_action, step_minutes):
     power_values = []
@@ -273,7 +280,8 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
     timeline = _create_timeline(24)
 
     generation_kw = _collect_total_generation_kw(manager, timeline)
-    generation_by_generator_kw = _collect_generation_by_generator_kw(manager, timeline)
+    generation_by_generator_kw = _collect_generation_by_generator_kw(
+        manager, timeline)
     prices_ct_per_kwh = _collect_hourly_prices_ct_per_kwh(timeline)
 
     plan_start = timeline[0]
@@ -287,7 +295,8 @@ def _collect_plan_data(manager, schedule) -> dict[str, Any]:
                 continue
 
             action = device.actions[0] if device.actions else None
-            power_w = float(Watt.get_value(action.consumption)) if action is not None else 0.0
+            power_w = float(Watt.get_value(action.consumption)
+                            ) if action is not None else 0.0
 
             start_dt = assigned.get_start_time()
             end_dt = assigned.get_end_time()
@@ -410,7 +419,7 @@ def get_plan_data(
     """
     Get additional plan data required for charts and detail views.
 
-    Includes: 
+    Includes:
         timeline (ISO timestamps)
         battery SOC series (Wh)
         variable action power series (W)
@@ -440,7 +449,8 @@ def get_plan_data(
 def generate_plan(
     device_manager: IDeviceManager = Depends(get_device_manager),
     orchestrator: IOrchestratorService = Depends(get_orchestrator_service),
-    settings_service: ISettingsService = Depends(get_settings_service)
+    settings_service: ISettingsService = Depends(get_settings_service),
+    optimizer_service: IOptimizerService = Depends(get_optimizer_service)
 ):
     """
     Start plan generation by running the optimization algorithm.
@@ -459,7 +469,8 @@ def generate_plan(
         )
 
     try:
-        orchestrator.run_optimization(device_manager, settings_service)
+        orchestrator.run_optimization(
+            device_manager, settings_service, optimizer_service)
     except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

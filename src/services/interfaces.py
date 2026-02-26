@@ -6,7 +6,10 @@ orchestrator services. These interfaces enforce a consistent API across differen
 implementations (e.g., in-memory vs. database-backed).
 """
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Tuple
+
+from electricity_price_optimizer_py import OptimizerContext
+from electricity_price_optimizer_py.units import Euro
 
 from controllers.base import GeneratorController
 from devices import GeneratorPV, GeneratorPV, GeneratorRandom, GeneratorScheduled
@@ -352,4 +355,13 @@ class ISettingsService(ABC):
     @abstractmethod
     def get_optimizer_settings(self) -> "SimulatedAnnealingSettingsOptimizer":
         """Get settings in the format required by the optimizer."""
+        ...
+
+
+class IOptimizerService(ABC):
+    """Optimizer service interface providing optimization-related operations."""
+
+    @abstractmethod
+    def run_optimization(self, context: "OptimizerContext", settings: "SimulatedAnnealingSettingsOptimizer") -> Tuple["Euro", "Schedule"]:
+        """Run the optimization algorithm."""
         ...
