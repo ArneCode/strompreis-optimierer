@@ -62,7 +62,7 @@ class ControllerService(IControllerService):
         return self.variable_action_controllers.set(controller.device_id, controller)
 
     def get_all_battery_controllers(self):
-        return self.variable_action_controllers.values()
+        return self.battery_controllers.values()
 
     def get_all_generator_controllers(self):
         return self.generator_controllers.values()
