@@ -243,8 +243,8 @@ class GeneratorScheduled(Generator):
         super().__init__(**kwargs)
         # Convert time keys to string for JSON storage
         # check that 00:00 is included in the schedule
-        assert any(t == time(0, 0) for t in schedule.keys()
-                   ), "Schedule must include an entry for 00:00"
+        if time(0, 0) not in schedule:
+            raise ValueError("Schedule must include an entry for 00:00")
         self.schedule = {t.strftime("%H:%M"): g.get_value()
                          for t, g in schedule.items()}
 
