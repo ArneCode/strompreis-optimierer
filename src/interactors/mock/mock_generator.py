@@ -34,8 +34,8 @@ class MockGeneratorInteractor(GeneratorInteractor):
         _current_power. The generator model in the device service may be used
         by callers to set the interactor's max_power initially.
         """
-        interactor = device_manager.get_interactor_service().get_generator_interactor(self._id)
-        pv_configuration = get_pv_configuration(interactor)
+        device = device_manager.get_device_service().get_generator_pv(self._id)
+        pv_configuration = get_pv_configuration(device)
         service = api_services.forecast_manager.get_service(pv_configuration)
         self._current_power = service.get_current_power()
         return self._current_power
