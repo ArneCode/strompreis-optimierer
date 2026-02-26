@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from api.dependencies import get_settings_service, get_uow
 from uow import IUnitOfWork
 from services.interfaces import ISettingsService
@@ -16,8 +16,7 @@ class SimulatedAnnealingSettingsRead(BaseModel):
     constant_action_move_factor: float
     num_moves_per_step: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SimulatedAnnealingSettingsUpdate(BaseModel):
