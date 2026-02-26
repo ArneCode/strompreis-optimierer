@@ -37,7 +37,7 @@ use crate::schedule::Schedule;
 use crate::simulated_annealing::{SimulatedAnnealingSettings, run_simulated_annealing};
 use crate::timeseries::{DataPoint, TimeSeries};
 use crate::units::register_units_submodule;
-
+#[cfg(feature = "extension-module")]
 #[pymodule]
 /// Python module initializer. Registers units, classes, and functions.
 fn electricity_price_optimizer_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
