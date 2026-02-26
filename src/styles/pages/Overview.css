@@ -1,0 +1,97 @@
+.overview-page {
+  margin-left: 3rem;
+  margin-top: 0;
+}
+
+.overview-title {
+  margin-bottom: 24px;
+  font-size: 40px;
+  font-weight: 400;
+  margin-top: 1rem;
+}
+
+/* Gruppen */
+.group-section {
+  margin-bottom: 40px;
+}
+
+.group-title {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Grid */
+.overview-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 320px));
+  grid-auto-rows: 150px;
+
+  max-width: 1200px;
+}
+
+/* Tile */
+.overview-tile {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 14px;
+  background: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tile-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.tile-info {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.info-label {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.info-value {
+  font-weight: 600;
+}
+
+/* Status Farben */
+.status-charging {
+  color: #1b8f3a;
+}
+
+.status-decharging {
+  color: #c62828;
+}
+
+.overview-hint {
+  margin: 12px 0 24px;
+  opacity: 0.7;
+}
+
+.overview-error {
+  margin: 12px 0 24px;
+  color: #c62828;
+  font-weight: 600;
+}
+
+.overview-empty {
+  opacity: 0.7;
+  font-size: 14px;
+  padding: 8px 0;
+}

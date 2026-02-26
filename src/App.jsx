@@ -9,6 +9,7 @@ import DevicesPage from './pages/devices/DevicesPage';
 import PlanPage from './pages/plan/PlanPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import ActionsPage from './pages/actions/ActionsPage';
+import OverviewPage from './pages/overview/OverviewPage';
 
 import './styles/App.css';
 
@@ -23,6 +24,7 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Navigate to="/geraete" replace />} />
 
+                        <Route path="/aktuell" element={<OverviewPage />} />
                         <Route path="/geraete" element={<DevicesPage />} />
                         <Route path="/aktionen" element={<ActionsPage />} />
                         <Route path="/ablaufplan" element={<PlanPage />} />

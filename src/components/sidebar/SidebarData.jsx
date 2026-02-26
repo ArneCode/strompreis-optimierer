@@ -7,9 +7,10 @@ import SettingsIcon from '../../assets/icons/navigation/settings.png';
  * Main sidebar navigation items (title, icon, route)
  */
 export const SIDEBAR_MAIN_ITEMS = [
+    { title: 'Aktuell', icon: ActionIcon, link: '/aktuell'},
     { title: 'Geräte', icon: DeviceIcon, link: '/geraete' },
     { title: 'Aktionen', icon: ActionIcon, link: '/aktionen' },
-    { title: 'Ablaufplan', icon: PlanIcon, link: '/ablaufplan' }
+    { title: 'Ablaufplan', icon: PlanIcon, link: '/ablaufplan' },
 ];
 
 /**

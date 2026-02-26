@@ -200,6 +200,14 @@ class ApiService {
         }
     }
 
+    /**
+     * Fetch overview data for the dashboard cards.
+     * @returns {Promise<{batteries: Array, actions: Array, generators: Array}>}
+     */
+    fetchOverview() {
+        return this.request("overview", "GET");
+    }
+
 }
 
 export default new ApiService();
