@@ -225,6 +225,10 @@ function ActionsPage() {
                 </button>
             </header>
 
+            {errorMessage && modalMode === MODAL_MODES.CLOSED && (
+                <div className="error-message">{errorMessage}</div>
+            )}
+
             <ActionGrid
                 devices={devices}
                 onEdit={handleOpenEdit}
