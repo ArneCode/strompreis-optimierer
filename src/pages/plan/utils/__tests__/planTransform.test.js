@@ -56,26 +56,39 @@ describe("planTransform utils", () => {
     expect(ganttEnd.toISOString()).toBe("2026-02-26T04:00:00.000Z");
   });
 
-  it("makePriceChartData maps timeline to hour + price", () => {
+  it("makePriceChartData maps timeline to hour + price (local time)", () => {
     const planData = {
       timeline: ["2026-02-26T00:00:00.000Z", "2026-02-26T01:00:00.000Z"],
       pricesCtPerKwh: [10, 20],
     };
+
+    const expectedHours = planData.timeline.map((iso) => {
+      const d = new Date(iso);
+      return String(d.getHours()).padStart(2, "0") + ":00";
+    });
+
     const out = makePriceChartData(planData);
+
     expect(out).toEqual([
-      { hour: "00:00", price: 10 },
-      { hour: "01:00", price: 20 },
+      { hour: expectedHours[0], price: 10 },
+      { hour: expectedHours[1], price: 20 },
     ]);
   });
 
-  it("makeGeneratorChartData maps timeline to hour + generation", () => {
-    const out = makeGeneratorChartData(
-      ["2026-02-26T00:00:00.000Z", "2026-02-26T01:00:00.000Z"],
-      [1.5, 2.5]
-    );
+  it("makeGeneratorChartData maps timeline to hour + generation (local time)", () => {
+    const timeline = ["2026-02-26T00:00:00.000Z", "2026-02-26T01:00:00.000Z"];
+    const generationSeries = [1.5, 2.5];
+
+    const expectedHours = timeline.map((iso) => {
+      const d = new Date(iso);
+      return String(d.getHours()).padStart(2, "0") + ":00";
+    });
+
+    const out = makeGeneratorChartData(timeline, generationSeries);
+
     expect(out).toEqual([
-      { hour: "00:00", generation: 1.5 },
-      { hour: "01:00", generation: 2.5 },
+      { hour: expectedHours[0], generation: 1.5 },
+      { hour: expectedHours[1], generation: 2.5 },
     ]);
   });
 
