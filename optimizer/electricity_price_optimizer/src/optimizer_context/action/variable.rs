@@ -124,3 +124,104 @@ impl Deref for AssignedVariableAction {
         &self.action
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::time::Time;
+    use std::sync::Arc;
+
+    #[test]
+    fn test_variable_action_creation() {
+        let start = Time::new(8, 0);
+        let end = Time::new(12, 0);
+        let action = VariableAction::new(start, end, 5000, 1000, 42);
+
+        assert_eq!(action.get_id(), 42);
+        assert_eq!(action.get_total_consumption(), 5000);
+        assert_eq!(action.get_max_consumption(), 1000);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid variable action time bounds")]
+    fn test_variable_action_invalid_times() {
+        // Start must be less than end
+        let start = Time::new(10, 0);
+        let end = Time::new(9, 0);
+        VariableAction::new(start, end, 100, 10, 1);
+    }
+
+    #[test]
+    fn test_assigned_variable_action_indexing() {
+        // 8:00 to 8:15 with 5-minute timesteps = 3 slots
+        let start = Time::new(8, 0);
+        let end = Time::new(8, 15);
+        let action = Arc::new(VariableAction::new(start, end, 30, 20, 1));
+
+        // Custom consumption profile: 10W, 5W, 15W
+        let consumption_profile = vec![10, 5, 15];
+        let assigned = AssignedVariableAction::new(action, consumption_profile);
+
+        // Check mapping:
+        // 08:00 -> index 0
+        assert_eq!(assigned.get_consumption(Time::new(8, 0)), 10);
+        // 08:05 -> index 1
+        assert_eq!(assigned.get_consumption(Time::new(8, 5)), 5);
+        // 08:10 -> index 2
+        assert_eq!(assigned.get_consumption(Time::new(8, 10)), 15);
+    }
+
+    #[test]
+    #[should_panic(expected = "Consumption list length does not match action duration")]
+    fn test_assigned_variable_mismatched_length() {
+        let start = Time::new(8, 0);
+        let end = Time::new(8, 15); // 3 timesteps
+        let action = Arc::new(VariableAction::new(start, end, 30, 20, 1));
+
+        // Provide only 2 values instead of 3
+        let consumption_profile = vec![10, 10];
+        AssignedVariableAction::new(action, consumption_profile);
+    }
+
+    #[test]
+    #[should_panic(expected = "out of bounds")]
+    fn test_get_consumption_out_of_bounds_early() {
+        let start = Time::new(8, 0);
+        let end = Time::new(9, 0);
+        let action = Arc::new(VariableAction::new(start, end, 100, 100, 1));
+
+        // 12 slots for 1 hour
+        let assigned = AssignedVariableAction::new(action, vec![10; 12]);
+
+        // Trying to access 07:55
+        assigned.get_consumption(Time::new(7, 55));
+    }
+
+    #[test]
+    #[should_panic(expected = "out of bounds")]
+    fn test_get_consumption_out_of_bounds_late() {
+        let start = Time::new(8, 0);
+        let end = Time::new(9, 0);
+        let action = Arc::new(VariableAction::new(start, end, 100, 100, 1));
+        let assigned = AssignedVariableAction::new(action, vec![10; 12]);
+
+        // Trying to access 09:00 (which is the exclusive end bound)
+        assigned.get_consumption(Time::new(9, 0));
+    }
+
+    #[test]
+    fn test_deref_to_base_action() {
+        let action = Arc::new(VariableAction::new(
+            Time::new(0, 0),
+            Time::new(1, 0),
+            100,
+            20,
+            7,
+        ));
+        let assigned = AssignedVariableAction::new(action, vec![5; 12]);
+
+        // Should access VariableAction fields through the proxy
+        assert_eq!(assigned.max_consumption, 20);
+        assert_eq!(assigned.get_id(), 7);
+    }
+}

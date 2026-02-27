@@ -109,3 +109,133 @@ impl Debug for Time {
         write!(f, "{:02}:{:02}", hours, minutes)
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_time_creation() {
+        let t = Time::new(2, 30);
+        assert_eq!(t.get_minutes(), 150);
+        assert_eq!(format!("{:?}", t), "02:30");
+    }
+
+    #[test]
+    fn test_timestep_logic_is_consistent_with_constant() {
+        let hour_in_minutes = 60;
+        let t = Time::new(1, 0);
+
+        // Instead of hardcoding "12", we calculate what it should be
+        let expected_steps = hour_in_minutes / MINUTES_PER_TIMESTEP;
+        assert_eq!(
+            t.to_timestep(),
+            expected_steps,
+            "to_timestep failed for 1 hour with MINUTES_PER_TIMESTEP={}",
+            MINUTES_PER_TIMESTEP
+        );
+    }
+
+    #[test]
+    fn test_from_timestep_is_lossless() {
+        let arbitrary_step = 42;
+        let t = Time::from_timestep(arbitrary_step);
+
+        // Round trip should always work regardless of the constant
+        assert_eq!(t.to_timestep(), arbitrary_step);
+        assert_eq!(t.get_minutes(), arbitrary_step * MINUTES_PER_TIMESTEP);
+    }
+
+    #[test]
+    fn test_day_segmentation() {
+        let total_steps = Time::get_day_end().to_timestep();
+
+        // This ensures STEPS_PER_DAY constant stays in sync with the method
+        assert_eq!(total_steps, STEPS_PER_DAY);
+
+        // Ensure total minutes in a day is always 1440
+        assert_eq!(Time::get_day_end().get_minutes(), 24 * 60);
+    }
+
+    #[test]
+    fn test_range_iteration_coverage() {
+        let start_step = 10;
+        let end_step = 20;
+        let start_time = Time::from_timestep(start_step);
+        let end_time = Time::from_timestep(end_step);
+
+        let range = start_time..end_time;
+        let steps: Vec<Time> = range.iter_steps().collect();
+
+        // The number of steps should always be (end - start)
+        assert_eq!(steps.len() as u32, end_step - start_step);
+
+        // Each step should be exactly MINUTES_PER_TIMESTEP apart
+        if steps.len() > 1 {
+            assert_eq!(
+                steps[1].get_minutes() - steps[0].get_minutes(),
+                MINUTES_PER_TIMESTEP
+            );
+        }
+    }
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_get_next_timestep_is_exactly_one_step_away() {
+            let t1 = Time::new(1, 0);
+            let t2 = t1.get_next_timestep();
+
+            // Invariant: The difference must always equal the constant
+            assert_eq!(t2.minutes - t1.minutes, MINUTES_PER_TIMESTEP);
+
+            // Invariant: The timestep index must increment by exactly 1
+            assert_eq!(t2.to_timestep(), t1.to_timestep() + 1);
+        }
+
+        #[test]
+        fn test_add_time() {
+            let t1 = Time::new(1, 10);
+            let t2 = Time::new(2, 20);
+            let result = t1 + t2;
+
+            // Invariant: minutes should be additive
+            assert_eq!(result.get_minutes(), t1.get_minutes() + t2.get_minutes());
+
+            // Test with zero
+            let zero = Time::new(0, 0);
+            assert_eq!((t1 + zero).get_minutes(), t1.get_minutes());
+        }
+
+        #[test]
+        fn test_sub_time() {
+            let t1 = Time::new(5, 0);
+            let t2 = Time::new(2, 30);
+            let result = t1 - t2;
+
+            // Invariant: minutes should be subtractive
+            assert_eq!(result.get_minutes(), t1.get_minutes() - t2.get_minutes());
+        }
+
+        #[test]
+        #[should_panic]
+        fn test_sub_underflow() {
+            // Since minutes is u32, subtracting a larger time from a smaller
+            // one will panic in debug mode (standard Rust behavior for Sub).
+            let t1 = Time::new(1, 0);
+            let t2 = Time::new(2, 0);
+            let _ = t1 - t2;
+        }
+
+        #[test]
+        fn test_arithmetic_timestep_consistency() {
+            // This ensures that adding two times results in the expected timestep sum
+            // (Only works cleanly if both times are perfectly aligned to steps)
+            let t1 = Time::from_timestep(10);
+            let t2 = Time::from_timestep(5);
+            let result = t1 + t2;
+
+            assert_eq!(result.to_timestep(), 15);
+        }
+    }
+}

@@ -118,3 +118,105 @@ where
         }
     }
 }
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use super::*;
+    use crate::{optimizer_context::action::constant::ConstantAction, time::Time};
+
+    #[test]
+    fn test_new_and_get() {
+        // Create an array with a specific value at one index
+        let mut raw_data: [i32; STEPS_PER_DAY as usize] = [0; STEPS_PER_DAY as usize];
+        raw_data[10] = 42;
+
+        let prog = Prognoses::new(raw_data);
+
+        // Ensure getting the value via Time works
+        let time = Time::from_timestep(10);
+        assert_eq!(prog.get(time), Some(&42));
+
+        // Ensure out-of-bounds (if theoretically possible via Time) returns None or is handled
+        // Note: Time::from_timestep can create values larger than STEPS_PER_DAY
+        let late_time = Time::from_timestep(STEPS_PER_DAY + 1);
+        assert_eq!(prog.get(late_time), None);
+    }
+
+    #[test]
+    fn test_set_value() {
+        let mut prog = Prognoses::new([0.0; STEPS_PER_DAY as usize]);
+        let time = Time::new(12, 0); // Noon
+
+        prog.set(time, 100.5);
+        assert_eq!(*prog.get(time).unwrap(), 100.5);
+    }
+
+    #[test]
+    fn test_from_closure() {
+        // Generate values based on the minute count
+        let prog = Prognoses::from_closure(|t| t.get_minutes() as f64);
+
+        let t1 = Time::from_timestep(0);
+        let t2 = Time::from_timestep(1);
+
+        assert_eq!(*prog.get(t1).unwrap(), 0.0);
+        assert_eq!(
+            *prog.get(t2).unwrap(),
+            crate::time::MINUTES_PER_TIMESTEP as f64
+        );
+    }
+
+    #[test]
+    fn test_from_closure_result() {
+        let prog_res: Result<Prognoses<i32>, &str> = Prognoses::from_closure_result(|t| {
+            if t.to_timestep() < STEPS_PER_DAY {
+                Ok(1)
+            } else {
+                Err("Too late")
+            }
+        });
+
+        assert!(prog_res.is_ok());
+        assert_eq!(*prog_res.unwrap().get(Time::from_timestep(0)).unwrap(), 1);
+    }
+
+    #[test]
+    fn test_add_constant_action() {
+        let mut prog = Prognoses::new([0i64; STEPS_PER_DAY as usize]);
+        let action = ConstantAction::new(
+            Time::from_timestep(5),
+            Time::from_timestep(10),
+            Time::from_timestep(2),
+            30,
+            1,
+        );
+        let assigned_action = AssignedConstantAction::new(Arc::new(action), Time::from_timestep(5));
+        prog.add_constant_action(&assigned_action);
+
+        for t in 5..7 {
+            assert_eq!(*prog.get(Time::from_timestep(t)).unwrap(), 30);
+        }
+        for t in 7..10 {
+            assert_eq!(*prog.get(Time::from_timestep(t)).unwrap(), 0);
+        }
+    }
+
+    #[test]
+    fn test_prognoses_addition() {
+        let p1 = Prognoses::new([10; STEPS_PER_DAY as usize]);
+        let p2 = Prognoses::new([20; STEPS_PER_DAY as usize]);
+
+        let sum = p1 + p2;
+        assert_eq!(*sum.get(Time::from_timestep(0)).unwrap(), 30);
+    }
+
+    #[test]
+    fn test_add_assign() {
+        let mut p1 = Prognoses::new([10; STEPS_PER_DAY as usize]);
+        let p2 = Prognoses::new([5; STEPS_PER_DAY as usize]);
+
+        p1 += p2;
+        assert_eq!(*p1.get(Time::from_timestep(0)).unwrap(), 15);
+    }
+}

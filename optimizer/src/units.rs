@@ -724,3 +724,85 @@ pub fn register_units_submodule(parent_module: &Bound<'_, PyModule>) -> PyResult
     parent_module.add_submodule(&units_mod)?;
     Ok(())
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use approx::assert_relative_eq;
+    use pyo3::types::PyAnyMethods; // Useful for floating point comparisons // For relative equality assertions
+
+    #[test]
+    fn test_watt_arithmetic() {
+        let w1 = Watt::new(100.0);
+        let w2 = Watt::new(50.0);
+
+        // Basic trait-based arithmetic
+        assert_eq!((&w1 + &w2).value, 150.0);
+        assert_eq!((&w1 - &w2).value, 50.0);
+        assert_eq!((&w1 * 2.0).value, 200.0);
+        assert_eq!((&w1 / 2.0).value, 50.0);
+        assert_eq!(&w1 / w2, 2.0);
+    }
+
+    #[test]
+    fn test_watt_to_watthour_conversion() {
+        let w = Watt::new(1000.0); // 1kW
+        let duration = TimeDelta::hours(1);
+        let wh = &w * duration;
+
+        assert_eq!(wh.value, 1000.0); // 1000W * 1h = 1000Wh
+
+        let half_hour = TimeDelta::minutes(30);
+        let wh_half = &w * half_hour;
+        assert_eq!(wh_half.value, 500.0);
+    }
+
+    #[test]
+    fn test_internal_optimizer_conversions() {
+        // Test Watt <-> milli-Wh/timestep
+        // MINUTES_PER_TIMESTEP may vary
+        let w = Watt::new(400.0);
+        let milli_wh_per_timestep = w.to_milli_watt_hour_per_timestep();
+        let w_converted = Watt::from_milli_watt_hour_per_timestep(milli_wh_per_timestep);
+        assert_relative_eq!(w.value, w_converted.value, epsilon = 1e-6);
+    }
+
+    #[test]
+    fn test_euro_conversions() {
+        let e = Euro::new(1.5);
+        assert_eq!(e.to_nano_euro(), 1_500_000_000.0);
+
+        let e2 = Euro::from_nano_euro(1_000_000_000.0);
+        assert_eq!(e2.value, 1.0);
+    }
+
+    #[test]
+    fn test_price_calculations() {
+        let energy = WattHour::new(2000.0); // 2kWh
+        let price = EuroPerWh::new(0.00015); // 0.15€ per kWh
+
+        let total_cost = &energy * &price;
+        assert_relative_eq!(total_cost.value, 0.30);
+    }
+
+    #[test]
+    fn test_watthour_to_watt_division() {
+        let wh = WattHour::new(100.0);
+        let duration = TimeDelta::minutes(15);
+        let w = &wh / duration;
+
+        // 100Wh / 0.25h = 400W
+        assert_relative_eq!(w.value, 400.0);
+    }
+
+    #[test]
+    fn test_comparisons() {
+        let w1 = Watt::new(10.0);
+        let w2 = Watt::new(20.0);
+        let w3 = Watt::new(10.0);
+
+        assert!(w1.__richcmp__(&w2, CompareOp::Lt));
+        assert!(w2.__richcmp__(&w1, CompareOp::Gt));
+        assert!(w1.__richcmp__(&w3, CompareOp::Eq));
+        assert!(w1.__richcmp__(&w2, CompareOp::Ne));
+    }
+}

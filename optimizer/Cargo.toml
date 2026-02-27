@@ -12,6 +12,7 @@ pyo3 = { version = "0.27.2", features = ["chrono"] }
 electricity_price_optimizer = { path = "electricity_price_optimizer" }
 chrono = "0.4.43"
 proptest = "1.10.0"
+approx = "0.5.1"
 [features]
 # Define a feature that enables the extension-module
 extension-module = ["pyo3/extension-module"]

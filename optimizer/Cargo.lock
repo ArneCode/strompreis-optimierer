@@ -106,6 +106,7 @@ dependencies = [
 name = "electricity_price_optimizer_py"
 version = "0.1.0"
 dependencies = [
+ "approx",
  "chrono",
  "electricity_price_optimizer",
  "proptest",

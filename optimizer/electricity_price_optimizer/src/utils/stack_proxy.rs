@@ -62,3 +62,89 @@ where
         Self::new(T::default())
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_initial_state() {
+        let proxy = StackProxy::new(10);
+        assert_eq!(*proxy, 10);
+    }
+
+    #[test]
+    fn test_deref_mut_modification() {
+        let mut proxy = StackProxy::new(10);
+        *proxy += 5;
+        assert_eq!(*proxy, 15);
+    }
+
+    #[test]
+    fn test_push_preserves_and_clones() {
+        let mut proxy = StackProxy::new(100);
+        proxy.push(); // Save state 100
+
+        *proxy = 200; // Modify top
+        assert_eq!(*proxy, 200);
+
+        proxy.pop(); // Restore
+        assert_eq!(*proxy, 100);
+    }
+
+    #[test]
+    fn test_nested_stacks() {
+        let mut proxy = StackProxy::new(String::from("A"));
+
+        proxy.push();
+        proxy.push_str("B"); // State is now "AB"
+
+        proxy.push();
+        proxy.push_str("C"); // State is now "ABC"
+
+        assert_eq!(*proxy, "ABC");
+
+        proxy.pop();
+        assert_eq!(*proxy, "AB");
+
+        proxy.pop();
+        assert_eq!(*proxy, "A");
+    }
+
+    #[test]
+    fn test_default_trait() {
+        // Only works if the inner type implements Default
+        let proxy: StackProxy<i32> = StackProxy::default();
+        assert_eq!(*proxy, 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot pop the last state from the stack")]
+    fn test_pop_panic_on_empty() {
+        let mut proxy = StackProxy::new(1);
+        proxy.pop(); // Should panic because length is 1
+    }
+
+    #[test]
+    fn test_complex_struct_state() {
+        #[derive(Clone, PartialEq, Debug)]
+        struct State {
+            score: f64,
+            path: Vec<u32>,
+        }
+
+        let initial = State {
+            score: 0.0,
+            path: vec![1],
+        };
+        let mut proxy = StackProxy::new(initial.clone());
+
+        proxy.push();
+        proxy.score = 10.5;
+        proxy.path.push(2);
+
+        assert_ne!(*proxy, initial);
+
+        proxy.pop();
+        assert_eq!(*proxy, initial);
+    }
+}

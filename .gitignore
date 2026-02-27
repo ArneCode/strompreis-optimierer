@@ -11,3 +11,6 @@ docs_export.zip
 
 *.pyd
 *.pyc
+
+.coverage
+tarpaulin-report.html

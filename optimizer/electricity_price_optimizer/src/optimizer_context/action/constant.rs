@@ -142,3 +142,128 @@ impl PartialEq for AssignedConstantAction {
 }
 
 impl Eq for AssignedConstantAction {}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::time::Time;
+    use std::sync::Arc;
+
+    #[test]
+    fn test_constant_action_creation() {
+        let start = Time::new(1, 0);
+        let duration = Time::new(2, 0);
+        let end_limit = Time::new(5, 0);
+
+        let action = ConstantAction::new(start, end_limit, duration, 1000, 1);
+
+        assert_eq!(action.get_start_from().get_minutes(), 60);
+        assert_eq!(action.get_end_before().get_minutes(), 300);
+        assert_eq!(action.get_consumption(), 1000);
+        assert_eq!(action.get_id(), 1);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid time bounds")]
+    fn test_constant_action_invalid_bounds() {
+        // Duration (4h) + Start (2h) = 6h, which is > limit (5h)
+        let start = Time::new(2, 0);
+        let duration = Time::new(4, 0);
+        let end_limit = Time::new(5, 0);
+
+        let _ = ConstantAction::new(start, end_limit, duration, 100, 1);
+    }
+
+    #[test]
+    fn test_assignment_valid() {
+        let action = Arc::new(ConstantAction::new(
+            Time::new(1, 0),
+            Time::new(5, 0),
+            Time::new(2, 0),
+            500,
+            10,
+        ));
+
+        // Start at 1:00 (exact boundary)
+        let assigned_start = action.clone().with_start_time(Time::new(1, 0));
+        assert_eq!(assigned_start.get_end_time().get_minutes(), 180); // 1h + 2h = 3h
+
+        // Start at 3:00 (exact boundary: 3h + 2h = 5h)
+        let assigned_end = action.clone().with_start_time(Time::new(3, 0));
+        assert_eq!(assigned_end.get_end_time().get_minutes(), 300);
+    }
+
+    #[test]
+    #[should_panic(expected = "Start time is out of bounds")]
+    fn test_assignment_too_early() {
+        let action = Arc::new(ConstantAction::new(
+            Time::new(2, 0),
+            Time::new(6, 0),
+            Time::new(1, 0),
+            500,
+            1,
+        ));
+
+        // Action starts at 2:00, trying to assign at 1:00
+        let _ = action.with_start_time(Time::new(1, 0));
+    }
+
+    #[test]
+    #[should_panic(expected = "Start time is out of bounds")]
+    fn test_assignment_too_late() {
+        let action = Arc::new(ConstantAction::new(
+            Time::new(2, 0),
+            Time::new(6, 0),
+            Time::new(2, 0),
+            500,
+            1,
+        ));
+
+        // Action must end by 6:00. Duration is 2h.
+        // Latest start is 4:00. Trying 4:05 (assuming 5min steps).
+        let _ = action.with_start_time(Time::new(4, 5));
+    }
+
+    #[test]
+    fn test_deref_behavior() {
+        let action = Arc::new(ConstantAction::new(
+            Time::new(0, 0),
+            Time::new(10, 0),
+            Time::new(1, 0),
+            750,
+            99,
+        ));
+
+        let assigned = action.with_start_time(Time::new(2, 0));
+
+        // We should be able to access ConstantAction fields directly via Deref
+        assert_eq!(assigned.consumption, 750);
+        assert_eq!(assigned.get_id(), 99);
+    }
+
+    #[test]
+    fn test_equality_and_hash() {
+        use std::collections::HashSet;
+
+        let action = Arc::new(ConstantAction::new(
+            Time::new(0, 0),
+            Time::new(10, 0),
+            Time::new(1, 0),
+            100,
+            1,
+        ));
+
+        let a1 = action.clone().with_start_time(Time::new(1, 0));
+        let a2 = action.clone().with_start_time(Time::new(1, 0));
+        let a3 = action.clone().with_start_time(Time::new(2, 0));
+
+        // a1 and a2 are same ID and same start time
+        assert_eq!(a1, a2);
+        // a1 and a3 have same ID but different start time
+        assert_ne!(a1, a3);
+
+        let mut set = HashSet::new();
+        set.insert(a1);
+        assert!(set.contains(&a2));
+        assert!(!set.contains(&a3));
+    }
+}
