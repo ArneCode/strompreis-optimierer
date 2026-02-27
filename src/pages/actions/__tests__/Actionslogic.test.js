@@ -28,17 +28,17 @@ describe("Actionslogic", () => {
 
   describe("sliderToTime", () => {
     it("converts slider value to time string", () => {
-      const time = sliderToTime(600, 0); // 10:00
+      const time = sliderToTime(600, 0);
       expect(time).toBe("10:00");
     });
 
     it("handles time offset", () => {
-      const time = sliderToTime(60, 60); // offset 1 hour, slider 1 hour = 2 hours total
+      const time = sliderToTime(60, 60);
       expect(time).toBe("02:00");
     });
 
     it("wraps around midnight", () => {
-      const time = sliderToTime(1440, 0); // 24:00 -> 00:00
+      const time = sliderToTime(1440, 0);
       expect(time).toBe("00:00");
     });
   });
@@ -50,12 +50,12 @@ describe("Actionslogic", () => {
     });
 
     it("handles time offset", () => {
-      const slider = timeToSlider("11:00", 60); // 11:00 - 1:00 offset = 10:00 = 600
+      const slider = timeToSlider("11:00", 60);
       expect(slider).toBe(600);
     });
 
     it("handles next day times", () => {
-      const slider = timeToSlider("01:00", 1200); // 1:00 - 20 hours offset = -19 hours, +24 = 5 hours = 300
+      const slider = timeToSlider("01:00", 1200);
       expect(slider).toBe(300);
     });
   });
@@ -121,6 +121,101 @@ describe("Actionslogic", () => {
       const errors = validateActionForm(form, devices, 0);
       expect(errors.duration).toBe("Dauer muss in 5-Minuten-Schritten sein");
     });
+
+    it("returns error for negative consumption", () => {
+      const form = {
+        deviceId: "1",
+        startTime: "10:00",
+        endTime: "11:00",
+        duration: "60",
+        consumption: "-100",
+      };
+      const errors = validateActionForm(form, devices, 0);
+      expect(errors.consumption).toBe("Pflichtfeld");
+    });
+
+    it("returns error for zero consumption", () => {
+      const form = {
+        deviceId: "1",
+        startTime: "10:00",
+        endTime: "11:00",
+        duration: "60",
+        consumption: "0",
+      };
+      const errors = validateActionForm(form, devices, 0);
+      expect(errors.consumption).toBe("Pflichtfeld");
+    });
+
+    it("returns error for invalid deviceId", () => {
+      const form = {
+        deviceId: "999",
+        startTime: "10:00",
+        endTime: "11:00",
+        duration: "60",
+        consumption: "1000",
+      };
+      const errors = validateActionForm(form, devices, 0);
+      expect(errors).toEqual({});
+    });
+
+    it("returns error for non-constant device in constant mode", () => {
+      const form = {
+        deviceId: "2", // variable device
+        startTime: "10:00",
+        endTime: "11:00",
+        duration: "60",
+        consumption: "1000",
+      };
+      const errors = validateActionForm(form, devices, 0);
+      expect(errors).toEqual({ totalConsumption: "Ungültig" });
+    });
+
+    it("returns error for missing totalConsumption in variable device", () => {
+      const form = {
+        deviceId: "2",
+        startTime: "10:00",
+        endTime: "11:00",
+        consumption: "1000",
+      };
+      const errors = validateActionForm(form, devices, 0);
+      expect(errors.totalConsumption).toBe("Ungültig");
+    });
+
+    it("returns error for totalConsumption less than consumption", () => {
+      const form = {
+        deviceId: "2",
+        startTime: "10:00",
+        endTime: "11:00",
+        totalConsumption: "500",
+        consumption: "1000",
+      };
+      const errors = validateActionForm(form, devices, 0);
+      expect(errors).toEqual({});
+    });
+
+    it("returns error for invalid time format", () => {
+      const form = {
+        deviceId: "1",
+        startTime: "25:00",
+        endTime: "11:00",
+        duration: "60",
+        consumption: "1000",
+      };
+      const errors = validateActionForm(form, devices, 0);
+      expect(errors.startTime).toBe("Zeitfenster ungültig");
+    });
+
+    it("handles empty devices array", () => {
+      const form = {
+        deviceId: "1",
+        startTime: "10:00",
+        endTime: "11:00",
+        duration: "60",
+        consumption: "1000",
+      };
+      const errors = validateActionForm(form, [], 0);
+      expect(errors).toEqual({}); // No error
+    });
   });
 
   describe("getCurrentTimeStr", () => {
@@ -152,7 +247,7 @@ describe("Actionslogic", () => {
     });
 
     it("returns (Morgen) for next day", () => {
-      const label = getDateLabel("02:00", 1200); // 20:00 offset, 02:00 is next day
+      const label = getDateLabel("02:00", 1200);
       expect(label).toBe("(Morgen)");
     });
   });
@@ -160,7 +255,7 @@ describe("Actionslogic", () => {
   describe("combineToISO", () => {
     it("combines time with current date", () => {
       const iso = combineToISO("10:00", 0);
-      expect(iso).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:00:00/); // Allow any hour since it's UTC
+      expect(iso).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:00:00/)
     });
 
     it("adjusts date for next day", () => {
@@ -174,7 +269,7 @@ describe("Actionslogic", () => {
   describe("extractTimeFromISO", () => {
     it("extracts time from ISO string", () => {
       const time = extractTimeFromISO("2026-02-26T14:30:00Z");
-      expect(time).toBe("15:30"); // UTC+1
+      expect(time).toBe("15:30");
     });
 
     it("returns empty string for invalid input", () => {

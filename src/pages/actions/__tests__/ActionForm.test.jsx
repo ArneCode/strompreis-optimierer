@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import ActionForm from "../components/ActionForm.jsx";
 
 vi.mock("../../../components/slider/TimeRangeSlider.jsx", () => ({
-  default: ({ startTime, endTime, onChange, disabled }) => (
+  default: ({ startTime, endTime}) => (
     <div data-testid="TimeRangeSlider">
       Slider: {startTime} - {endTime}
     </div>

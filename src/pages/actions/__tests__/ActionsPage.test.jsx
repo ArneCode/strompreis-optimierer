@@ -125,10 +125,8 @@ describe("ActionsPage", () => {
       expect(apiService.fetchDevices).toHaveBeenCalled();
     });
 
-    // Open create modal
     fireEvent.click(screen.getByText("Neue Aktion"));
 
-    // Fill form
     fireEvent.change(screen.getByDisplayValue("Verbraucher wählen"), {
       target: { value: "1" },
     });
@@ -139,7 +137,6 @@ describe("ActionsPage", () => {
       target: { value: "500" },
     });
 
-    // Save
     fireEvent.click(screen.getByText("Erstellen"));
 
     await waitFor(() => {
@@ -161,11 +158,9 @@ describe("ActionsPage", () => {
       expect(apiService.fetchDevices).toHaveBeenCalled();
     });
 
-    // Open edit modal
     const actionCard = screen.getByText("Device 1").closest(".action-card-wrapper");
     fireEvent.click(actionCard);
 
-    // Delete
     fireEvent.click(screen.getByText("Löschen"));
 
     await waitFor(() => {

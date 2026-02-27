@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ActionModal from "../ActionModal.jsx";
 
-// Mock ActionForm
 vi.mock("../components/ActionForm.jsx", () => ({
   default: ({ actionForm, onChange, disabled }) => (
     <div data-testid="ActionForm">

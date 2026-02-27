@@ -197,7 +197,7 @@ function ActionsPage() {
     };
 
     const removeAction = async () => {
-        // Protection vor Doppelklicks
+
         if (isDeleting) return;
 
         setIsDeleting(true);

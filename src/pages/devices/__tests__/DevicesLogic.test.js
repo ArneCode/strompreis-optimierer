@@ -4,6 +4,7 @@ import {
   RULES,
   DEVICE_VALIDATION_SCHEME,
   INITIAL_DEVICE_FORM,
+  validateDevice,
 } from "../DevicesLogic.js";
 
 describe("DevicesLogic", () => {
@@ -156,6 +157,99 @@ describe("DevicesLogic", () => {
         efficiency: "",
         peakPower: "",
       });
+    });
+  });
+
+  describe("validateDevice", () => {
+    it("returns no errors for valid Generator", () => {
+      const form = {
+        type: "Generator",
+        name: "Test Generator",
+        forecast: "file.csv",
+      };
+      expect(validateDevice(form)).toEqual({});
+    });
+
+    it("returns errors for missing required fields in Generator", () => {
+      const form = {
+        type: "Generator",
+        name: "",
+        forecast: "",
+      };
+      expect(validateDevice(form)).toEqual({
+        name: "Pflichtfeld",
+        forecast: "Pflichtfeld",
+      });
+    });
+
+    it("returns errors for invalid PVGenerator values", () => {
+      const form = {
+        type: "PVGenerator",
+        name: "Test PV",
+        ratedPower: "0",
+        angleOfInclination: "95",
+        alignment: "",
+        location: "",
+      };
+      expect(validateDevice(form)).toEqual({
+        ratedPower: "Muss > 0 sein",
+        angleOfInclination: "0°-90°!",
+        alignment: "Pflichtfeld",
+        location: "Pflichtfeld",
+      });
+    });
+
+    it("returns errors for invalid Battery values", () => {
+      const form = {
+        type: "Battery",
+        name: "Test Battery",
+        capacity: "abc",
+        currentCharge: "-10",
+        maxChargeRate: "0",
+        maxDischarge: "0",
+        efficiency: "150",
+      };
+      expect(validateDevice(form)).toEqual({
+        capacity: "Gib eine Zahl an",
+        currentCharge: "Muss > 0 sein",
+        maxChargeRate: "Muss > 0 sein",
+        maxDischarge: "Muss > 0 sein",
+        efficiency: "0-100%!",
+      });
+    });
+
+    it("returns errors for unknown device type", () => {
+      const form = {
+        type: "Unknown",
+        name: "",
+      };
+      expect(validateDevice(form)).toEqual({
+        name: "Pflichtfeld",
+      });
+    });
+
+    it("handles null/undefined form", () => {
+      expect(validateDevice(null)).toEqual({});
+      expect(validateDevice(undefined)).toEqual({});
+      expect(validateDevice({})).toEqual({ name: "Pflichtfeld" });
+    });
+
+    it("validates RandomGenerator correctly", () => {
+      const form = {
+        type: "RandomGenerator",
+        name: "Test Random",
+        peakPower: "100.5",
+      };
+      expect(validateDevice(form)).toEqual({});
+    });
+
+    it("validates Consumer correctly", () => {
+      const form = {
+        type: "Consumer",
+        name: "Test Consumer",
+        flexibility: "constant",
+      };
+      expect(validateDevice(form)).toEqual({});
     });
   });
 });

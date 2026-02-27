@@ -63,6 +63,7 @@ export const DEVICE_VALIDATION_SCHEME = {
  * @returns {object} field->error
  */
 export function validateDevice(form) {
+    if (!form) return {};
     const errors = {};
     const scheme = { name: [RULES.required], ...DEVICE_VALIDATION_SCHEME[form.type] };
 
