@@ -9,5 +9,13 @@ export default defineConfig({
     globals: true,
     css: true,
     clearMocks: true,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      exclude: [
+        "node_modules/",
+        "src/setupTests.js",
+      ],
+    },
   },
 });

@@ -12,7 +12,6 @@ vi.mock("../../../services/apiService", () => ({
   },
 }));
 
-// Mock TimeRangeSlider
 vi.mock("../../../components/slider/TimeRangeSlider.jsx", () => ({
   default: ({ startTime, endTime, onChange, disabled }) => (
     <div data-testid="TimeRangeSlider">

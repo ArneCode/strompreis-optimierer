@@ -4,7 +4,6 @@ import DevicesPage from "../DevicesPage.jsx";
 import apiService from "../../../services/apiService";
 import { prepareDeviceForForm } from "../../../services/deviceMapper.js";
 
-// Mock apiService
 vi.mock("../../../services/apiService", () => ({
   default: {
     fetchDevices: vi.fn(),
@@ -14,7 +13,6 @@ vi.mock("../../../services/apiService", () => ({
   },
 }));
 
-// Mock deviceMapper
 vi.mock("../../../services/deviceMapper.js", () => ({
   prepareDeviceForForm: vi.fn((device) => device),
 }));
