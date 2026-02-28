@@ -200,46 +200,47 @@ function SettingsPage() {
 
     return (
         <>
-          <div className="settings-head">
+          <div className="settings-head" data-testid="settings-head">
             <p>Einstellungen</p>
           </div>
 
-          <div className="settings-container">
+          <div className="settings-container" data-testid="settings-container">
 
-              {successMessage && <div className="settings-success">{successMessage}</div>}
+              {successMessage && <div className="settings-success" data-testid="settings-success">{successMessage}</div>}
 
               <p className="title">
                 <b>Simulated Annealing Parameter</b>
               </p>
 
-              {error && <div className="settings-error">{error}</div>}
-              {isLoading && <div className="settings-loading">Einstellungen werden geladen...</div>}
+              {error && <div className="settings-error" data-testid="settings-error">{error}</div>}
+              {isLoading && <div className="settings-loading" data-testid="settings-loading">Einstellungen werden geladen...</div>}
 
               {!isLoading && !isEditingSettings && (
                   <>
                       <div className="settings-item">
                           <label>Starttemperatur:</label>
-                          <span className="settings-value">{settings?.initial_temperature || '-'}</span>
+                          <span className="settings-value" data-testid="settings-initial-temperature-value">{settings?.initial_temperature || '-'}</span>
                       </div>
                       <div className="settings-item">
                           <label>Abkühlrate:</label>
-                          <span className="settings-value">{settings?.cooling_rate || '-'}</span>
+                          <span className="settings-value" data-testid="settings-cooling-rate-value">{settings?.cooling_rate || '-'}</span>
                       </div>
                       <div className="settings-item">
                           <label>Endtemperatur:</label>
-                          <span className="settings-value">{settings?.final_temperature || '-'}</span>
+                          <span className="settings-value" data-testid="settings-final-temperature-value">{settings?.final_temperature || '-'}</span>
                       </div>
                       <div className="settings-item">
                           <label>Konstanter Aktions-Bewegungsfaktor:</label>
-                          <span className="settings-value">{settings?.constant_action_move_factor || '-'}</span>
+                          <span className="settings-value" data-testid="settings-move-factor-value">{settings?.constant_action_move_factor || '-'}</span>
                       </div>
                       <div className="settings-item">
                           <label>Bewegungen pro Schritt:</label>
-                          <span className="settings-value">{settings?.num_moves_per_step || '-'}</span>
+                          <span className="settings-value" data-testid="settings-num-moves-value">{settings?.num_moves_per_step || '-'}</span>
                       </div>
                       <button
                           className="settings-edit-button"
                           onClick={startEditSettings}
+                          data-testid="settings-edit-open"
                       >
                           Parameter bearbeiten
                       </button>
@@ -247,25 +248,28 @@ function SettingsPage() {
                       <button
                           className="settings-reset-button"
                           onClick={toggleSaResetPopUp}
+                          data-testid="settings-sa-reset-open"
                       >
                           Einstellungen zurücksetzen
                       </button>
 
                       {openSaReset && (
-                          <div className="reset-popup-overlay">
-                              <div className="reset-popup-window">
+                          <div className="reset-popup-overlay" data-testid="settings-sa-reset-overlay">
+                              <div className="reset-popup-window" data-testid="settings-sa-reset-modal">
                                   <p>Möchten Sie die Simulated Annealing Einstellungen wirklich auf die Standardwerte zurücksetzen?</p>
 
                                   <div className="reset-popup-buttons">
                                       <button
                                           className="reset-cancel-button"
                                           onClick={toggleSaResetPopUp}
+                                          data-testid="settings-sa-reset-cancel"
                                       >
                                           Abbrechen
                                       </button>
                                       <button
                                           className="reset-confirm-button"
                                           onClick={handleSaReset}
+                                          data-testid="settings-sa-reset-confirm"
                                       >
                                           Zurücksetzen
                                       </button>
@@ -278,7 +282,7 @@ function SettingsPage() {
 
               {isEditingSettings && (
                   <>
-                      <div className="settings-form">
+                      <div className="settings-form" data-testid="settings-edit-form">
                           <div className="form-group">
                               <label>Starttemperatur:</label>
                               <input
@@ -288,8 +292,9 @@ function SettingsPage() {
                                   value={editSettings.initial_temperature}
                                   onChange={(e) => handleSettingChange('initial_temperature', e.target.value)}
                                   className={fieldErrors.initial_temperature ? 'input-error' : ''}
+                                  data-testid="settings-initial-temperature"
                               />
-                              {fieldErrors.initial_temperature && <div className="field-error">{fieldErrors.initial_temperature}</div>}
+                              {fieldErrors.initial_temperature && <div className="field-error" data-testid="settings-initial-temperature-error">{fieldErrors.initial_temperature}</div>}
                           </div>
                           <div className="form-group">
                               <label>Abkühlrate:</label>
@@ -301,8 +306,9 @@ function SettingsPage() {
                                   value={editSettings.cooling_rate}
                                   onChange={(e) => handleSettingChange('cooling_rate', e.target.value)}
                                   className={fieldErrors.cooling_rate ? 'input-error' : ''}
+                                  data-testid="settings-cooling-rate"
                               />
-                              {fieldErrors.cooling_rate && <div className="field-error">{fieldErrors.cooling_rate}</div>}
+                              {fieldErrors.cooling_rate && <div className="field-error" data-testid="settings-cooling-rate-error">{fieldErrors.cooling_rate}</div>}
                           </div>
                           <div className="form-group">
                               <label>Endtemperatur:</label>
@@ -313,8 +319,9 @@ function SettingsPage() {
                                   value={editSettings.final_temperature}
                                   onChange={(e) => handleSettingChange('final_temperature', e.target.value)}
                                   className={fieldErrors.final_temperature ? 'input-error' : ''}
+                                  data-testid="settings-final-temperature"
                               />
-                              {fieldErrors.final_temperature && <div className="field-error">{fieldErrors.final_temperature}</div>}
+                              {fieldErrors.final_temperature && <div className="field-error" data-testid="settings-final-temperature-error">{fieldErrors.final_temperature}</div>}
                           </div>
                           <div className="form-group">
                               <label>Konstanter Aktions-Bewegungsfaktor:</label>
@@ -325,8 +332,9 @@ function SettingsPage() {
                                   value={editSettings.constant_action_move_factor}
                                   onChange={(e) => handleSettingChange('constant_action_move_factor', e.target.value)}
                                   className={fieldErrors.constant_action_move_factor ? 'input-error' : ''}
+                                  data-testid="settings-move-factor"
                               />
-                              {fieldErrors.constant_action_move_factor && <div className="field-error">{fieldErrors.constant_action_move_factor}</div>}
+                              {fieldErrors.constant_action_move_factor && <div className="field-error" data-testid="settings-move-factor-error">{fieldErrors.constant_action_move_factor}</div>}
                           </div>
                           <div className="form-group">
                               <label>Bewegungen pro Schritt:</label>
@@ -337,21 +345,24 @@ function SettingsPage() {
                                   value={editSettings.num_moves_per_step}
                                   onChange={(e) => handleSettingChange('num_moves_per_step', e.target.value)}
                                   className={fieldErrors.num_moves_per_step ? 'input-error' : ''}
+                                  data-testid="settings-num-moves"
                               />
-                              {fieldErrors.num_moves_per_step && <div className="field-error">{fieldErrors.num_moves_per_step}</div>}
-                              <div className="field-info">Konstante Aktionen verfügbar: {constantActionsCount}</div>
+                              {fieldErrors.num_moves_per_step && <div className="field-error" data-testid="settings-num-moves-error">{fieldErrors.num_moves_per_step}</div>}
+                              <div className="field-info" data-testid="settings-constant-actions-count">Konstante Aktionen verfügbar: {constantActionsCount}</div>
                           </div>
                       </div>
                       <div className="settings-form-buttons">
                           <button
                               className="settings-cancel-button"
                               onClick={cancelEditSettings}
+                              data-testid="settings-edit-cancel"
                           >
                               Abbrechen
                           </button>
                           <button
                               className="settings-save-button"
                               onClick={saveSettings}
+                              data-testid="settings-edit-save"
                           >
                               Speichern
                           </button>
@@ -360,7 +371,7 @@ function SettingsPage() {
               )}
           </div>
 
-          <div className="settings-container reset-section">
+          <div className="settings-container reset-section" data-testid="settings-house-reset-section">
               <p className="title">
                 <b>Haushalt zurücksetzen</b>
               </p>
@@ -372,13 +383,14 @@ function SettingsPage() {
               <button
                   className="settings-reset-button"
                   onClick={toggleResetPopUp}
+                  data-testid="settings-house-reset-open"
               >
                   Haushalt zurücksetzen
               </button>
 
               {openReset && (
-                  <div className="reset-popup-overlay">
-                      <div className="reset-popup-window">
+                  <div className="reset-popup-overlay" data-testid="settings-house-reset-overlay">
+                      <div className="reset-popup-window" data-testid="settings-house-reset-modal">
 
 
                           <p>Möchten Sie den Haushalt wirklich zurücksetzen?</p>
@@ -387,12 +399,14 @@ function SettingsPage() {
                               <button
                                   className="reset-cancel-button"
                                   onClick={toggleResetPopUp}
+                                  data-testid="settings-house-reset-cancel"
                               >
                                   Abbrechen
                               </button>
                               <button
                                   className="reset-confirm-button"
                                   onClick={handleReset}
+                                  data-testid="settings-house-reset-confirm"
                               >
                                   Zurücksetzen
                               </button>

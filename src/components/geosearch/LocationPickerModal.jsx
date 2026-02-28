@@ -38,7 +38,7 @@ export default function LocationPickerModal({ onSelect, onCancel }) {
     const { tempLocation, updateLocation, isLoading } = useLocationLogic();
 
     return (
-        <div className="modal-overlay">
+        <div className="modal-overlay" data-testid="location-modal">
             <div className="modal-content">
                 <h3 className="modal-header">Standort wählen</h3>
 
@@ -68,11 +68,12 @@ export default function LocationPickerModal({ onSelect, onCancel }) {
                     </p>
 
                     <div className="button-group">
-                        <button onClick={onCancel} className="btn-secondary">Abbrechen</button>
+                        <button onClick={onCancel} className="btn-secondary" data-testid="location-cancel">Abbrechen</button>
                         <button
                             onClick={() => onSelect(tempLocation)}
                             disabled={!tempLocation || isLoading}
                             className={`btn-primary ${(!tempLocation || isLoading) ? 'btn-disabled' : ''}`}
+                            data-testid="location-confirm"
                         >
                             Übernehmen
                         </button>

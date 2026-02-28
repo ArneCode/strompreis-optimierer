@@ -57,7 +57,7 @@ function ActionForm({
     const hasError = !!(errors.startTime || errors.endTime || errors.duration);
 
     return (
-        <div className="action-popup-inputs">
+        <div className="action-popup-inputs" data-testid="action-form">
 
             {!isEdit && (
                 <FormField label="Gerät auswählen" error={errors.deviceId}>
@@ -67,6 +67,7 @@ function ActionForm({
                         onChange={onChange}
                         disabled={disabled}
                         className={`action-device-select ${errors.deviceId ? "input-error" : ""}`}
+                        data-testid="action-device"
                     >
                         <option value="">Verbraucher wählen</option>
                         {devices
@@ -90,6 +91,7 @@ function ActionForm({
                     disabled={disabled}
                     className={errors.startTime ? "input-error" : ""}
                     step={300}
+                    data-testid="action-startTime"
                 />
             </FormField>
 
@@ -103,11 +105,12 @@ function ActionForm({
                     disabled={disabled}
                     className={errors.endTime ? "input-error" : ""}
                     step={300}
+                    data-testid="action-endTime"
                 />
             </FormField>
 
             {/* 3. Visual Slider */}
-            <div className="action-slider">
+            <div className="action-slider" data-testid="action-time-slider">
                 <TimeRangeSlider
                     startTime={actionForm.startTime}
                     endTime={actionForm.endTime}
@@ -125,7 +128,7 @@ function ActionForm({
 
             {/* 4. Dynamic Fields (Consumption / Duration) */}
             {selectedDevice && (
-                <div className="dynamic-fields-container">
+                <div className="dynamic-fields-container" data-testid="action-dynamic-fields">
                     {isVariable ? (
                         <FormField label="Gesamtverbrauch (Wh)" error={errors.totalConsumption}>
                             <input
@@ -136,6 +139,7 @@ function ActionForm({
                                 disabled={disabled}
                                 className={errors.totalConsumption ? "input-error" : ""}
                                 placeholder="z.B. 2500"
+                                data-testid="action-totalConsumption"
                             />
                         </FormField>
                     ) : (
@@ -149,6 +153,7 @@ function ActionForm({
                                 className={errors.duration ? "input-error" : ""}
                                 placeholder="z.B. 60"
                                 step="5"
+                                data-testid="action-duration"
                             />
                         </FormField>
                     )}
@@ -165,6 +170,7 @@ function ActionForm({
                             disabled={disabled}
                             className={errors.consumption ? "input-error" : ""}
                             placeholder="z.B. 1000"
+                            data-testid="action-consumption"
                         />
                     </FormField>
                 </div>
