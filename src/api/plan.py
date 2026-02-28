@@ -2,164 +2,20 @@ from __future__ import annotations
 
 from typing import Any
 
-from external_api_services.api_services import api_services
-from controllers.base import GeneratorController
-# from external_api_services.forecast_service.forecast_cache import PVConfiguration
-from zoneinfo import ZoneInfo
-from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
-from electricity_price_optimizer_py.units import WattHour, Watt
-from api.dependencies import get_device_manager, get_optimizer_service, get_orchestrator_service, get_settings_service
-from device_manager import IDeviceManager
-from services.interfaces import IOptimizerService, IOrchestratorService, ISettingsService
-from devices import ConstantActionDevice
-from devices import VariableActionDevice
-from devices import Battery
-from electricity_price_optimizer_py import Schedule
 
-BERLIN = ZoneInfo("Europe/Berlin")
+from api.dependencies import (
+    get_device_manager,
+    get_optimizer_service,
+    get_orchestrator_service,
+    get_settings_service,
+)
+from api.plan_collectors import collect_plan_data
+from device_manager import IDeviceManager
+from electricity_price_optimizer_py import Schedule
+from services.interfaces import IOptimizerService, IOrchestratorService, ISettingsService
 
 router = APIRouter(prefix="/api", tags=["plan"])
-
-
-def _collect_constant_power_series(
-    start: datetime,
-    end: datetime,
-    power_w: float,
-    timeline: list[datetime],
-) -> list[float]:
-    return [float(power_w) if start <= t < end else 0.0 for t in timeline]
-
-
-def _collect_generation_by_generator_kw(
-    manager: IDeviceManager,
-    timeline: list[datetime],
-) -> list[dict[str, Any]]:
-    """Calculate generation time series per generator.
-
-    Returns:
-        A list of objects of the form:
-            {
-              "id": <generator device id>,
-              "name": <device name>,
-              "generationKw": [ ... ],
-            }
-        Where "generationKw" aligns with the given timeline (same length).
-    """
-
-    step = (timeline[1] - timeline[0]
-            ) if len(timeline) > 1 else timedelta(hours=1)
-    end = timeline[-1] + step
-
-    gen_controllers = manager.get_controller_service().get_all_generator_controllers()
-
-    result: list[dict[str, Any]] = []
-
-    for ctrl in gen_controllers:
-        try:
-            device = manager.get_device_service().get_device(ctrl.device_id)
-        except Exception:
-            device = None
-
-        name = device.name if device is not None else f"Generator {ctrl.device_id}"
-
-        series: list[float] = [0.0 for _ in timeline]
-
-        try:
-            prognoses = ctrl.get_prognoses(manager, timeline, end)
-        except Exception:
-            prognoses = []
-
-        if prognoses:
-            for i in range(min(len(prognoses), len(timeline))):
-                try:
-                    wh = WattHour.get_value(prognoses[i])
-                except Exception:
-                    continue
-                series[i] += float(wh) / 1000.0
-
-        result.append(
-            {"id": ctrl.device_id, "name": name, "generationKw": series})
-
-    return result
-
-
-def _collect_total_generation_kw(
-    manager: IDeviceManager,
-    timeline: list[datetime],
-) -> list[float]:
-    """
-    Calculates the total sum of all generators based on the timeslots of 'timeline'.
-
-    Args:
-        manager: Device manager providing access to all configured devices.
-        timeline: the list of timeslots to calculate the total generation for.
-
-    Returns:
-        A list of the total generation in kw. Each element of the list corresponds with
-        the element in 'timeline' of the same index.
-
-    """
-    step = (timeline[1] - timeline[0]
-            ) if len(timeline) > 1 else timedelta(hours=1)
-    end = timeline[-1] + step
-
-    total_kw: list[float] = [0.0 for _ in timeline]
-
-    controllers = manager.get_controller_service().get_all_controllers()
-
-    gen_controllers = manager.get_controller_service().get_all_generator_controllers()
-
-    print(
-        f"collecting generation for {len(gen_controllers)} generator controllers out of {len(controllers)} total controllers")
-
-    end = timeline[-1] + timedelta(hours=1)
-
-    for ctrl in gen_controllers:
-        try:
-            prognoses = ctrl.get_prognoses(manager, timeline, end)
-        except Exception:
-            continue
-
-        if not prognoses:
-            continue
-
-        for i in range(min(len(prognoses), len(timeline))):
-            try:
-                wh = WattHour.get_value(prognoses[i])
-            except Exception:
-                continue
-
-            total_kw[i] += float(wh) / 1000.0
-
-    return total_kw
-
-
-def _collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | None]:
-    """
-    Collect hourly electricity prices aligned with the given timeline.
-
-    Args:
-        timeline: List of timestamps (typically hourly) used to align price values.
-
-    Returns:
-        A list of prices in ct/kWh aligned to 'timeline'. If a price for a given hour is missing in the
-        cache, the list contains None at that position.
-    """
-
-    blocks = api_services.price_cache.get_blocks()
-    prices: list[float | None] = []
-
-    for t in timeline:
-        hour = t.astimezone(BERLIN).replace(minute=0, second=0, microsecond=0)
-        block = blocks.get(hour)
-
-        if block is None:
-            prices.append(None)
-        else:
-            prices.append(float(block.price) / 10.0)
-
-    return prices
 
 
 def _require_schedule(orchestrator: IOrchestratorService) -> Schedule:
@@ -196,196 +52,6 @@ def _require_schedule(orchestrator: IOrchestratorService) -> Schedule:
         )
 
 
-def _create_timeline(hours: int):
-    timeline = []
-
-    start_time = datetime.now(timezone.utc)
-    timeline = [start_time + timedelta(hours=i) for i in range(hours)]
-
-    return timeline
-
-
-def _collect_power_values_timeline_aligned(
-    action,
-    assigned_action,
-    timeline: list[datetime],
-) -> list[float]:
-    """Return power values aligned exactly to the plan timeline."""
-    start = action.start
-    end = action.end
-
-    values: list[float] = []
-
-    for t in timeline:
-        if start <= t < end:
-            try:
-                power = assigned_action.get_consumption(t)
-                values.append(float(Watt.get_value(power)))
-            except Exception:
-                values.append(0.0)
-        else:
-            values.append(0.0)
-
-    return values
-
-
-def _collect_power_values(action, assigned_action, step_minutes):
-    power_values = []
-
-    start = action.start
-    end = action.end
-
-    step = timedelta(minutes=step_minutes)
-    t = start
-
-    while t < end:
-        power = assigned_action.get_consumption(t)
-        power_values.append(Watt.get_value(power))
-        t += step
-
-    return power_values
-
-
-def _collect_soc_values(battery, timeline):
-    soc_values = []
-
-    for time in timeline:
-        soc_values.append(WattHour.get_value(battery.get_charge_level(time)))
-
-    return soc_values
-
-
-def _collect_plan_data(manager, schedule) -> dict[str, Any]:
-    """
-    Transform the optimizer schedule and device configuration into frontend plan data.
-
-    It generates:
-        Gantt tasks for devices that have schedule assignments
-        time series data for batteries (SOC) and variable actions (power values)
-        hourly price series (ct/kWh)
-        hourly total generation (kW)
-
-    Args:
-        manager: Device manager providing access to all configured devices.
-        schedule: The current optimizer schedule.
-
-    Returns:
-        A dict containing: tasks, timeline, batteries, variableActions, priceCtPerKwh, generationKw
-    """
-
-    tasks = []
-    batteries = []
-    variable_actions = []
-    constant_actions = []
-    timeline = _create_timeline(24)
-
-    generation_kw = _collect_total_generation_kw(manager, timeline)
-    generation_by_generator_kw = _collect_generation_by_generator_kw(
-        manager, timeline)
-    prices_ct_per_kwh = _collect_hourly_prices_ct_per_kwh(timeline)
-
-    plan_start = timeline[0]
-    plan_end = timeline[-1] + timedelta(hours=1)
-
-    i = 1
-    for device in manager.get_device_service().get_all_devices():
-        if isinstance(device, ConstantActionDevice):
-            assigned = schedule.get_constant_action(device.id)
-            if assigned is None:
-                continue
-
-            action = device.actions[0] if device.actions else None
-            power_w = float(Watt.get_value(action.consumption)
-                            ) if action is not None else 0.0
-
-            start_dt = assigned.get_start_time()
-            end_dt = assigned.get_end_time()
-
-            tasks.append(
-                {
-                    "id": str(i),
-                    "name": device.name,
-                    "text": device.name,
-                    "start": start_dt.isoformat(),
-                    "end": end_dt.isoformat(),
-                }
-            )
-
-            constant_actions.append(
-                {
-                    "id": str(i),
-                    "name": device.name,
-                    "powerW": _collect_constant_power_series(start_dt, end_dt, power_w, timeline),
-                }
-            )
-
-            i += 1
-
-        if isinstance(device, VariableActionDevice):
-            for action in device.actions:
-                assigned_action = schedule.get_variable_action(device.id)
-                if assigned_action is None:
-                    continue
-
-                tasks.append(
-                    {
-                        "id": str(i),
-                        "name": device.name,
-                        "text": device.name,
-                        "start": action.start.isoformat(),
-                        "end": action.end.isoformat(),
-                    }
-                )
-
-                variable_actions.append(
-                    {
-                        "id": str(i),
-                        "name": device.name,
-                        "powerW": _collect_power_values_timeline_aligned(
-                            action,
-                            assigned_action,
-                            timeline,
-                        ),
-                    }
-                )
-                i += 1
-
-        if isinstance(device, Battery):
-            assigned_battery = schedule.get_battery(device.id)
-            if assigned_battery is None:
-                continue
-
-            tasks.append(
-                {
-                    "id": str(i),
-                    "name": device.name,
-                    "text": device.name,
-                    "start": plan_start.isoformat(),
-                    "end": plan_end.isoformat(),
-                }
-            )
-
-            batteries.append(
-                {
-                    "id": str(i),
-                    "name": device.name,
-                    "socWh": _collect_soc_values(assigned_battery, timeline),
-                }
-            )
-            i += 1
-
-    return {
-        "tasks": tasks,
-        "timeline": [time.isoformat() for time in timeline],
-        "batteries": batteries,
-        "variableActions": variable_actions,
-        "pricesCtPerKwh": prices_ct_per_kwh,
-        "generationKw": generation_kw,
-        "generationByGeneratorKw": generation_by_generator_kw,
-        "constantActions": constant_actions,
-    }
-
-
 @router.get("/plan")
 def get_plan(
     manager: IDeviceManager = Depends(get_device_manager),
@@ -404,7 +70,7 @@ def get_plan(
             404 if no schedule is available
     """
     schedule = _require_schedule(orchestrator)
-    data = _collect_plan_data(manager, schedule)
+    data = collect_plan_data(manager, schedule)
 
     return {
         "tasks": data["tasks"]
@@ -432,7 +98,7 @@ def get_plan_data(
             404 if no schedule is available
     """
     schedule = _require_schedule(orchestrator)
-    data = _collect_plan_data(manager, schedule)
+    data = collect_plan_data(manager, schedule)
 
     return {
         "timeline": data["timeline"],
