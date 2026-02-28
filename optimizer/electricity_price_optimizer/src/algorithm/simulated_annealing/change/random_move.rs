@@ -29,10 +29,10 @@ impl Change for RandomMoveChange {
             .with_start_time(self.new_time);
         state.add_constant_action(new_action);
 
-        println!(
-            "Moved action {} from {:?} to {:?}",
-            self.action_id, self.old_time, self.new_time
-        );
+        // println!(
+        //     "Moved action {} from {:?} to {:?}",
+        //     self.action_id, self.old_time, self.new_time
+        // );
     }
     /// Undoes the move on the given state.
     ///
@@ -45,10 +45,10 @@ impl Change for RandomMoveChange {
             .with_start_time(self.old_time);
         state.add_constant_action(old_action);
 
-        println!(
-            "Reverted action {} from {:?} to {:?}",
-            self.action_id, self.new_time, self.old_time
-        );
+        // println!(
+        //     "Reverted action {} from {:?} to {:?}",
+        //     self.action_id, self.new_time, self.old_time
+        // );
     }
 }
 
@@ -69,20 +69,59 @@ impl RandomMoveChange {
             .choose(rng)
             .expect("No constant actions available")
             .clone();
-        let action = state.get_constant_action(action_id);
-        let old_time = action.get_start_time().get_minutes() as u32;
-        let start_bound = action.get_start_from().get_minutes() as u32;
-        let end_bound = (action.get_end_before().get_minutes()
-            - action.get_action().duration.get_minutes()) as u32;
 
-        let mut new_time = old_time;
-        while new_time == old_time {
-            new_time = sample_centered_int(start_bound, end_bound, old_time, sigma, rng);
+        let action = state.get_constant_action(action_id);
+
+        // Work entirely in Timestep units
+        let old_step = action.get_start_time().to_timestep();
+        let start_bound = action.get_start_from().to_timestep();
+
+        // Calculate the last possible valid timestep for start
+        // Duration is converted to total timesteps
+        let duration_steps = action.get_action().duration.to_timestep();
+        let end_bound = action
+            .get_end_before()
+            .to_timestep()
+            .saturating_sub(duration_steps);
+
+        let mut new_step = old_step;
+        let mut attempts = 0;
+
+        // Try sampling based on Sigma first
+        while new_step == old_step && attempts < 3 {
+            new_step = sample_centered_int(
+                start_bound as u32,
+                end_bound as u32,
+                old_step as u32,
+                sigma,
+                rng,
+            );
+            attempts += 1;
         }
+
+        // FALLBACK: If we failed 3 times (sigma is too low), force a +/- 1 step move
+        if new_step == old_step {
+            let can_move_up = old_step < end_bound;
+            let can_move_down = old_step > start_bound;
+
+            new_step = match (can_move_up, can_move_down) {
+                (true, true) => {
+                    if rng.random_bool(0.5) {
+                        old_step + 1
+                    } else {
+                        old_step - 1
+                    }
+                }
+                (true, false) => old_step + 1,
+                (false, true) => old_step - 1,
+                (false, false) => old_step, // Action is locked (window == duration)
+            };
+        }
+
         Self {
             action_id,
-            old_time: Time::new(0, old_time),
-            new_time: Time::new(0, new_time),
+            old_time: Time::from_timestep(old_step),
+            new_time: Time::from_timestep(new_step),
         }
     }
 }

@@ -21,14 +21,15 @@ use crate::{optimizer_context::OptimizerContext, schedule::Schedule};
 
 // The new layout groups algorithm implementations under `algorithm` and
 // small utilities under `utils`.
-pub mod utils;
 pub mod algorithm;
 pub mod optimizer_context;
 pub mod schedule;
+mod tests;
 pub mod time;
+pub mod utils;
 
 // Re-export algorithm submodules at the crate root so downstream crates that
 // expect `electricity_price_optimizer::simulated_annealing` or
 // `electricity_price_optimizer::flow` continue to work.
-pub use algorithm::simulated_annealing;
 pub use algorithm::flow;
+pub use algorithm::simulated_annealing;

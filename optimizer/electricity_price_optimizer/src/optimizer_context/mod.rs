@@ -27,7 +27,7 @@ use crate::optimizer_context::{
 /// instances share underlying data rather than duplicating it. This makes
 /// it efficient to pass around as part of various optimization routines.
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct OptimizerContext {
     /// Price of electricity at each timestep
     electricity_price: Arc<Prognoses<i64>>,

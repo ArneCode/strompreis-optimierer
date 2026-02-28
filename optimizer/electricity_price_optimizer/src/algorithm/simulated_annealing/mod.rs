@@ -4,6 +4,8 @@
 //! including the representation of the state, the changes that can be applied to it,
 //! and the main optimization loop.
 
+use std::time::Instant;
+
 use rand::Rng;
 
 use crate::{
@@ -19,6 +21,7 @@ use crate::{
 };
 
 /// Settings for the simulated annealing algorithm.
+#[derive(Debug, Clone)]
 pub struct SimulatedAnnealingSettings {
     pub initial_temperature: f64,
     pub cooling_rate: f64,
@@ -56,9 +59,10 @@ pub mod state;
 ///             variable::VariableAction,
 ///         },
 ///     },
-///     simulated_annealing::run_simulated_annealing,
+///     simulated_annealing::{run_simulated_annealing,SimulatedAnnealingSettings},
 ///     time::{Time, STEPS_PER_DAY},
 /// };
+///
 ///
 /// let electricity_price_data = [10; STEPS_PER_DAY as usize];
 /// let generated_electricity_data = [100; STEPS_PER_DAY as usize];
@@ -118,8 +122,17 @@ pub fn run_simulated_annealing(
     let mut old_cost = state.get_cost();
     let mut n_iterations = 0;
     let mut min_cost = old_cost;
+
+    // timer
+    let start = Instant::now();
     while temperature > settings.final_temperature {
         n_iterations += 1;
+        if true || ((n_iterations % 20 == 0) && n_iterations > 0) {
+            let elapsed = start.elapsed();
+            println!(
+                "Iteration: {n_iterations}, Temperature: {temperature:.4}, Cost: {old_cost}, Elapsed: {elapsed:.2?}"
+            );
+        }
         // Determine random_move_sigma based on temperature
         let random_move_sigma = settings.constant_action_move_factor * temperature.sqrt();
         let change = MultiChange::new_random(
@@ -157,4 +170,82 @@ pub fn run_simulated_annealing(
     (old_cost, schedule)
 
     // somehow also get the final schedule out of the state
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tests::common::*;
+    use proptest::prelude::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    proptest! {
+        // We increase the cases to find deeper logic bugs
+        #![proptest_config(ProptestConfig::with_cases(10))]
+        #[test]
+        fn test_sa_output_validity(
+            context in arb_optimizer_context(),
+            settings in arb_sa_settings()
+        ) {
+            static COUNTER: AtomicUsize = AtomicUsize::new(0);
+            let test_id = COUNTER.fetch_add(1, Ordering::SeqCst);
+            println!("Running SA validity test #{test_id} with settings: {:?}", settings);
+
+            // Capture context info for validation before moving it
+            let expected_constant_ids: Vec<u32> = context.get_constant_actions().iter().map(|a| a.get_id()).collect();
+            let expected_variable_ids: Vec<u32> = context.get_variable_actions().iter().map(|a| a.get_id()).collect();
+            let expected_battery_ids: Vec<u32> = context.get_batteries().iter().map(|a| a.get_id()).collect();
+
+            let (_cost, schedule) = run_simulated_annealing(context.clone(), settings);
+
+            // --- 1. COMPLETENESS CHECKS ---
+            for id in expected_constant_ids {
+                assert!(schedule.constant_actions.contains_key(&id), "Constant action {} missing from schedule", id);
+            }
+            for id in expected_variable_ids {
+                assert!(schedule.variable_actions.contains_key(&id), "Variable action {} missing from schedule", id);
+            }
+            // Note: Check if your SA currently populates batteries; if not, skip this
+            for id in expected_battery_ids {
+                assert!(schedule.batteries.contains_key(&id), "Battery {} missing from schedule", id);
+            }
+
+            // --- 2. CONSTANT ACTION TEMPORAL VALIDITY ---
+            for (_, action) in schedule.constant_actions.iter() {
+                let start = action.get_start_time();
+                let end = action.get_end_time();
+
+                assert!(start >= action.get_start_from(), "Action started too early");
+                assert!(end <= action.get_end_before(), "Action ended too late");
+            }
+
+            // --- 3. VARIABLE ACTION ENERGY BALANCE ---
+            for (_, assigned_var) in schedule.variable_actions.iter() {
+                let mut total_scheduled_energy = 0i64;
+
+                // Iterate through every step in the day
+                for t in 0..crate::time::STEPS_PER_DAY {
+                    let time = crate::time::Time::from_timestep(t);
+                    // We only check within the action's window
+                    if time >= assigned_var.get_start() && time < assigned_var.get_end() {
+                        let step_cons = assigned_var.get_consumption(time);
+                        assert!(step_cons <= assigned_var.get_max_consumption(), "Exceeded max consumption at {:?}", time);
+                        total_scheduled_energy += step_cons;
+                    }
+                }
+
+                // Critical check: Total energy must match exactly
+                assert_eq!(total_scheduled_energy, assigned_var.get_total_consumption(),
+                    "Variable action energy sum mismatch for ID {}", assigned_var.get_id());
+            }
+
+            // --- 4. NETWORK CONSUMPTION INTEGRITY ---
+            // Verify that the cost reported matches the grid prognosis manually
+            // Grid = (BeyondControl + Actions - Generation +/- Battery)
+            // This validates your SmartHomeFlow logic indirectly.
+            // if let Err(e) = schedule.verify_energy_balance(&context) {
+            //     panic!("Fuzzy test failed physical balance: {}", e);
+            // }
+        }
+    }
 }

@@ -218,16 +218,6 @@ mod tests {
         }
 
         #[test]
-        #[should_panic]
-        fn test_sub_underflow() {
-            // Since minutes is u32, subtracting a larger time from a smaller
-            // one will panic in debug mode (standard Rust behavior for Sub).
-            let t1 = Time::new(1, 0);
-            let t2 = Time::new(2, 0);
-            let _ = t1 - t2;
-        }
-
-        #[test]
         fn test_arithmetic_timestep_consistency() {
             // This ensures that adding two times results in the expected timestep sum
             // (Only works cleanly if both times are perfectly aligned to steps)

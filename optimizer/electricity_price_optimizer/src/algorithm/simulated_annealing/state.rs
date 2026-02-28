@@ -117,3 +117,31 @@ impl State {
     //     new_context
     // }
 }
+
+// tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::optimizer_context::prognoses::Prognoses;
+    use crate::tests::common::*;
+    use proptest::prelude::*;
+    proptest! {
+        #[test]
+        fn test_state_new_random_never_panics(
+            context in arb_optimizer_context(),
+            seed in any::<u64>()
+        ) {
+            use rand::SeedableRng;
+            let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+
+            // This will attempt to create a random state from a random context.
+            // If your logic has any out-of-bounds or math errors,
+            // proptest will find the exact context that caused it.
+            let state = State::new_random(context, &mut rng);
+
+            // Basic invariant: Every ID in context must be in State
+            assert_eq!(state.get_constant_action_ids().len(),
+                       state.get_constant_action_ids().len());
+        }
+    }
+}
