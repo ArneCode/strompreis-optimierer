@@ -251,7 +251,7 @@ class ConstantActionController(DeviceController):
         otherwise None.
         """
         start = self.assigned_start_time
-        end = self.get_assigned_end_time()
+        end = self.get_assigned_end_time(device_manager)
         if start is None or end is None:
             return None
         return end - start
