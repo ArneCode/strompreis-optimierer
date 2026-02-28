@@ -24,6 +24,7 @@ import '../../styles/components/Sidebar.css';
 const SidebarRow = ({ item, isCollapsed }) => (
     <NavLink
         to={item.link}
+        data-testid={item.testId}
         className={({ isActive }) => `sidebar-row ${isActive ? "active" : ""}`}
     >
         <div className="sidebar-icon-wrapper">
@@ -48,6 +49,7 @@ function Sidebar() {
                         className="sidebar-toggle"
                         onClick={() => setCollapsed(!collapsed)}
                         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        data-testid="sidebar-toggle"
                     >
                         <img src={collapsed ? uncollapseIcon : collapseIcon} alt="" />
                     </button>

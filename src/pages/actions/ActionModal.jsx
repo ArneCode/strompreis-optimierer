@@ -39,7 +39,7 @@ function ActionModal({
     return (
         <div className={isEdit ? "edit-action-popup" : "create-action-popup"}>
             <div className={isEdit ? "edit-action-popup-window" : "action-popup-window"}>
-                {errorMessage && <div className="error-message">{errorMessage}</div>}
+                {errorMessage && <div className="error-message" data-testid="action-error">{errorMessage}</div>}
                 <p className="action-popup-header">
                     {isEdit ? "Aktion bearbeiten" : "Aktion erstellen"}
                 </p>
@@ -52,17 +52,19 @@ function ActionModal({
                             className="actions-edit-delete-button"
                             onClick={onDelete}
                             disabled={isDeleting || isLoading}
+                            data-testid="action-delete"
                         >
                             {isDeleting ? "Löscht..." : "Löschen"}
                         </button>
                     )}
-                    <button onClick={onClose} disabled={isLoading || isDeleting}>
+                    <button onClick={onClose} disabled={isLoading || isDeleting} data-testid="action-cancel">
                         Abbrechen
                     </button>
                     <button
                         className="actions-save-button"
                         onClick={() => onSave(isEdit)}
                         disabled={isLoading || isDeleting}
+                        data-testid="action-save"
                     >
                         {isLoading ? (isEdit ? "Speichert..." : "Erstellt...") : (isEdit ? "Speichern" : "Erstellen")}
                     </button>

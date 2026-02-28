@@ -5,11 +5,11 @@ function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, select
   if (!open) return null;
 
   return (
-    <div className="data-popup">
+    <div className="data-popup" data-testid="task-modal">
       <div className="data-popup-window">
         <div className="data-popup-head">
           <p className="graph-title">{selectedTask?.name}</p>
-          <button onClick={onClose}>✕</button>
+          <button onClick={onClose} data-testid="task-modal-close">✕</button>
         </div>
 
         {selectedBattery && (

@@ -150,15 +150,15 @@ function DevicesPage() {
         <div className="devices-page">
             <div className="devices-head">
                 <p>Geräte</p>
-                <button className="new-device-button" onClick={openCreate}>
+                <button className="new-device-button" onClick={openCreate} data-testid="device-new-button">
                     <img className="new-device-plus-image" src={plusIcon} alt="+" />
                     Neues Gerät
                 </button>
             </div>
 
-            <div className="devices-grid">
+            <div className="devices-grid" data-testid="device-grid">
                 {devices.map((dev, idx) => (
-                    <div key={dev.id || idx} onClick={() => handleDeviceClick(idx)}>
+                    <div key={dev.id || idx} onClick={() => handleDeviceClick(idx)} data-testid={`device-card-${dev.id}`}>
                         <Device type={dev.type} name={dev.name} />
                     </div>
                 ))}

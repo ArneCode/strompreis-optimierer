@@ -219,7 +219,7 @@ function ActionsPage() {
         <div className="action">
             <header className="action-head">
                 <h1>Aktionen</h1>
-                <button className="new-action-button" onClick={handleOpenCreate}>
+                <button className="new-action-button" onClick={handleOpenCreate} data-testid="action-new-button">
                     <img src={plusIcon} alt="plus" className="new-device-plus-image" />
                     Neue Aktion
                 </button>

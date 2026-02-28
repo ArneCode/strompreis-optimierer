@@ -19,6 +19,7 @@ function GanttPanel({ tasks, scales, ganttStart, ganttEnd, initGantt, setError }
               readonly={true}
               init={initGantt}
               columns={[{ id: "name", label: "", value: (task) => task.name, width: 120 }]}
+              data-testid="plan-gantt"
             />
           </Willow>
         </div>
@@ -27,6 +28,7 @@ function GanttPanel({ tasks, scales, ganttStart, ganttEnd, initGantt, setError }
           <button
             className="plan-export-button"
             onClick={() => downloadCSV(tasks, "ablaufplan.csv", setError)}
+            data-testid="plan-export-csv"
           >
             Exportieren als CSV
           </button>
@@ -34,6 +36,7 @@ function GanttPanel({ tasks, scales, ganttStart, ganttEnd, initGantt, setError }
           <button
             className="plan-export-button"
             onClick={() => downloadPDF(tasks, "ablaufplan.pdf", setError)}
+            data-testid="plan-export-pdf"
           >
             Exportieren als PDF
           </button>

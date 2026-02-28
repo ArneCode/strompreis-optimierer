@@ -22,7 +22,7 @@ function DeviceModal({ isOpen, isEdit, onClose, onSave, onDelete, errorMessage, 
     if (!isOpen) return null;
 
     return (
-        <div className={isEdit ? "edit-device-popup" : "create-device-popup"}>
+        <div className={isEdit ? "edit-device-popup" : "create-device-popup"} data-testid="device-modal">
             <div className="device-popup-window">
                 {errorMessage && <div className="error-message">{errorMessage}</div>}
                 <p className="device-popup-header">
@@ -37,11 +37,12 @@ function DeviceModal({ isOpen, isEdit, onClose, onSave, onDelete, errorMessage, 
                             className="devices-edit-delete-button"
                             onClick={onDelete}
                             disabled={isDeleting || isLoading}
+                            data-testid="device-delete"
                         >
                             {isDeleting ? "Löscht..." : "Löschen"}
                         </button>
                     )}
-                    <button onClick={onClose} disabled={isLoading || isDeleting}>
+                    <button onClick={onClose} disabled={isLoading || isDeleting} data-testid="device-cancel">
                         Abbrechen
                     </button>
 
@@ -50,6 +51,7 @@ function DeviceModal({ isOpen, isEdit, onClose, onSave, onDelete, errorMessage, 
                             className="devices-save-button"
                             onClick={() => onSave(isEdit)}
                             disabled={isLoading || isDeleting}
+                            data-testid="device-save"
                         >
                             {isLoading ? (isEdit ? "Speichert..." : "Erstellt...") : (isEdit ? "Speichern" : "Erstellen")}
                         </button>
