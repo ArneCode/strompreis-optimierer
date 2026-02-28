@@ -1,7 +1,33 @@
+/**
+ * DeviceForm - Form component for creating/editing household devices
+ * Renders type-specific fields based on device type selection.
+ * Supports Battery, Consumer, Generator, and PVGenerator types.
+ * @param {object} props
+ * @param {object} props.deviceForm - Current form field values
+ * @param {string} props.deviceForm.name - Device name
+ * @param {string} props.deviceForm.type - Device type (Battery|Consumer|Generator|PVGenerator)
+ * @param {Function} props.onChange - Callback(fieldName, value) for field changes
+ * @param {Function} props.onChange.fieldName - Name of field being changed
+ * @param {Function} props.onChange.value - New value for the field
+ * @param {Object} [props.errors={}] - Validation errors {fieldName: errorMessage}
+ * @param {boolean} [props.isEdit=false] - Edit mode (cannot change device type)
+ * @param {boolean} [props.disabled=false] - Disable all form inputs
+ * @returns {JSX.Element} Form container with type-specific fields
+ */
+
 import React, { useState } from 'react'
 import LocationPickerModal from "../../../components/geosearch/LocationPickerModal.jsx";
 import { translateDevice } from "../DevicesLogic.js";
 
+/**
+ * Helper component for consistent form field rendering with label and error.
+ * @param {object} props
+ * @param {string} props.label - Field label text
+ * @param {string} [props.error] - Validation error message (if any)
+ * @param {ReactNode} props.children - Input element(s)
+ * @param {string} [props.className=""] - Additional CSS class
+ * @returns {JSX.Element}
+ */
 const FormField = ({ label, error, children, className = "" }) => (
     <div className={`input-group ${className}`}>
         <div className="input-label">
@@ -17,6 +43,10 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
     const isGeneratorType = deviceForm.type === "Generator" || deviceForm.type === "ScheduledGenerator";
     const isGeneratorEdit = isEdit && isGeneratorType;
 
+    /**
+     * Receive a selected location and push values into the form via onChange.
+     * @param {object|null} location - {label, lat, lng}
+     */
     const handleLocationConfirm = (location) => {
         if (!location) return;
         onChange({
