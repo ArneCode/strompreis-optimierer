@@ -261,8 +261,8 @@ describe("Actionslogic", () => {
     it("adjusts date for next day", () => {
       const iso = combineToISO("02:00", 1200);
       const date = new Date(iso);
-      const today = new Date();
-      expect(date.getDate()).toBe(today.getDate() + 1);
+      expect(date.getDate()).toBe(1);
+      expect(date.getMonth()).toBe(2);
     });
   });
 

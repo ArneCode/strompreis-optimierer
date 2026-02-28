@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import apiService from "../apiService.js";
+import { mapDeviceData } from "../deviceMapper.js";
 
 
 const fetchMock = vi.fn();
@@ -62,14 +63,80 @@ describe("apiService", () => {
         });
 
         describe("saveDevice", () => {
-            it("calls request with POST and mapped data", async () => {
-                const rawForm = {name: "Test", type: "Battery", capacity: "100"};
+            it("calls request with POST and mapped data for Battery", async () => {
+                const rawForm = {name: "Test Battery", type: "Battery", capacity: "100", currentCharge: "50", maxChargeRate: "10", maxDischarge: "10", efficiency: "95"};
+                const expectedData = mapDeviceData(rawForm);
                 await apiService.saveDevice(rawForm);
 
                 expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: expect.stringContaining('"name":"Test"'),
+                    body: JSON.stringify(expectedData),
+                });
+                expect(expectedData).toEqual({
+                    name: "Test Battery",
+                    type: "Battery",
+                    capacity: 100,
+                    currentCharge: 50,
+                    maxChargeRate: 10,
+                    maxDischarge: 10,
+                    efficiency: 0.95
+                });
+            });
+
+            it("calls request with POST and mapped data for Consumer", async () => {
+                const rawForm = {name: "Test Consumer", type: "Consumer", flexibility: "variable"};
+                const expectedData = mapDeviceData(rawForm);
+                await apiService.saveDevice(rawForm);
+
+                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(expectedData),
+                });
+                expect(expectedData).toEqual({
+                    name: "Test Consumer",
+                    type: "Consumer",
+                    flexibility: "variable"
+                });
+            });
+
+            it("calls request with POST and mapped data for PVGenerator", async () => {
+                const rawForm = {name: "Test PV", type: "PVGenerator", ratedPower: "5", angleOfInclination: "30", alignment: "Süd", location: "Berlin", lat: "52.5", lng: "13.4"};
+                const expectedData = mapDeviceData(rawForm);
+                await apiService.saveDevice(rawForm);
+
+                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(expectedData),
+                });
+                expect(expectedData).toEqual({
+                    name: "Test PV",
+                    type: "PVGenerator",
+                    peakPower: 5,
+                    declination: 30,
+                    location: "Berlin",
+                    azimuth: 180,
+                    latitude: 52.5,
+                    longitude: 13.4
+                });
+            });
+
+            it("calls request with POST and mapped data for RandomGenerator", async () => {
+                const rawForm = {name: "Test Random", type: "RandomGenerator", peakPower: "10"};
+                const expectedData = mapDeviceData(rawForm);
+                await apiService.saveDevice(rawForm);
+
+                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(expectedData),
+                });
+                expect(expectedData).toEqual({
+                    name: "Test Random",
+                    type: "RandomGenerator",
+                    peakPower: 10
                 });
             });
         });
