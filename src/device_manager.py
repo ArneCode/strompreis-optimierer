@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from controllers.generator_random_controller import GeneratorRandomController
 from controllers.generator_scheduled_controller import GeneratorScheduledController
 from devices import GeneratorRandom, GeneratorScheduled
-from interactors.mock import MockConstantActionInteractor, MockBatteryInteractor, MockGeneratorInteractor, MockVariableActionInteractor
+from interactors.mock import MockConstantActionInteractor, MockBatteryInteractor, MockGeneratorPVInteractor, MockVariableActionInteractor
 from controllers import ConstantActionController, VariableActionController, BatteryController, GeneratorPvController
 
 if TYPE_CHECKING:
@@ -89,7 +89,7 @@ class DeviceManager(IDeviceManager):
     def add_generator_pv(self, device: "GeneratorPV") -> "int":
         id = self._uow.device_service.add_device(device)
         self._uow.interactor_service.add_generator_interactor(
-            MockGeneratorInteractor(device.id))
+            MockGeneratorPVInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorPvController(device.id))
         return id
@@ -97,7 +97,7 @@ class DeviceManager(IDeviceManager):
     def add_generator_random(self, device: "GeneratorRandom") -> "int":
         id = self._uow.device_service.add_device(device)
         self._uow.interactor_service.add_generator_interactor(
-            MockGeneratorInteractor(device.id))
+            MockGeneratorPVInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorRandomController(device.id))
         return id
@@ -105,7 +105,7 @@ class DeviceManager(IDeviceManager):
     def add_generator_scheduled(self, device: "GeneratorScheduled") -> "int":
         id = self._uow.device_service.add_device(device)
         self._uow.interactor_service.add_generator_interactor(
-            MockGeneratorInteractor(device.id))
+            MockGeneratorPVInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorScheduledController(device.id))
         return id

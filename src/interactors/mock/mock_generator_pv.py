@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
 
-class MockGeneratorInteractor(GeneratorInteractor):
+class MockGeneratorPVInteractor(GeneratorInteractor):
     """Mock implementation of generator interactor for testing.
 
     This mock follows the same pattern as other mock interactors: it stores

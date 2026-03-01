@@ -1,5 +1,3 @@
-# src/tests/mock_interactors/test_battery_interactor.py
-
 from datetime import datetime, timedelta, timezone
 from unittest.mock import create_autospec
 import pytest

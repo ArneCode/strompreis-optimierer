@@ -14,7 +14,7 @@ from devices import (
 from electricity_price_optimizer_py.units import Watt
 from interactors.mock import (
     MockBatteryInteractor,
-    MockGeneratorInteractor,
+    MockGeneratorPVInteractor,
     MockConstantActionInteractor,
     MockVariableActionInteractor,
 )
@@ -79,7 +79,7 @@ class TestDeviceManager:
         uow.interactor_service.add_generator_interactor.assert_called_once()
         assert isinstance(
             uow.interactor_service.add_generator_interactor.call_args[0][0],
-            MockGeneratorInteractor,
+            MockGeneratorPVInteractor,
         )
         uow.controller_service.add_generator_controller.assert_called_once()
         assert isinstance(
@@ -96,7 +96,7 @@ class TestDeviceManager:
         uow.interactor_service.add_generator_interactor.assert_called_once()
         assert isinstance(
             uow.interactor_service.add_generator_interactor.call_args[0][0],
-            MockGeneratorInteractor,
+            MockGeneratorPVInteractor,
         )
         uow.controller_service.add_generator_controller.assert_called_once()
         assert isinstance(
@@ -115,7 +115,7 @@ class TestDeviceManager:
         uow.interactor_service.add_generator_interactor.assert_called_once()
         assert isinstance(
             uow.interactor_service.add_generator_interactor.call_args[0][0],
-            MockGeneratorInteractor,
+            MockGeneratorPVInteractor,
         )
         uow.controller_service.add_generator_controller.assert_called_once()
         assert isinstance(

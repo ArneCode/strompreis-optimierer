@@ -10,13 +10,13 @@ from controllers.battery_controller import BatteryController
 from controllers.generator_random_controller import GeneratorRandomController
 from controllers.generator_scheduled_controller import GeneratorScheduledController
 from interactors.mock.mock_battery import MockBatteryInteractor
-from interactors.mock.mock_generator import MockGeneratorInteractor
+from interactors.mock.mock_generator_pv import MockGeneratorPVInteractor
 from interactors.mock.mock_constant_action import MockConstantActionInteractor
 from interactors.mock.mock_variable_action import MockVariableActionInteractor
 from instances import interactor_service_instance, controller_service_instance
 from interactors.mock import (
     MockBatteryInteractor,
-    MockGeneratorInteractor,
+    MockGeneratorPVInteractor,
     MockConstantActionInteractor,
     MockVariableActionInteractor,
 )
@@ -45,7 +45,7 @@ def update_mock_interactors():
                 battery_interactor.update(current_time, dm)
 
         for generator_interactor in dm.get_interactor_service().get_all_generator_interactors():
-            if (isinstance(generator_interactor, MockGeneratorInteractor)):
+            if (isinstance(generator_interactor, MockGeneratorPVInteractor)):
                 generator_interactor.update(current_time, dm)
 
         for constant_action_interactor in dm.get_interactor_service().get_all_constant_action_interactors():
@@ -72,21 +72,21 @@ def initialize_services_from_db() -> None:
         # Generators
         for dev in ds.get_all_generators_pv():
             interactor_service_instance.add_generator_interactor(
-                MockGeneratorInteractor(dev.id)
+                MockGeneratorPVInteractor(dev.id)
             )
             controller_service_instance.add_generator_controller(
                 GeneratorPvController(dev.id)
             )
         for dev in ds.get_all_generators_random():
             interactor_service_instance.add_generator_interactor(
-                MockGeneratorInteractor(dev.id)
+                MockGeneratorPVInteractor(dev.id)
             )
             controller_service_instance.add_generator_controller(
                 GeneratorRandomController(dev.id)
             )
         for dev in ds.get_all_generators_scheduled():
             interactor_service_instance.add_generator_interactor(
-                MockGeneratorInteractor(dev.id)
+                MockGeneratorPVInteractor(dev.id)
             )
             controller_service_instance.add_generator_controller(
                 GeneratorScheduledController(dev.id)
