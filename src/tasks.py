@@ -12,6 +12,8 @@ from controllers.generator_scheduled_controller import GeneratorScheduledControl
 from interactors.mock.mock_battery import MockBatteryInteractor
 from interactors.mock.mock_generator_pv import MockGeneratorPVInteractor
 from interactors.mock.mock_constant_action import MockConstantActionInteractor
+from interactors.mock.mock_generator_random import MockGeneratorRandomInteractor
+from interactors.mock.mock_generator_scheduled import MockGeneratorScheduledInteractor
 from interactors.mock.mock_variable_action import MockVariableActionInteractor
 from instances import interactor_service_instance, controller_service_instance
 from interactors.mock import (
@@ -45,7 +47,7 @@ def update_mock_interactors():
                 battery_interactor.update(current_time, dm)
 
         for generator_interactor in dm.get_interactor_service().get_all_generator_interactors():
-            if (isinstance(generator_interactor, MockGeneratorPVInteractor)):
+            if (isinstance(generator_interactor, (MockGeneratorPVInteractor, MockGeneratorRandomInteractor, MockGeneratorScheduledInteractor))):
                 generator_interactor.update(current_time, dm)
 
         for constant_action_interactor in dm.get_interactor_service().get_all_constant_action_interactors():
@@ -79,14 +81,14 @@ def initialize_services_from_db() -> None:
             )
         for dev in ds.get_all_generators_random():
             interactor_service_instance.add_generator_interactor(
-                MockGeneratorPVInteractor(dev.id)
+                MockGeneratorRandomInteractor(dev.id)
             )
             controller_service_instance.add_generator_controller(
                 GeneratorRandomController(dev.id)
             )
         for dev in ds.get_all_generators_scheduled():
             interactor_service_instance.add_generator_interactor(
-                MockGeneratorPVInteractor(dev.id)
+                MockGeneratorScheduledInteractor(dev.id)
             )
             controller_service_instance.add_generator_controller(
                 GeneratorScheduledController(dev.id)

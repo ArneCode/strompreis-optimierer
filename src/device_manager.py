@@ -11,6 +11,8 @@ from controllers.generator_scheduled_controller import GeneratorScheduledControl
 from devices import GeneratorRandom, GeneratorScheduled
 from interactors.mock import MockConstantActionInteractor, MockBatteryInteractor, MockGeneratorPVInteractor, MockVariableActionInteractor
 from controllers import ConstantActionController, VariableActionController, BatteryController, GeneratorPvController
+from interactors.mock.mock_generator_random import MockGeneratorRandomInteractor
+from interactors.mock.mock_generator_scheduled import MockGeneratorScheduledInteractor
 
 if TYPE_CHECKING:
     from devices import Battery, VariableActionDevice, GeneratorPV, ConstantActionDevice
@@ -97,7 +99,7 @@ class DeviceManager(IDeviceManager):
     def add_generator_random(self, device: "GeneratorRandom") -> "int":
         id = self._uow.device_service.add_device(device)
         self._uow.interactor_service.add_generator_interactor(
-            MockGeneratorPVInteractor(device.id))
+            MockGeneratorRandomInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorRandomController(device.id))
         return id
@@ -105,7 +107,7 @@ class DeviceManager(IDeviceManager):
     def add_generator_scheduled(self, device: "GeneratorScheduled") -> "int":
         id = self._uow.device_service.add_device(device)
         self._uow.interactor_service.add_generator_interactor(
-            MockGeneratorPVInteractor(device.id))
+            MockGeneratorScheduledInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorScheduledController(device.id))
         return id

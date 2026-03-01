@@ -1,3 +1,5 @@
+# src/tests/test_device_manager.py
+
 from datetime import time
 from unittest.mock import create_autospec
 import pytest
@@ -14,7 +16,9 @@ from devices import (
 from electricity_price_optimizer_py.units import Watt
 from interactors.mock import (
     MockBatteryInteractor,
-    MockGeneratorPVInteractor,
+    MockGeneratorPVInteractor,  # Correct name
+    MockGeneratorRandomInteractor,
+    MockGeneratorScheduledInteractor,
     MockConstantActionInteractor,
     MockVariableActionInteractor,
 )
@@ -79,7 +83,7 @@ class TestDeviceManager:
         uow.interactor_service.add_generator_interactor.assert_called_once()
         assert isinstance(
             uow.interactor_service.add_generator_interactor.call_args[0][0],
-            MockGeneratorPVInteractor,
+            MockGeneratorPVInteractor,  # Fixed
         )
         uow.controller_service.add_generator_controller.assert_called_once()
         assert isinstance(
@@ -96,7 +100,7 @@ class TestDeviceManager:
         uow.interactor_service.add_generator_interactor.assert_called_once()
         assert isinstance(
             uow.interactor_service.add_generator_interactor.call_args[0][0],
-            MockGeneratorPVInteractor,
+            MockGeneratorRandomInteractor,  # Fixed
         )
         uow.controller_service.add_generator_controller.assert_called_once()
         assert isinstance(
@@ -115,7 +119,7 @@ class TestDeviceManager:
         uow.interactor_service.add_generator_interactor.assert_called_once()
         assert isinstance(
             uow.interactor_service.add_generator_interactor.call_args[0][0],
-            MockGeneratorPVInteractor,
+            MockGeneratorScheduledInteractor,  # Fixed
         )
         uow.controller_service.add_generator_controller.assert_called_once()
         assert isinstance(
