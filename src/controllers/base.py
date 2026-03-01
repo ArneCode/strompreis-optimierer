@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from datetime import datetime
 
 from electricity_price_optimizer_py.units import WattHour
+from electricity_price_optimizer_py.units import Watt
 
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
+    from interactors.interfaces import DeviceStatus
 
 
 from electricity_price_optimizer_py import (
@@ -76,4 +78,29 @@ class GeneratorController(DeviceController):
 
     @abstractmethod
     def get_prognoses(self, dm: "IDeviceManager", timestamps: list[datetime], end: datetime) -> list["WattHour"]:
+        pass
+
+    # Common getter names implemented by concrete generator controllers.
+    # The base class only declares the signatures so callers can rely on
+    # a common API; concrete controllers keep their specific implementations.
+
+    @abstractmethod
+    def get_current_power(self, device_manager: "IDeviceManager", current_time: Optional[datetime] = None) -> "Watt":
+        """Return instantaneous generation (Watts). Some controllers may
+        require a `current_time` argument; it's optional here for flexibility."""
+        pass
+
+    @abstractmethod
+    def get_peak_power(self, device_manager: "IDeviceManager") -> "Watt":
+        """Return the rated/peak power for the generator device."""
+        pass
+
+    @abstractmethod
+    def get_status(self, device_manager: "IDeviceManager", current_time: Optional[datetime] = None) -> "DeviceStatus":
+        """Return the device status (producing/idle/etc.)."""
+        pass
+
+    @abstractmethod
+    def get_status_str(self, device_manager: "IDeviceManager", current_time: Optional[datetime] = None) -> str:
+        """Return a string representation of the status (for frontend)."""
         pass
