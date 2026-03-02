@@ -33,7 +33,6 @@ class ApiService {
                 throw new Error(errorMsg);
             }
 
-            // Handle empty responses (e.g., DELETE endpoints)
             const text = await res.text();
             return text ? JSON.parse(text) : {};
         } catch (err) {
