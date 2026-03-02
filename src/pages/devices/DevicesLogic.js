@@ -31,7 +31,7 @@ export const RULES = {
     required: value => value ? null : "Pflichtfeld",
     number: value => isNaN(Number(value)) ? "Gib eine Zahl an" : null,
     positive: value => Number(value) > 0 ? null : "Muss > 0 sein",
-    efficiencyRange: value => (Number(value) <= 0 || Number(value) > 100) ? "0-100%!" : null,
+    efficiencyRange: value => (Number(value) < 1 || Number(value) > 100) ? "Muss zwischen 1-100% sein" : null,
     angleRange: value => (Number(value) < 0 || Number(value) > 90) ? "0°-90°!" : null
 };
 

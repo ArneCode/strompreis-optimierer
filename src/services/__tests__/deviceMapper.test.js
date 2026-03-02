@@ -179,5 +179,22 @@ describe("deviceMapper", () => {
       expect(prepareDeviceForForm({})).toEqual({});
     });
 
+    it("converts efficiency from decimal to percentage for Battery", () => {
+      const device = { id: 1, name: "Test Battery", type: "Battery", efficiency: 0.95 };
+      const result = prepareDeviceForForm(device);
+      expect(result.efficiency).toBe(95);
+    });
+
+    it("converts efficiency for Battery with different values", () => {
+      const device1 = { id: 1, name: "Test Battery", type: "Battery", efficiency: 0.9 };
+      expect(prepareDeviceForForm(device1).efficiency).toBe(90);
+
+      const device2 = { id: 2, name: "Test Battery", type: "Battery", efficiency: 0.5 };
+      expect(prepareDeviceForForm(device2).efficiency).toBe(50);
+
+      const device3 = { id: 3, name: "Test Battery", type: "Battery", efficiency: 1.0 };
+      expect(prepareDeviceForForm(device3).efficiency).toBe(100);
+    });
+
   });
 });

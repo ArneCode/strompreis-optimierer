@@ -12,14 +12,14 @@ export const mapDeviceData = (rawForm) => {
 
     switch (rawForm.type) {
         case "Battery":
-            { const eff = parseFloat(rawForm.efficiency) || 0.95;
+            { const eff = parseFloat(rawForm.efficiency) || 95;
             return {
                 ...cleanData,
                 capacity: parseFloat(rawForm.capacity) || 0,
                 currentCharge: parseFloat(rawForm.currentCharge) || 0,
                 maxChargeRate: parseFloat(rawForm.maxChargeRate) || 0,
                 maxDischarge: parseFloat(rawForm.maxDischarge) || 0,
-                efficiency: eff > 1 ? eff / 100 : eff
+                efficiency: eff / 100
             }; }
 
         case "Consumer":
@@ -98,6 +98,9 @@ export const prepareDeviceForForm = (device = {}) => {
         out.alignment = azimuthToAlignment(device.azimuth);
     } else if (device.alignment !== undefined && typeof device.alignment === 'number') {
         out.alignment = azimuthToAlignment(device.alignment);
+    }
+    if (device.type === "Battery" && device.efficiency !== undefined) {
+        out.efficiency = parseFloat(device.efficiency) * 100;
     }
     return out;
 };
