@@ -11,10 +11,9 @@ describe("apiService Integration Tests", () => {
         try {
             await apiService.fetchDevices();
             backendAvailable = true;
-            console.log("✓ Backend is available - running integration tests");
+            console.log("Backend is available - running integration tests");
         } catch {
-            console.warn("⚠ Backend not available - skipping integration tests");
-            console.warn("  Start backend with: python app.py");
+            console.warn("Backend not available - skipping integration tests");
         }
     });
 
