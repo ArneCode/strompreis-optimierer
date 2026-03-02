@@ -12,6 +12,7 @@ describe("apiService", () => {
         fetchMock.mockResolvedValue({
             ok: true,
             json: vi.fn().mockResolvedValue({}),
+            text: vi.fn().mockResolvedValue('{}'),
         });
     });
 
@@ -41,6 +42,7 @@ describe("apiService", () => {
             fetchMock.mockResolvedValue({
                 ok: true,
                 json: vi.fn().mockResolvedValue(mockResponse),
+                text: vi.fn().mockResolvedValue(JSON.stringify(mockResponse)),
             });
 
             const result = await apiService.request("test-endpoint");

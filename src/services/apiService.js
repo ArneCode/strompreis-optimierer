@@ -29,9 +29,13 @@ class ApiService {
             if (!res.ok) {
                 const errorDetail = await res.json().catch(() => ({}));
                 console.error(`[ApiService] Backend Error (${res.status}):`, errorDetail);
+                const errorMsg = errorDetail.detail || `HTTP ${res.status}`;
+                throw new Error(errorMsg);
             }
 
-            return res.json();
+            // Handle empty responses (e.g., DELETE endpoints)
+            const text = await res.text();
+            return text ? JSON.parse(text) : {};
         } catch (err) {
             console.error(`[ApiService] Request failed:`, err);
             throw err;
@@ -190,7 +194,15 @@ class ApiService {
             if (!res.ok) {
                 const errorDetail = await res.json().catch(() => ({}));
                 console.error(`[ApiService] Backend Error (${res.status}):`, errorDetail);
-                throw new Error(errorDetail.detail || 'Fehler beim Erstellen des Generators');
+
+                // Handle both string and array error details
+                let errorMsg = 'Fehler beim Erstellen des Generators';
+                if (Array.isArray(errorDetail.detail)) {
+                    errorMsg = errorDetail.detail.map(e => e.msg || e).join(', ');
+                } else if (errorDetail.detail) {
+                    errorMsg = errorDetail.detail;
+                }
+                throw new Error(errorMsg);
             }
 
             return res.json();

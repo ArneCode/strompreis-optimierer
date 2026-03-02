@@ -79,7 +79,6 @@ describe("SettingsPage", () => {
         fireEvent.click(screen.getByTestId("settings-edit-open"));
       });
 
-      // Change cooling_rate and final_temperature to fix validation issues
       fireEvent.change(screen.getByTestId("settings-cooling-rate"), { target: { value: "0.90" } });
       fireEvent.change(screen.getByTestId("settings-final-temperature"), { target: { value: "0.5" } });
       fireEvent.change(screen.getByTestId("settings-num-moves"), { target: { value: "2" } });
