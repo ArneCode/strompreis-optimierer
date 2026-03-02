@@ -226,7 +226,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
                         <input name="maxChargeRate" type="number" value={deviceForm.maxChargeRate} onChange={onChange} disabled={disabled} data-testid="battery-maxChargeRate" />
                     </FormField>
                     <FormField label="Effizienz (%)" error={errors.efficiency}>
-                        <input name="efficiency" type="number" value={deviceForm.efficiency} onChange={onChange} disabled={disabled} data-testid="battery-efficiency" />
+                        <input name="efficiency" type="number" value={deviceForm.efficiency * 100} onChange={onChange} disabled={disabled} data-testid="battery-efficiency" />
                     </FormField>
                 </div>
             )}
