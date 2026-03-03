@@ -301,16 +301,37 @@
   line-height: 1;
 }
 
+/*
 .compare-chart {
   width: 100%;
-  overflow-x: auto; /* falls die LineChart fixed width hat */
+  overflow-x: auto; 
   display: flex;
   justify-content: center;
 }
 
 .compare-chart-gantt {
-  width: 1080px;
-  padding-left: 200px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  padding-left: 0;          
+  box-sizing: border-box;
+}
+*/
+
+.compare-chart,
+.compare-chart-gantt {
+  width: 100%;
+  overflow-x: auto;
+  display: flex;
+  justify-content: flex-start; /* wichtig: nicht zentrieren, sonst driftet es je nach Breite */
+  box-sizing: border-box;
+}
+
+.compare-chart-gantt {
+  padding-left: 0;   /* entfernen */
+  /* width: 1080px;  entfernen */
 }
 
 .plan-compare-button {

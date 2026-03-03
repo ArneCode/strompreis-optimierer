@@ -1,7 +1,7 @@
 /** Gantt scale configuration (day + hour) */
 export const SCALES = [
-  { unit: "day", step: 1, format: "d" },
-  { unit: "hour", step: 1, format: "h" },
+  { unit: "day", step: 1, format: "%j" }, // 1..31 (Tag im Monat)
+  { unit: "hour", step: 1, format: "%H" }, // 00..23
 ];
 
 export const toGanttTasks = (apiTasks) =>
