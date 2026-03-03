@@ -325,13 +325,12 @@
   width: 100%;
   overflow-x: auto;
   display: flex;
-  justify-content: flex-start; /* wichtig: nicht zentrieren, sonst driftet es je nach Breite */
+  justify-content: flex-start; 
   box-sizing: border-box;
 }
 
 .compare-chart-gantt {
-  padding-left: 0;   /* entfernen */
-  /* width: 1080px;  entfernen */
+  padding-left: 0;   
 }
 
 .plan-compare-button {
