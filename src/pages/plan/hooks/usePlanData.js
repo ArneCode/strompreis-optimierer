@@ -125,13 +125,20 @@ export function usePlanData({
     pollRef.current = setInterval(async () => {
       try {
         const s = await loadStatus();
-        if (!s.currentlyRunning && s.hasSchedule) {
+
+        if (!s.currentlyRunning) {
           stopPolling();
-          await loadPlan();
-          await loadPlanData();
+
+          if (s.hasSchedule) {
+            await loadPlan();
+            await loadPlanData();
+          } else {
+            setError("Planerstellung fehlgeschlagen (kein Schedule erzeugt).");
+          }
         }
-      } catch {
-        // ignore
+      } catch (e) {
+        stopPolling();
+        setError(e?.message ?? "Fehler beim Polling des Status-Endpunkts.");
       }
     }, 1000);
   };
@@ -163,13 +170,15 @@ export function usePlanData({
 
   const handleGeneratePlan = async () => {
     setError(null);
+
     try {
       await apiService.generatePlan();
-    } catch {
-      // ignore
+      await loadStatus();
+      startPolling();
+    } catch (e) {
+      setError(e?.message ?? "Fehler beim Starten der Optimierung.");
+      stopPolling();
     }
-    await loadStatus();
-    startPolling();
   };
 
   const initGantt = (api) => {
