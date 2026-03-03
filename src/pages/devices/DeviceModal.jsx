@@ -53,7 +53,13 @@ function DeviceModal({ isOpen, isEdit, onClose, onSave, onDelete, errorMessage, 
                             disabled={isLoading || isDeleting}
                             data-testid="device-save"
                         >
-                            {isLoading ? (isEdit ? "Speichert..." : "Erstellt...") : (isEdit ? "Speichern" : "Erstellen")}
+                            {isLoading
+                                ? (isEdit ? "Speichert..." : "Erstellt...")
+                                : (isEdit
+                                    ? (formProps.deviceForm.type === "RandomGenerator" ? "Neu generieren" : "Speichern")
+                                    : "Erstellen"
+                                )
+                            }
                         </button>
                     ) : null}
                 </div>
