@@ -111,7 +111,6 @@ describe("apiService Integration Tests", () => {
             const randomForm = {
                 name: "Test Random Generator",
                 type: "RandomGenerator",
-                minPower: "1000",
                 maxPower: "3000",
             };
 
@@ -146,7 +145,8 @@ describe("apiService Integration Tests", () => {
             const devicesAfter = await apiService.fetchDevices();
             const countAfter = devicesAfter.filter(d => d.name === uniqueName).length;
 
-            expect(countAfter).toBeLessThanOrEqual(countBefore);
+            expect(countAfter).toBe(0);
+            expect(countAfter).toBeLessThan(countBefore);
         });
 
         it("resets all devices", async () => {
@@ -175,6 +175,7 @@ describe("apiService Integration Tests", () => {
 
             const devices = await apiService.fetchDevices();
             expect(Array.isArray(devices)).toBe(true);
+            expect(devices.length).toBe(0);
         });
     });
 

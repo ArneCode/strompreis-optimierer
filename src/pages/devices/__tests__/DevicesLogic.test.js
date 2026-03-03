@@ -78,9 +78,9 @@ describe("DevicesLogic", () => {
       });
 
       it("returns error for invalid efficiency", () => {
-        expect(RULES.efficiencyRange("0")).toBe("Muss zwischen 1-100% sein");
-        expect(RULES.efficiencyRange("101")).toBe("Muss zwischen 1-100% sein");
-        expect(RULES.efficiencyRange("-1")).toBe("Muss zwischen 1-100% sein");
+        expect(RULES.efficiencyRange("0")).toBe("1-100%!");
+        expect(RULES.efficiencyRange("101")).toBe("1-100%!");
+        expect(RULES.efficiencyRange("-1")).toBe("1-100%!");
       });
     });
 
@@ -214,7 +214,7 @@ describe("DevicesLogic", () => {
         currentCharge: "Muss > 0 sein",
         maxChargeRate: "Muss > 0 sein",
         maxDischarge: "Muss > 0 sein",
-        efficiency: "Muss zwischen 1-100% sein",
+        efficiency: "1-100%!",
       });
     });
 
