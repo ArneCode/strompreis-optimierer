@@ -143,5 +143,77 @@ mod tests {
             assert_eq!(state.get_constant_action_ids().len(),
                        state.get_constant_action_ids().len());
         }
+
+        #[test]
+        fn test_state_schedule_validity(
+            context in arb_optimizer_context(),
+            seed in any::<u64>()
+        ) {
+            use rand::SeedableRng;
+            let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+
+            // Capture context info for validation before moving it
+            let expected_constant_ids: Vec<u32> = context.get_constant_actions().iter().map(|a| a.get_id()).collect();
+            let expected_variable_ids: Vec<u32> = context.get_variable_actions().iter().map(|a| a.get_id()).collect();
+            let expected_battery_ids: Vec<u32> = context.get_batteries().iter().map(|a| a.get_id()).collect();
+
+            let mut state = State::new_random(context, &mut rng);
+
+            // Get cost and schedule
+            let cost = state.get_cost();
+            let schedule = state.get_schedule();
+
+            // --- 1. COMPLETENESS CHECKS ---
+            for id in &expected_constant_ids {
+                assert!(schedule.constant_actions.contains_key(id),
+                    "Constant action {} missing from schedule", id);
+            }
+            for id in &expected_variable_ids {
+                assert!(schedule.variable_actions.contains_key(id),
+                    "Variable action {} missing from schedule", id);
+            }
+            for id in &expected_battery_ids {
+                assert!(schedule.batteries.contains_key(id),
+                    "Battery {} missing from schedule", id);
+            }
+
+            // --- 2. CONSTANT ACTION TEMPORAL VALIDITY ---
+            for (_, action) in schedule.constant_actions.iter() {
+                let start = action.get_start_time();
+                let end = action.get_end_time();
+
+                assert!(start >= action.get_start_from(),
+                    "Action {} started too early: {:?} < {:?}",
+                    action.get_id(), start, action.get_start_from());
+                assert!(end <= action.get_end_before(),
+                    "Action {} ended too late: {:?} > {:?}",
+                    action.get_id(), end, action.get_end_before());
+            }
+
+            // --- 3. VARIABLE ACTION ENERGY BALANCE ---
+            for (_, assigned_var) in schedule.variable_actions.iter() {
+                let mut total_scheduled_energy = 0i64;
+
+                // Iterate through every step in the day
+                for t in 0..crate::time::STEPS_PER_DAY {
+                    let time = crate::time::Time::from_timestep(t);
+                    // We only check within the action's window
+                    if time >= assigned_var.get_start() && time < assigned_var.get_end() {
+                        let step_cons = assigned_var.get_consumption(time);
+                        assert!(step_cons <= assigned_var.get_max_consumption(),
+                            "Exceeded max consumption at {:?}", time);
+                        total_scheduled_energy += step_cons;
+                    }
+                }
+
+                // Critical check: Total energy must match exactly
+                assert_eq!(total_scheduled_energy, assigned_var.get_total_consumption(),
+                    "Variable action energy sum mismatch for ID {}", assigned_var.get_id());
+            }
+
+            // Cost should be a valid number (not NaN equivalent behavior)
+            // Since i64 can't be NaN, we just verify it's computed without panic
+            let _ = cost;
+        }
     }
 }

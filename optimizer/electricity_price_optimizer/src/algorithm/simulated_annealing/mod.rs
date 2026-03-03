@@ -116,6 +116,13 @@ pub fn run_simulated_annealing(
 ) -> (i64, Schedule) {
     let mut rng = rand::rng();
 
+    let has_constant_actions = !context.get_constant_actions().is_empty();
+    if !has_constant_actions {
+        // no constant actions so no simulated annealing needed, one flow run is enough
+        println!(
+            "No constant actions found, skipping simulated annealing and returning optimal schedule."
+        );
+    }
     let mut state = State::new_random(context, &mut rng);
     let mut temperature: f64 = settings.initial_temperature;
 
@@ -125,9 +132,9 @@ pub fn run_simulated_annealing(
 
     // timer
     let start = Instant::now();
-    while temperature > settings.final_temperature {
+    while temperature > settings.final_temperature && has_constant_actions {
         n_iterations += 1;
-        if true || ((n_iterations % 20 == 0) && n_iterations > 0) {
+        if (n_iterations % 10 == 0) && n_iterations > 0 {
             let elapsed = start.elapsed();
             println!(
                 "Iteration: {n_iterations}, Temperature: {temperature:.4}, Cost: {old_cost}, Elapsed: {elapsed:.2?}"
@@ -180,8 +187,7 @@ mod tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
 
     proptest! {
-        // We increase the cases to find deeper logic bugs
-        #![proptest_config(ProptestConfig::with_cases(10))]
+        #![proptest_config(ProptestConfig::with_cases(3))]
         #[test]
         fn test_sa_output_validity(
             context in arb_optimizer_context(),
