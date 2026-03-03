@@ -126,7 +126,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
             )}
 
             {deviceForm.type === "RandomGenerator" && (
-                <FormField label="Nennleistung (kW)" error={errors.peakPower}>
+                <FormField label="Nennleistung (W)" error={errors.peakPower}>
                     <input
                         name="peakPower"
                         type="number"
@@ -140,7 +140,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
 
             {deviceForm.type === "PVGenerator" && (
                 <>
-                    <FormField label="Nennleistung (kWp)" error={errors.ratedPower}>
+                    <FormField label="Nennleistung (Wp)" error={errors.ratedPower}>
                         <input
                             name="ratedPower"
                             type="number"
@@ -213,16 +213,16 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
 
             {deviceForm.type === "Battery" && (
                 <div className="battery-grid">
-                    <FormField label="Kapazität (kWh)" error={errors.capacity}>
+                    <FormField label="Kapazität (Wh)" error={errors.capacity}>
                         <input name="capacity" type="number" value={deviceForm.capacity} onChange={onChange} disabled={disabled} data-testid="battery-capacity" />
                     </FormField>
-                    <FormField label="Ladezustand (kWh)" error={errors.currentCharge}>
+                    <FormField label="Ladezustand (Wh)" error={errors.currentCharge}>
                         <input name="currentCharge" type="number" value={deviceForm.currentCharge} onChange={onChange} disabled={disabled} data-testid="battery-currentCharge" />
                     </FormField>
-                    <FormField label="Max. Entladung (kW)" error={errors.maxDischarge}>
+                    <FormField label="Max. Entladung (W)" error={errors.maxDischarge}>
                         <input name="maxDischarge" type="number" value={deviceForm.maxDischarge} onChange={onChange} disabled={disabled} data-testid="battery-maxDischarge" />
                     </FormField>
-                    <FormField label="Max. Ladung (kW)" error={errors.maxChargeRate}>
+                    <FormField label="Max. Ladung (W)" error={errors.maxChargeRate}>
                         <input name="maxChargeRate" type="number" value={deviceForm.maxChargeRate} onChange={onChange} disabled={disabled} data-testid="battery-maxChargeRate" />
                     </FormField>
                     <FormField label="Effizienz (%)" error={errors.efficiency}>
