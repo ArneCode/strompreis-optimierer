@@ -29,6 +29,7 @@ export function usePlanData({
   const [status, setStatus] = useState({
     currentlyRunning: false,
     hasSchedule: false,
+    hasConstantActions: false,
   });
 
   const [error, setError] = useState(null);
@@ -67,8 +68,38 @@ export function usePlanData({
 
   const loadStatus = async () => {
     const s = await apiService.fetchPlanStatus();
-    setStatus(s);
+
+    setStatus((prev) => ({
+      ...prev,
+      ...s,
+    }));
     return s;
+  };
+
+  const loadConstantActionsFlag = async () => {
+    try {
+      const devices = await apiService.fetchDevices();
+
+      const has = (devices ?? []).some(
+        (device) =>
+          device?.flexibility === "constant" &&
+          (device?.actions?.length ?? 0) > 0
+      );
+
+      setStatus((prev) => ({
+        ...prev,
+        hasConstantActions: has,
+      }));
+
+      return has;
+    } catch (e) {
+      console.error("Fehler beim Laden der Constant Actions:", e);
+      setStatus((prev) => ({
+        ...prev,
+        hasConstantActions: false,
+      }));
+      return false;
+    }
   };
 
   const loadPlan = async () => {
@@ -107,14 +138,23 @@ export function usePlanData({
 
   const refreshAll = async () => {
     setError(null);
+
     try {
       const s = await loadStatus();
+      await loadConstantActionsFlag();
+
       if (s.hasSchedule) {
         await loadPlan();
         await loadPlanData();
       } else {
         setTasks([]);
-        setPlanData({ timeline: [], batteries: [], variableActions: [] });
+        setPlanData({
+          timeline: [],
+          batteries: [],
+          variableActions: [],
+          generationByGeneratorKw: [],
+          constantActions: [],
+        });
       }
     } catch (e) {
       setError(e?.message ?? String(e));

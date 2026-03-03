@@ -1,16 +1,44 @@
+import { useEffect, useState } from "react";
+
 function PlanHeader({ status, error, onGenerate, onRefresh, compareView, setCompareView }) {
+
+  const [showConstantActionHint, setShowConstantActionHint] = useState(false);
+
+  useEffect(() => {
+    if (status?.hasConstantActions) {
+      setShowConstantActionHint(false);
+    }
+  }, [status?.hasConstantActions]);
+
+  const handleGenerateClick = () => {
+    if (!status?.hasConstantActions) {
+      setShowConstantActionHint(true);
+      return;
+    }
+
+    setShowConstantActionHint(false);
+    onGenerate?.();
+  };
+
   return (
     <div className="plan-header">
       <p>Ablaufplan</p>
 
       <div className="plan-header-info">
         <button
-          className={status.currentlyRunning ? "generate-plan-button-running" : "generate-plan-button"}
-          onClick={onGenerate}
+          className={
+            status.currentlyRunning
+              ? "generate-plan-button-running"
+              : `generate-plan-button${
+                  !status?.hasConstantActions ? " blocked" : ""
+                }`
+          }
+          onClick={handleGenerateClick}
           disabled={status.currentlyRunning}
-          data-testid="plan-generate"
         >
-          {status.currentlyRunning ? "Plan wird generiert..." : "Plan generieren"}
+          {status.currentlyRunning
+            ? "Plan wird generiert..."
+            : "Plan generieren"}
         </button>
 
         <button
@@ -36,10 +64,16 @@ function PlanHeader({ status, error, onGenerate, onRefresh, compareView, setComp
           <div>Noch kein Plan vorhanden. Klicke "Plan generieren".</div>
         )}
 
+
         {status.currentlyRunning && <div data-testid="plan-status" >Optimierung läuft... bitte warten.</div>}
 
         {error && <div className="error" data-testid="plan-error">{error}</div>}
       </div>
+      {showConstantActionHint && !status.currentlyRunning && (
+        <div className="plan-inline-hint">
+          Bitte erstelle zuerst mindestens eine durchlaufende Aktion
+        </div>
+      )}
     </div>
   );
 }
