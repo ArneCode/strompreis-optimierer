@@ -109,7 +109,6 @@ function ActionForm({
                 />
             </FormField>
 
-            {/* 3. Visual Slider */}
             <div className="action-slider" data-testid="action-time-slider">
                 <TimeRangeSlider
                     startTime={actionForm.startTime}
@@ -126,7 +125,6 @@ function ActionForm({
                 />
             </div>
 
-            {/* 4. Dynamic Fields (Consumption / Duration) */}
             {selectedDevice && (
                 <div className="dynamic-fields-container" data-testid="action-dynamic-fields">
                     {isVariable ? (
