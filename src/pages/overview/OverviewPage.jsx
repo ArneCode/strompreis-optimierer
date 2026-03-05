@@ -66,13 +66,13 @@ function OverviewPage() {
 
           <div className="info-row">
             <span className="info-label">Aktuelle Leistung</span>
-            <span className="info-value">{item.currentPower} W</span>
+            <span className="info-value">{Number(item.currentPower).toFixed(2)} W</span>
           </div>
 
           {"chargeLevel" in item && (
             <div className="info-row">
               <span className="info-label">Ladezustand</span>
-              <span className="info-value">{item.chargeLevel} Wh</span>
+              <span className="info-value">{Number(item.chargeLevel).toFixed(2)} Wh</span>
             </div>
           )}
 
