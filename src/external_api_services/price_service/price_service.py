@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-from external_api_services.price_service.price_cache import PriceCache
+
+from external_api_services.cache import Cache
 from external_api_services.price_service.price_service_port import PriceServicePort
 
 BERLIN = ZoneInfo("Europe/Berlin")
@@ -8,18 +9,11 @@ BERLIN = ZoneInfo("Europe/Berlin")
 def _floor_hour(dt: datetime) -> datetime:
     return dt.replace(minute = 0, second = 0, microsecond = 0)
 
-def _ceil_hour(dt: datetime) -> datetime:
-    floored_hour = _floor_hour(dt)
-    if dt == floored_hour:
-        return floored_hour
-    else:
-        return floored_hour + timedelta(hours = 1)
-
 class PriceService(PriceServicePort):
     """
     Provides access to cached electricity price data.
     """
-    def __init__(self, cache : PriceCache) -> None:
+    def __init__(self, cache : Cache) -> None:
         """
         Initializes the price service.
         :param cache: the cache that caches price data
@@ -39,7 +33,7 @@ class PriceService(PriceServicePort):
         start_block_key = _floor_hour(start)
 
         if start_block_key == _floor_hour(end - timedelta(microseconds = 1)):
-            return blocks[start_block_key]
+            return blocks[start_block_key] / 1000
 
         total_weighted = 0.0
         total_duration = 0
@@ -47,7 +41,7 @@ class PriceService(PriceServicePort):
         cur = start
         while cur < end:
             hour_start = _floor_hour(cur)
-            hour_end = _ceil_hour(cur)
+            hour_end = hour_start + timedelta(hours = 1)
             segment_end = min(hour_end, end)
 
             segment_duration = int((segment_end - cur).total_seconds())
@@ -86,6 +80,6 @@ class PriceService(PriceServicePort):
                 raise RuntimeError(f"No price for {current.isoformat()}.")
 
             hourly_prices[current] = price / 1000
-            current += timedelta(hours=1)
+            current += timedelta(hours = 1)
 
         return hourly_prices
