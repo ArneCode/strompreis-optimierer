@@ -77,7 +77,7 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
                         disabled={disabled}
                         data-testid="device-type"
                     >
-                        {["Generator", "RandomGenerator", "PVGenerator", "Consumer", "Battery"].map(t => (
+                        {["Generator", "RandomGenerator", "PVGenerator", "Consumer", "Battery", "ScheduledConsumer"].map(t => (
                             <option key={t} value={t}>{translateDevice(t)}</option>
                         ))}
                     </select>
@@ -93,20 +93,20 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
                     name="name"
                     value={deviceForm.name}
                     onChange={onChange}
-                    disabled={disabled || isGeneratorEdit || (isEdit && deviceForm.type === "Consumer")}
+                    disabled={disabled || isGeneratorEdit || (isEdit && (deviceForm.type === "Consumer" || deviceForm.type === "ScheduledConsumer"))}
                     readOnly={isGeneratorEdit || (isEdit && deviceForm.type === "Consumer")}
                     className={`${errors.name ? "input-error" : ""} ${(isGeneratorEdit || (isEdit && deviceForm.type === "Consumer")) ? "device-type-readonly" : ""}`}
                     data-testid="device-name"
                 />
             </FormField>
 
-            {isGeneratorType && (
+            {(isGeneratorType || deviceForm.type === "ScheduledConsumer")  && (
                 <FormField label="Prognose" error={errors.forecast} className="upload-section">
                     <input
                         type="file"
                         accept=".csv"
                         onChange={handleFileUpload}
-                        disabled={disabled || isGeneratorEdit}
+                        disabled={disabled || isGeneratorEdit || (isEdit && deviceForm.type === "ScheduledConsumer")}
                         data-testid="device-forecast-upload"
                     />
                     {deviceForm.forecast && (
@@ -115,8 +115,8 @@ function DeviceForm({ deviceForm, onChange, errors = {}, isEdit = false, disable
                         </p>
                     )}
                     <a
-                        href="/beispiel-generator.csv"
-                        download="beispiel-generator.csv"
+                        href={deviceForm.type === "ScheduledConsumer" ? "/beispiel-consumer.csv" : "/beispiel-generator.csv"}
+                        download={deviceForm.type === "ScheduledConsumer" ? "beispiel-consumer.csv" : "beispiel-generator.csv"}
                         className="devices-save-button download-example-csv-button"
                         data-testid="device-forecast-example"
                     >

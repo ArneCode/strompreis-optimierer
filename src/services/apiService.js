@@ -187,15 +187,52 @@ class ApiService {
             const res = await fetch(`${this.baseURL}/devices/scheduled-generator`, {
                 method: 'POST',
                 body: formData
-                // Note: Do NOT set Content-Type header - browser will set it with boundary
             });
 
             if (!res.ok) {
                 const errorDetail = await res.json().catch(() => ({}));
                 console.error(`[ApiService] Backend Error (${res.status}):`, errorDetail);
 
-                // Handle both string and array error details
                 let errorMsg = 'Fehler beim Erstellen des Generators';
+                if (Array.isArray(errorDetail.detail)) {
+                    errorMsg = errorDetail.detail.map(e => e.msg || e).join(', ');
+                } else if (errorDetail.detail) {
+                    errorMsg = errorDetail.detail;
+                }
+                throw new Error(errorMsg);
+            }
+
+            return res.json();
+        } catch (err) {
+            console.error(`[ApiService] Request failed:`, err);
+            throw err;
+        }
+    }
+
+    /**
+     * Create a new scheduled consumer device by uploading a CSV file.
+     * The CSV must contain 'timestamp' and 'value' columns.
+     * @param {string} name - Name of the consumer device
+     * @param {File} file - CSV file with schedule data
+     * @returns {Promise<object>} Created scheduled consumer device
+     * @throws {Error} If validation fails or backend rejects
+     */
+    async createScheduledConsumer(name, file) {
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('file', file);
+
+        try {
+            const res = await fetch(`${this.baseURL}/devices/scheduled-consumer`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) {
+                const errorDetail = await res.json().catch(() => ({}));
+                console.error(`[ApiService] Backend Error (${res.status}):`, errorDetail);
+
+                let errorMsg = 'Fehler beim Erstellen des Verbrauchers';
                 if (Array.isArray(errorDetail.detail)) {
                     errorMsg = errorDetail.detail.map(e => e.msg || e).join(', ');
                 } else if (errorDetail.detail) {

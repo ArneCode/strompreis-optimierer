@@ -105,7 +105,11 @@ function DevicesPage() {
             try {
                 if (deviceForm.type === "Generator" && deviceForm.forecast) {
                     await apiService.createScheduledGenerator(deviceForm.name, deviceForm.forecast);
-                } else {
+
+                } else if (deviceForm.type === "ScheduledConsumer" && deviceForm.forecast) {
+                    await apiService.createScheduledConsumer(deviceForm.name, deviceForm.forecast);
+
+                }else {
                     const { id: _id, ...deviceDataWithoutId } = deviceForm;
                     await apiService.saveDevice(deviceDataWithoutId);
                 }
