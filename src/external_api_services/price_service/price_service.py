@@ -39,7 +39,7 @@ class PriceService(PriceServicePort):
         start_block_key = _floor_hour(start)
 
         if start_block_key == _floor_hour(end - timedelta(microseconds = 1)):
-            return blocks[start_block_key].price
+            return blocks[start_block_key]
 
         total_weighted = 0.0
         total_duration = 0
@@ -53,7 +53,7 @@ class PriceService(PriceServicePort):
             segment_duration = int((segment_end - cur).total_seconds())
             if segment_duration > 0:
                 try:
-                    price = blocks[hour_start].price
+                    price = blocks[hour_start]
                 except KeyError as keyError:
                     raise RuntimeError(f"Missing price block for hour starting at {hour_start.isoformat()}") from keyError
 
@@ -80,7 +80,7 @@ class PriceService(PriceServicePort):
         end = current + timedelta(hours=23)
         hourly_prices: dict[datetime, float] = {}
         while current < end:
-            price: float = blocks[current].price
+            price: float = blocks[current]
 
             if price is None:
                 raise RuntimeError(f"No price for {current.isoformat()}.")
