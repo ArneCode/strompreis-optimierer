@@ -3,6 +3,8 @@
 //! Wraps the internal Rust `Schedule` and pairs it with a start timestamp so
 //! that all time-related accessors can return proper `DateTime<Utc>` values.
 
+use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
 use electricity_price_optimizer::{
     optimizer_context::prognoses::Prognoses, schedule::Schedule as RustSchedule,
@@ -22,12 +24,16 @@ use crate::units::WattHour;
 /// `start_timestamp` used when the optimizer was invoked.
 pub struct Schedule {
     inner: RustSchedule,
+    past_constant_actions: HashMap<u32, AssignedConstantAction>,
     start_timestamp: DateTime<Utc>,
 }
 #[pymethods]
 impl Schedule {
     /// Get an assigned constant action by ID, if present.
     fn get_constant_action(&self, id: u32) -> Option<AssignedConstantAction> {
+        if let Some(action) = self.past_constant_actions.get(&id) {
+            return Some(action.clone());
+        }
         self.inner
             .get_constant_action(id)
             .map(|action| AssignedConstantAction::new(action.clone(), self.start_timestamp))
@@ -60,9 +66,14 @@ impl Schedule {
 }
 impl Schedule {
     /// Construct a Python-facing `Schedule` from a Rust `Schedule` and a reference timestamp.
-    pub fn new(inner: RustSchedule, start_timestamp: DateTime<Utc>) -> Self {
+    pub fn new(
+        inner: RustSchedule,
+        past_constant_actions: HashMap<u32, AssignedConstantAction>,
+        start_timestamp: DateTime<Utc>,
+    ) -> Self {
         Schedule {
             inner,
+            past_constant_actions,
             start_timestamp,
         }
     }
