@@ -1,5 +1,5 @@
 from datetime import datetime
-from ..interfaces import ConsumerInteractor
+from ..interfaces import ConsumerScheduledInteractor
 
 from electricity_price_optimizer_py import units
 from typing import TYPE_CHECKING
@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from device_manager import IDeviceManager
 
 
-class MockConsumerScheduledInteractor(ConsumerInteractor):
+class MockConsumerScheduledInteractor(ConsumerScheduledInteractor):
     """
     Mock interactor for ConsumerScheduled devices.
 
