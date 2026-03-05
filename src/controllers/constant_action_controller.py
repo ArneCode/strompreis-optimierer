@@ -182,6 +182,21 @@ class ConstantActionController(DeviceController):
             if assigned_start and current_time >= assigned_start:
                 interactor.start_action(device_manager)
 
+    def start_now(self, device_manager: "IDeviceManager") -> "None":
+            """
+            Immediately start the constant action via its interactor.
+            
+            This calls the interactor's `start_action` regardless of the stored
+            schedule. The controller and optimizer behaviour should remain safe:
+            - `use_schedule()` only stores schedules when the device is controllable,
+                so calling `start_now()` won't be overwritten by a later `use_schedule()`
+                unless the interactor reports the device is controllable again.
+            - `update_device()` will not attempt to start an already-running action
+                because it checks the interactor state.
+            """
+            interactor = device_manager.get_interactor_service().get_constant_action_interactor(self._id)
+            interactor.start_action(device_manager)
+
     # ------------------------------------------------------------------
     # Getter helpers (delegating to the interactor / schedule)
     # These expose convenient, backend-facing information for API layers.
