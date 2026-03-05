@@ -13,6 +13,7 @@ from api.dependencies import (
 from api.plan_collectors import collect_plan_data
 from device_manager import IDeviceManager
 from electricity_price_optimizer_py import Schedule
+from electricity_price_optimizer_py.units import Euro
 from services.interfaces import IOptimizerService, IOrchestratorService, ISettingsService
 
 router = APIRouter(prefix="/api", tags=["plan"])
@@ -102,6 +103,13 @@ def get_plan_data(
     schedule = _require_schedule(orchestrator)
     data = collect_plan_data(manager, schedule)
 
+    cost_euro: float | None
+    try:
+        cost = orchestrator.get_cost()
+        cost_euro = float(Euro.get_value(cost))
+    except Exception:
+        cost_euro = None
+
     return {
         "timeline": data["timeline"],
         "batteries": data["batteries"],
@@ -112,6 +120,7 @@ def get_plan_data(
         "constantActions": data["constantActions"],
         "scheduledConsumers": data["scheduledConsumers"],
         "fixedConsumptionW": data["consumptionW"],
+        "costEuro": cost_euro,
     }
 
 
