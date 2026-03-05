@@ -97,6 +97,7 @@ function PlanPage() {
         onRefresh={refreshAll}
         compareView={compareView}
         setCompareView={setCompareView}
+        costEuro={planData.costEuro}
       />
 
       {!compareView ? (

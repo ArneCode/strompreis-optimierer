@@ -24,6 +24,7 @@ export function usePlanData({
     variableActions: [],
     generationByGeneratorKw: [],
     constantActions: [],
+    costEuro: null,
   });
 
   const [status, setStatus] = useState({
@@ -161,6 +162,7 @@ export function usePlanData({
           variableActions: [],
           generationByGeneratorKw: [],
           constantActions: [],
+          costEuro: null,
         });
       }
     } catch (e) {
