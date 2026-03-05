@@ -182,20 +182,37 @@ class ConstantActionController(DeviceController):
             if assigned_start and current_time >= assigned_start:
                 interactor.start_action(device_manager)
 
-    def start_now(self, device_manager: "IDeviceManager") -> "None":
-            """
-            Immediately start the constant action via its interactor.
+    def start_now(self, device_manager: "IDeviceManager", current_time: "datetime") -> "None":
+        """
+        Immediately start the constant action via its interactor.
             
-            This calls the interactor's `start_action` regardless of the stored
-            schedule. The controller and optimizer behaviour should remain safe:
-            - `use_schedule()` only stores schedules when the device is controllable,
-                so calling `start_now()` won't be overwritten by a later `use_schedule()`
-                unless the interactor reports the device is controllable again.
-            - `update_device()` will not attempt to start an already-running action
-                because it checks the interactor state.
-            """
-            interactor = device_manager.get_interactor_service().get_constant_action_interactor(self._id)
-            interactor.start_action(device_manager)
+        This calls the interactor's `start_action` regardless of the stored
+        schedule. The controller and optimizer behaviour should remain safe:
+        - `use_schedule()` only stores schedules when the device is controllable,
+            so calling `start_now()` won't be overwritten by a later `use_schedule()`
+            unless the interactor reports the device is controllable again.
+        - `update_device()` will not attempt to start an already-running action
+            because it checks the interactor state.
+        """
+        interactor = device_manager.get_interactor_service().get_constant_action_interactor(self._id)
+        interactor.start_action(device_manager)
+
+        if self._schedule is None:
+            return
+
+        device = device_manager.get_device_service().get_constant_action_device(self._id)
+        if not device or not getattr(device, "actions", None):
+            return
+        action = device.actions[0]
+
+        self._schedule.start_constant_action_now(OptimizerConstantAction(
+            start_from=current_time,
+            end_before=action.end_before,
+            duration=action.duration,
+            consumption=action.consumption,
+            id=self._id,  # maybe needs to be action ID
+        ))
+ 
 
     # ------------------------------------------------------------------
     # Getter helpers (delegating to the interactor / schedule)
