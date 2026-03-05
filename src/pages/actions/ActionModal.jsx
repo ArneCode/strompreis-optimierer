@@ -48,14 +48,16 @@ function ActionModal({
 
                 <div className="action-popup-buttons">
                     {isEdit && (
-                        <button
-                            className="actions-edit-delete-button"
-                            onClick={onDelete}
-                            disabled={isDeleting || isLoading}
-                            data-testid="action-delete"
-                        >
-                            {isDeleting ? "Löscht..." : "Löschen"}
-                        </button>
+                        <div className="actions-delete-button-container">
+                            <button
+                                className="actions-edit-delete-button"
+                                onClick={onDelete}
+                                disabled={isDeleting || isLoading}
+                                data-testid="action-delete"
+                            >
+                                {isDeleting ? "Löscht..." : "Löschen"}
+                            </button>
+                        </div>
                     )}
                     <button onClick={onClose} disabled={isLoading || isDeleting} data-testid="action-cancel">
                         Abbrechen

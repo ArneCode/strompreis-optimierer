@@ -33,14 +33,16 @@ function DeviceModal({ isOpen, isEdit, onClose, onSave, onDelete, errorMessage, 
                 </div>
                 <div className="device-popup-buttons">
                     {isEdit && (
-                        <button
-                            className="devices-edit-delete-button"
-                            onClick={onDelete}
-                            disabled={isDeleting || isLoading}
-                            data-testid="device-delete"
-                        >
-                            {isDeleting ? "Löscht..." : "Löschen"}
-                        </button>
+                        <div className="devices-delete-button-container">
+                            <button
+                                className="devices-edit-delete-button"
+                                onClick={onDelete}
+                                disabled={isDeleting || isLoading}
+                                data-testid="device-delete"
+                            >
+                                {isDeleting ? "Löscht..." : "Löschen"}
+                            </button>
+                        </div>
                     )}
                     <button onClick={onClose} disabled={isLoading || isDeleting} data-testid="device-cancel">
                         Abbrechen

@@ -23,6 +23,7 @@
   background-color: rgb(216, 52, 52);
   color: white;
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+  margin-left: 2rem;
 }
 
 
@@ -93,11 +94,7 @@
 
 .action-popup-window,
 .edit-action-popup-window {
-    /*height: 550px;*/
     min-height: 400px;
-    /*
-    width: 400px;
-    */
     width: min(90%, 400px);
     box-sizing: border-box;
     background-color: white;
@@ -106,21 +103,7 @@
     flex-direction: column;
     position: relative;
     padding: 0px;
-    /*align-items: center;*/
 }
-
-/*
-.edit-action-popup-window {
-    min-height: 400px;
-    width: 400px;
-    background-color: white;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    padding: 0px;
-}
-*/
 
 .create-action-head {
     font-size: 30px;
@@ -151,10 +134,6 @@
     font-size: 20px;
 }
 
-
-
-
-
 .action-popup-buttons {
     display: flex;
     justify-content: end;
@@ -183,19 +162,11 @@
 
 
 .action-popup-inputs {
-    /*
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    */
     flex-grow: 1;
 }
 
 .action-popup-inputs input, 
 .action-device-select {
-    /*width: 200px;*/
     width: 90%;
     max-width: 230px;
     box-sizing: border-box;
@@ -248,4 +219,8 @@
 .action-head {
   margin: 0 auto;
   padding: 0 3rem;
+}
+
+.actions-delete-button-container {
+    width: 100%;
 }
