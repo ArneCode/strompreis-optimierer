@@ -4,7 +4,7 @@ import PlanHeader from "../PlanHeader.jsx";
 
 describe("PlanHeader", () => {
   it("renders buttons and calls callbacks", () => {
-    const onGenerate = vi.fn();
+    const handleGenerateClick = vi.fn();
     const onRefresh = vi.fn();
     const setCompareView = vi.fn();
 
@@ -12,7 +12,7 @@ describe("PlanHeader", () => {
       <PlanHeader
         status={{ currentlyRunning: false, hasSchedule: true }}
         error={null}
-        onGenerate={onGenerate}
+        handleGenerateClick={handleGenerateClick}
         onRefresh={onRefresh}
         compareView={false}
         setCompareView={setCompareView}
@@ -20,7 +20,7 @@ describe("PlanHeader", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /plan generieren/i }));
-    expect(onGenerate).toHaveBeenCalled();
+    expect(handleGenerateClick).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: /aktualisieren/i }));
     expect(onRefresh).toHaveBeenCalled();
@@ -34,7 +34,7 @@ describe("PlanHeader", () => {
       <PlanHeader
         status={{ currentlyRunning: true, hasSchedule: false }}
         error={null}
-        onGenerate={() => {}}
+        handleGenerateClick={() => {}}
         onRefresh={() => {}}
         compareView={false}
         setCompareView={() => {}}
@@ -51,7 +51,7 @@ describe("PlanHeader", () => {
       <PlanHeader
         status={{ currentlyRunning: false, hasSchedule: true }}
         error={"Boom"}
-        onGenerate={() => {}}
+        handleGenerateClick={() => {}}
         onRefresh={() => {}}
         compareView={false}
         setCompareView={() => {}}
