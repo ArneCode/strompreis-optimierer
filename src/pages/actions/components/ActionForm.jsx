@@ -71,7 +71,7 @@ function ActionForm({
                     >
                         <option value="">Verbraucher wählen</option>
                         {devices
-                            ?.filter(device => device.type === "Consumer")
+                            ?.filter(device => device.type === "Consumer" && (!device.actions || device.actions.length === 0))
                             .map((device) => (
                                 <option key={device.id} value={device.id}>
                                     {device.name} ({device.flexibility === "variable" ? "Flexibel" : "Konstant"})
