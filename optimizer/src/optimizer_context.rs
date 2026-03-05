@@ -5,7 +5,7 @@
 //! Unit conversions (e.g. `EuroPerWh` → micro-euro/Wh, `Watt` → milli-Wh/timestep)
 //! happen at the boundary when data enters this struct.
 
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use chrono::{DateTime, Utc};
 use electricity_price_optimizer::{
@@ -50,6 +50,8 @@ pub struct OptimizerContext {
     batteries: Vec<Arc<RustBattery>>,
     /// Constant actions.
     constant_actions: Vec<Arc<RustConstantAction>>,
+    /// past constant actions
+    past_constant_actions: HashMap<u32, AssignedConstantAction>,
     /// Variable actions.
     variable_actions: Vec<Arc<RustVariableAction>>,
     /// Reference start timestamp for conversions and first timestep fraction.
@@ -79,6 +81,7 @@ impl OptimizerContext {
         let beyond_control_consumption = Prognoses::from_closure(|_| 0);
         let batteries = vec![];
         let constant_actions = vec![];
+        let past_constant_actions = HashMap::new();
         let variable_actions = vec![];
         let start_time = time;
 
@@ -88,6 +91,7 @@ impl OptimizerContext {
             beyond_control_consumption,
             batteries,
             constant_actions,
+            past_constant_actions,
             variable_actions,
             start_time,
         })
@@ -132,6 +136,8 @@ impl OptimizerContext {
         action: &AssignedConstantAction,
     ) -> PyResult<()> {
         // find out how much time has passed since action start
+        self.past_constant_actions
+            .insert(action.get_id(), action.clone());
         let end_time = action.get_end_time()?;
         let end_time = datetime_to_time(end_time, self.start_time)?;
         // Add the action's consumption to every timestep before its end
@@ -189,6 +195,9 @@ impl OptimizerContext {
     /// Returns a reference to the list of constant actions.
     pub fn get_constant_actions(&self) -> &Vec<Arc<RustConstantAction>> {
         &self.constant_actions
+    }
+    pub fn get_past_constant_actions(&self) -> &HashMap<u32, AssignedConstantAction> {
+        &self.past_constant_actions
     }
     /// Returns a reference to the list of variable actions.
     pub fn get_variable_actions(&self) -> &Vec<Arc<RustVariableAction>> {

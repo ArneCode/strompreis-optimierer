@@ -106,6 +106,10 @@ pub fn run_simulated_annealing(
     })?;
     Ok((
         Euro::from_nano_euro(cost as f64),
-        Schedule::new(rust_schedule, context.get_start_time()),
+        Schedule::new(
+            rust_schedule,
+            context.get_past_constant_actions().clone(),
+            context.get_start_time(),
+        ),
     ))
 }

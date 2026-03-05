@@ -107,6 +107,7 @@ impl ConstantAction {
 
 #[pyclass]
 /// Result of the optimizer for a constant action: start/end times are now fixed.
+#[derive(Clone)]
 pub struct AssignedConstantAction {
     inner: RustAssignedConstantAction,
     start_timestamp: DateTime<Utc>,

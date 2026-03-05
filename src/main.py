@@ -10,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 from api.example_price_24h_request import router as example_price_24h_request_router
 
-from tasks import initialize_services_from_db, update_controllers, update_mock_interactors
+from tasks import initialize_services_from_db, update_controllers, update_mock_interactors, run_scheduled_optimization
 
 from database import init_db
 
@@ -37,6 +37,7 @@ async def lifespan(app: FastAPI):
     # This happens on Startup
     scheduler.add_job(update_controllers, 'interval', seconds=2)
     scheduler.add_job(update_mock_interactors, 'interval', seconds=0.5)
+    scheduler.add_job(run_scheduled_optimization, 'interval', minutes=15)
     scheduler.start()
     print("Scheduler started...")
 
