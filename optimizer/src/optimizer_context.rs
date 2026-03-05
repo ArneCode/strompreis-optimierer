@@ -163,6 +163,19 @@ impl OptimizerContext {
         });
         Ok(())
     }
+
+    /// Add constant consumption prognoses via a provider. Values are summed with existing prognoses.
+    fn add_constant_consumption_prognoses<'py>(
+        &mut self,
+        py: Python<'py>,
+        provider: &PrognosesProvider,
+    ) -> PyResult<()> {
+        let prognoses = provider.get_prognoses::<WattHour>(py, self.start_time)?;
+        self.beyond_control_consumption += Prognoses::from_closure(|t| -> i64 {
+            prognoses.get(t).expect("internal error").to_milli_wh() as i64
+        });
+        Ok(())
+    }
 }
 impl OptimizerContext {
     /// Convert to the internal `RustOptimizerContext`.

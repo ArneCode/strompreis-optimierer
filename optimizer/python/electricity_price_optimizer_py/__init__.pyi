@@ -233,6 +233,10 @@ class OptimizerContext:
         """Adds predicted energy generation (e.g., Solar) to the context."""
         ...
 
+    def add_constant_consumption_prognoses(self, provider: PrognosesProvider[units.WattHour]) -> None:
+        """Adds predicted constant energy consumption to the context."""
+        ...
+
 
 class Schedule:
     """The result of an optimization run containing assigned actions and battery states."""
