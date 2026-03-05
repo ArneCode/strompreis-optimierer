@@ -155,7 +155,7 @@ class ConstantActionController(DeviceController):
             if self._schedule is None:
                 return
             assigned = self._schedule.get_constant_action(self._id)
-            if assigned is not None:
+            if assigned is not None and assigned.get_end_time() > current_time:
                 context.add_past_constant_action(assigned)
 
     def update_device(self, current_time: "datetime", device_manager: "IDeviceManager") -> "None":
