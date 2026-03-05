@@ -3,6 +3,7 @@ from enum import Enum
 
 from electricity_price_optimizer_py import units
 from typing import TYPE_CHECKING
+from datetime import datetime
 
 if TYPE_CHECKING:
     from device_manager import IDeviceManager
@@ -123,3 +124,23 @@ class VariableActionInteractor(ABC):
     def device_id(self) -> "int":
         """Get the ID of the associated device."""
         pass
+
+
+class ConsumerScheduledInteractor(ABC):
+    """Interface for scheduled consumer interactors."""
+
+    @abstractmethod
+    def get_current(self, device_manager: "IDeviceManager") -> "units.Watt":
+        """Get the current power consumption in W."""
+        ...
+
+    @abstractmethod
+    def update(self, current_time: "datetime", device_manager: "IDeviceManager") -> None:
+        """Update current power based on the device's scheduled consumption."""
+        ...
+
+    @property
+    @abstractmethod
+    def device_id(self) -> "int":
+        """Return the device ID."""
+        ...

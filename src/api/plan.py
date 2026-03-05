@@ -91,6 +91,8 @@ def get_plan_data(
         variable action power series (W)
         hourly electricity price (ct/kWh)
         hourly total generation (kW)
+        hourly total fixed consumption (W)
+        scheduled consumer power series (W)
 
     Raises:
         HTTPException:
@@ -108,6 +110,8 @@ def get_plan_data(
         "generationKw": data["generationKw"],
         "generationByGeneratorKw": data["generationByGeneratorKw"],
         "constantActions": data["constantActions"],
+        "scheduledConsumers": data["scheduledConsumers"],
+        "fixedConsumptionW": data["consumptionW"],
     }
 
 

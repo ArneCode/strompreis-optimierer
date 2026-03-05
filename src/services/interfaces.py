@@ -12,7 +12,9 @@ from electricity_price_optimizer_py import OptimizerContext
 from electricity_price_optimizer_py.units import Euro
 
 from controllers.base import GeneratorController
-from devices import GeneratorPV, GeneratorPV, GeneratorRandom, GeneratorScheduled
+
+from devices import ConsumerScheduled, GeneratorPV, GeneratorPV, GeneratorRandom, GeneratorScheduled
+
 if TYPE_CHECKING:
     from api.settings import SimulatedAnnealingSettingsUpdate
     from electricity_price_optimizer_py import Schedule, SimulatedAnnealingSettings as SimulatedAnnealingSettingsOptimizer
@@ -26,6 +28,8 @@ if TYPE_CHECKING:
     from interactors.interfaces import BatteryInteractor, GeneratorInteractor, ConstantActionInteractor, VariableActionInteractor
     from rollback_map import RollbackMap
     from settings import SimulatedAnnealingSettings
+    from interactors.interfaces import ConsumerScheduledInteractor
+    from controllers.consumer_scheduled_controller import ConsumerScheduledController
 
 
 class IInteractorServiceReader(ABC):
@@ -38,6 +42,11 @@ class IInteractorServiceReader(ABC):
     @abstractmethod
     def get_generator_interactor(self, interactor_id: "int") -> "Optional[GeneratorInteractor]":
         """Retrieve generator interactor details by ID."""
+        ...
+
+    @abstractmethod
+    def get_consumer_scheduled_interactor(self, interactor_id: "int") -> "Optional[ConsumerScheduledInteractor]":
+        """Retrieve consumer scheduled interactor details by ID."""
         ...
 
     @abstractmethod
@@ -70,6 +79,11 @@ class IInteractorServiceReader(ABC):
         """Retrieve all variable action interactors."""
         ...
 
+    @abstractmethod
+    def get_all_consumer_scheduled_interactors(self) -> "list[ConsumerScheduledInteractor]":
+        """Retrieve all consumer scheduled interactors."""
+        ...
+
 
 class IInteractorService(IInteractorServiceReader):
     """Interactor service API with mutation operations."""
@@ -82,6 +96,11 @@ class IInteractorService(IInteractorServiceReader):
     @abstractmethod
     def add_generator_interactor(self, interactor: "GeneratorInteractor") -> "int":
         """Add a new generator interactor and return its ID."""
+        ...
+
+    @abstractmethod
+    def add_consumer_scheduled_interactor(self, interactor: "ConsumerScheduledInteractor") -> "int":
+        """Add a new consumer scheduled interactor and return its ID."""
         ...
 
     @abstractmethod
@@ -123,6 +142,11 @@ class IControllerServiceReader(ABC):
         ...
 
     @abstractmethod
+    def get_consumer_scheduled_controller(self, controller_id: int) -> Optional["ConsumerScheduledController"]:
+        """Retrieve consumer scheduled controller details by ID."""
+        ...
+
+    @abstractmethod
     def get_constant_action_controller(self, controller_id: int) -> Optional["ConstantActionController"]:
         """Retrieve constant action controller details by ID."""
         ...
@@ -157,6 +181,11 @@ class IControllerServiceReader(ABC):
         """Retrieve all variable action controllers."""
         ...
 
+    @abstractmethod
+    def get_all_consumer_scheduled_controllers(self) -> list["ConsumerScheduledController"]:
+        """Retrieve all consumer scheduled controllers."""
+        ...
+
 
 class IControllerService(IControllerServiceReader):
     """Controller service API with mutation operations."""
@@ -168,6 +197,11 @@ class IControllerService(IControllerServiceReader):
     @abstractmethod
     def add_generator_controller(self, controller: "GeneratorPvController") -> int:
         """Add a new generator controller and return its ID."""
+        ...
+
+    @abstractmethod
+    def add_consumer_scheduled_controller(self, controller: "ConsumerScheduledController") -> int:
+        """Add a new consumer scheduled controller and return its ID."""
         ...
 
     @abstractmethod
@@ -224,6 +258,11 @@ class IDeviceServiceReader(ABC):
         ...
 
     @abstractmethod
+    def get_consumer_scheduled(self, device_id: "int") -> "ConsumerScheduled | None":
+        """Retrieve consumer scheduled details by ID."""
+        ...
+
+    @abstractmethod
     def get_constant_action_device(self, device_id: "int") -> "ConstantActionDevice | None":
         """Retrieve constant action device details by ID."""
         ...
@@ -256,6 +295,11 @@ class IDeviceServiceReader(ABC):
     @abstractmethod
     def get_all_generators_scheduled(self) -> "list[GeneratorScheduled]":
         """Retrieve all scheduled generators."""
+        ...
+
+    @abstractmethod
+    def get_all_consumers_scheduled(self) -> "list[ConsumerScheduled]":
+        """Retrieve all scheduled consumers."""
         ...
 
     @abstractmethod

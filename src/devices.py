@@ -28,6 +28,7 @@ class DeviceType(enum.Enum):
     GENERATOR_PV = "GENERATOR_PV"
     GENERATOR_RANDOM = "GENERATOR_RANDOM"
     GENERATOR_SCHEDULED = "GENERATOR_SCHEDULED"
+    CONSUMER_SCHEDULED = "CONSUMER_SCHEDULED"
 
 
 class Device(Base):
@@ -302,6 +303,90 @@ class GeneratorScheduled(Generator):
                     next_dt = next_dt.replace(tzinfo=timezone.utc)
 
                 # Intersection of [start_dt, next_dt] and [t1, t2]
+                overlap_start = max(start_dt, t1)
+                overlap_end = min(next_dt, t2)
+
+                if overlap_start < overlap_end:
+                    duration = overlap_end - overlap_start
+                    total_energy += val * duration
+
+            current_date += timedelta(days=1)
+
+        return total_energy
+
+
+class ConsumerScheduled(Device):
+    """Scheduled consumer device with predefined consumption profile."""
+    __tablename__ = "consumer_scheduled"
+    id: Mapped[int] = mapped_column(
+        ForeignKey("device.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+
+    # Store a JSON string of time-to-consumption mappings
+    schedule: Mapped[dict[str, float]] = mapped_column(JSON)
+
+    __mapper_args__ = {
+        "polymorphic_identity": DeviceType.CONSUMER_SCHEDULED,
+    }
+
+    def __init__(self, schedule: dict[time, Watt], **kwargs):
+        super().__init__(**kwargs)
+        # Convert time keys to string for JSON storage
+        # check that 00:00 is included in the schedule
+        if time(0, 0) not in schedule:
+            raise ValueError("Schedule must include an entry for 00:00")
+        self.schedule = {t.strftime("%H:%M"): c.get_value()
+                         for t, c in schedule.items()}
+
+    def _get_day_schedule(self, d: date) -> list[tuple[datetime, Watt]]:
+        """
+        Returns a sorted list of (datetime, value) for a specific date.
+        Converts the internal "HH:MM" JSON strings into full datetime objects.
+        """
+        day_points = []
+        for t_str, val in self.schedule.items():
+            t_obj = datetime.strptime(t_str, "%H:%M").time()
+            dt_obj = datetime.combine(d, t_obj)
+            dt_obj = dt_obj.replace(tzinfo=timezone.utc)
+            day_points.append((dt_obj, Watt(val)))
+
+        day_points.sort(key=lambda x: x[0])
+        return day_points
+
+    def get_consumption(self, date_time: datetime) -> Watt:
+        """Get the scheduled power consumption at a specific time."""
+        sorted_schedule = self._get_day_schedule(date_time.date())
+
+        current_value = Watt(0)
+        for dt, val in sorted_schedule:
+            if date_time >= dt:
+                current_value = val
+            else:
+                break
+        return current_value
+
+    def get_consumption_between(self, t1: datetime, t2: datetime) -> WattHour:
+        """Calculates energy consumption between two datetimes, supporting multi-day spans."""
+        if t1 >= t2:
+            return WattHour(0)
+
+        total_energy = WattHour(0)
+        current_date = t1.date()
+
+        while current_date <= t2.date():
+            day_points = self._get_day_schedule(current_date)
+
+            for i in range(len(day_points)):
+                start_dt, val = day_points[i]
+
+                if i + 1 < len(day_points):
+                    next_dt = day_points[i + 1][0]
+                else:
+                    next_dt = datetime.combine(
+                        current_date + timedelta(days=1), time(0, 0))
+                    next_dt = next_dt.replace(tzinfo=timezone.utc)
+
                 overlap_start = max(start_dt, t1)
                 overlap_end = min(next_dt, t2)
 

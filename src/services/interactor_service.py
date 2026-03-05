@@ -12,7 +12,7 @@ from typing import Optional, TYPE_CHECKING
 from services.interfaces import IInteractorService
 
 if TYPE_CHECKING:
-    from interactors.interfaces import BatteryInteractor, GeneratorInteractor, ConstantActionInteractor, VariableActionInteractor
+    from interactors.interfaces import BatteryInteractor, GeneratorInteractor, ConstantActionInteractor, VariableActionInteractor, ConsumerScheduledInteractor
 from rollback_map import RollbackMap
 
 
@@ -25,12 +25,14 @@ class InteractorService(IInteractorService):
     generator_interactors: "RollbackMap[GeneratorInteractor]"
     constant_action_interactors: "RollbackMap[ConstantActionInteractor]"
     variable_action_interactors: "RollbackMap[VariableActionInteractor]"
+    consumer_scheduled_interactors: "RollbackMap[ConsumerScheduledInteractor]"
 
     def __init__(self):
         self.battery_interactors = RollbackMap()
         self.generator_interactors = RollbackMap()
         self.constant_action_interactors = RollbackMap()
         self.variable_action_interactors = RollbackMap()
+        self.consumer_scheduled_interactors = RollbackMap()
 
     def get_battery_interactor(self, interactor_id: "int") -> "Optional[BatteryInteractor]":
         return self.battery_interactors.get(interactor_id)
@@ -44,6 +46,9 @@ class InteractorService(IInteractorService):
     def get_variable_action_interactor(self, interactor_id: "int") -> "Optional[VariableActionInteractor]":
         return self.variable_action_interactors.get(interactor_id)
 
+    def get_consumer_scheduled_interactor(self, interactor_id: "int") -> "Optional[ConsumerScheduledInteractor]":
+        return self.consumer_scheduled_interactors.get(interactor_id)
+
     def get_all_battery_interactors(self) -> "list[BatteryInteractor]":
         return list(self.battery_interactors.values())
 
@@ -55,6 +60,9 @@ class InteractorService(IInteractorService):
 
     def get_all_variable_action_interactors(self) -> "list[VariableActionInteractor]":
         return list(self.variable_action_interactors.values())
+
+    def get_all_consumer_scheduled_interactors(self) -> "list[ConsumerScheduledInteractor]":
+        return list(self.consumer_scheduled_interactors.values())
 
     def add_battery_interactor(self, interactor: "BatteryInteractor") -> "int":
         self.battery_interactors.set(interactor.device_id, interactor)
@@ -72,20 +80,28 @@ class InteractorService(IInteractorService):
         self.variable_action_interactors.set(interactor.device_id, interactor)
         return interactor.device_id
 
+    def add_consumer_scheduled_interactor(self, interactor: "ConsumerScheduledInteractor") -> "int":
+        self.consumer_scheduled_interactors.set(
+            interactor.device_id, interactor)
+        return interactor.device_id
+
     def remove_interactor(self, interactor_id: "int") -> "None":
         self.battery_interactors.delete(interactor_id)
         self.generator_interactors.delete(interactor_id)
         self.constant_action_interactors.delete(interactor_id)
         self.variable_action_interactors.delete(interactor_id)
+        self.consumer_scheduled_interactors.delete(interactor_id)
 
     def rollback(self) -> "None":
         self.battery_interactors.rollback()
         self.generator_interactors.rollback()
         self.constant_action_interactors.rollback()
         self.variable_action_interactors.rollback()
+        self.consumer_scheduled_interactors.rollback()
 
     def commit(self) -> "None":
         self.battery_interactors.commit()
         self.generator_interactors.commit()
         self.constant_action_interactors.commit()
         self.variable_action_interactors.commit()
+        self.consumer_scheduled_interactors.commit()

@@ -6,7 +6,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from device_manager import IDeviceManager
-from devices import Battery, ConstantActionDevice, VariableActionDevice
+from devices import Battery, ConstantActionDevice, VariableActionDevice, ConsumerScheduled
 from electricity_price_optimizer_py import Schedule
 from electricity_price_optimizer_py.units import Watt, WattHour
 from external_api_services.api_services import api_services
@@ -53,7 +53,8 @@ def collect_generation_by_generator_kw(
 ) -> list[dict[str, Any]]:
     """Calculate generation time series per generator."""
 
-    step = (timeline[1] - timeline[0]) if len(timeline) > 1 else timedelta(hours=1)
+    step = (timeline[1] - timeline[0]
+            ) if len(timeline) > 1 else timedelta(hours=1)
     end = timeline[-1] + step
 
     gen_controllers = manager.get_controller_service().get_all_generator_controllers()
@@ -82,7 +83,8 @@ def collect_generation_by_generator_kw(
                     continue
                 series[i] += float(wh) / 1000.0
 
-        result.append({"id": ctrl.device_id, "name": name, "generationKw": series})
+        result.append(
+            {"id": ctrl.device_id, "name": name, "generationKw": series})
 
     return result
 
@@ -93,7 +95,8 @@ def collect_total_generation_kw(
 ) -> list[float]:
     """Calculate total generation in kW aligned with `timeline`."""
 
-    step = (timeline[1] - timeline[0]) if len(timeline) > 1 else timedelta(hours=1)
+    step = (timeline[1] - timeline[0]
+            ) if len(timeline) > 1 else timedelta(hours=1)
     end = timeline[-1] + step
 
     total_kw: list[float] = [0.0 for _ in timeline]
@@ -114,6 +117,43 @@ def collect_total_generation_kw(
             except Exception:
                 continue
             total_kw[i] += float(wh) / 1000.0
+
+    return total_kw
+
+
+def collect_fixed_consumption_w(
+    manager: IDeviceManager,
+    timeline: list[datetime],
+) -> list[float]:
+    """Calculate total consumption in kW aligned with `timeline`.
+
+    Includes consumption from scheduled consumers only (constant/variable actions
+    are handled separately in the schedule).
+    """
+
+    step = (timeline[1] - timeline[0]
+            ) if len(timeline) > 1 else timedelta(hours=1)
+    end = timeline[-1] + step
+
+    total_kw: list[float] = [0.0 for _ in timeline]
+    consumer_controllers = manager.get_controller_service(
+    ).get_all_consumer_scheduled_controllers()
+
+    for ctrl in consumer_controllers:
+        try:
+            prognoses = ctrl.get_prognoses(manager, timeline, end)
+        except Exception:
+            continue
+
+        if not prognoses:
+            continue
+
+        for i in range(min(len(prognoses), len(timeline))):
+            try:
+                wh = WattHour.get_value(prognoses[i])
+            except Exception:
+                continue
+            total_kw[i] += float(wh)
 
     return total_kw
 
@@ -163,16 +203,17 @@ def collect_device_tasks_and_series(
     manager: IDeviceManager,
     schedule: Schedule,
     ctx: PlanContext,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Collect tasks and per-device series.
 
-    Returns: (tasks, batteries, variable_actions, constant_actions)
+    Returns: (tasks, batteries, variable_actions, constant_actions, scheduled_consumers)
     """
 
     tasks: list[dict[str, Any]] = []
     batteries: list[dict[str, Any]] = []
     variable_actions: list[dict[str, Any]] = []
     constant_actions: list[dict[str, Any]] = []
+    scheduled_consumers: list[dict[str, Any]] = []
 
     i = 1
     for device in manager.get_device_service().get_all_devices():
@@ -182,7 +223,8 @@ def collect_device_tasks_and_series(
                 continue
 
             action = device.actions[0] if device.actions else None
-            power_w = float(Watt.get_value(action.consumption)) if action is not None else 0.0
+            power_w = float(Watt.get_value(action.consumption)
+                            ) if action is not None else 0.0
 
             start_dt = assigned.get_start_time()
             end_dt = assigned.get_end_time()
@@ -231,6 +273,35 @@ def collect_device_tasks_and_series(
                 )
                 i += 1
 
+        if isinstance(device, ConsumerScheduled):
+            tasks.append(
+                {
+                    "id": str(i),
+                    "name": device.name,
+                    "text": device.name,
+                    "start": ctx.plan_start.isoformat(),
+                    "end": ctx.plan_end.isoformat(),
+                }
+            )
+
+            # Collect power consumption series aligned to timeline
+            power_series: list[float] = []
+            for t in ctx.timeline:
+                try:
+                    power = device.get_consumption(t)
+                    power_series.append(float(Watt.get_value(power)))
+                except Exception:
+                    power_series.append(0.0)
+
+            scheduled_consumers.append(
+                {
+                    "id": str(i),
+                    "name": device.name,
+                    "powerW": power_series,
+                }
+            )
+            i += 1
+
         if isinstance(device, Battery):
             assigned_battery = schedule.get_battery(device.id)
             if assigned_battery is None:
@@ -255,7 +326,7 @@ def collect_device_tasks_and_series(
             )
             i += 1
 
-    return tasks, batteries, variable_actions, constant_actions
+    return tasks, batteries, variable_actions, constant_actions, scheduled_consumers
 
 
 def collect_plan_data(manager: IDeviceManager, schedule: Schedule) -> dict[str, Any]:
@@ -264,10 +335,12 @@ def collect_plan_data(manager: IDeviceManager, schedule: Schedule) -> dict[str, 
     ctx = build_plan_context(24)
 
     generation_kw = collect_total_generation_kw(manager, ctx.timeline)
-    generation_by_generator_kw = collect_generation_by_generator_kw(manager, ctx.timeline)
+    generation_by_generator_kw = collect_generation_by_generator_kw(
+        manager, ctx.timeline)
+    consumption_w = collect_fixed_consumption_w(manager, ctx.timeline)
     prices_ct_per_kwh = collect_hourly_prices_ct_per_kwh(ctx.timeline)
 
-    tasks, batteries, variable_actions, constant_actions = collect_device_tasks_and_series(
+    tasks, batteries, variable_actions, constant_actions, scheduled_consumers = collect_device_tasks_and_series(
         manager=manager,
         schedule=schedule,
         ctx=ctx,
@@ -282,4 +355,6 @@ def collect_plan_data(manager: IDeviceManager, schedule: Schedule) -> dict[str, 
         "generationKw": generation_kw,
         "generationByGeneratorKw": generation_by_generator_kw,
         "constantActions": constant_actions,
+        "scheduledConsumers": scheduled_consumers,
+        "consumptionW": consumption_w,
     }

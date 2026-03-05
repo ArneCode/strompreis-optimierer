@@ -11,6 +11,7 @@ from devices import (
     ConstantActionDevice,
     GeneratorRandom,
     GeneratorScheduled,
+    ConsumerScheduled,
     VariableActionDevice,
     GeneratorPV,
     Battery,
@@ -148,6 +149,12 @@ def _device_to_frontend_dict(d: Device) -> dict[str, Any]:
         })
         return base
 
+    if isinstance(d, ConsumerScheduled):
+        base.update({
+            "type": "ScheduledConsumer",
+        })
+        return base
+
     if isinstance(d, Battery):
         base.update({
             "type": "Battery",
@@ -271,6 +278,45 @@ async def create_scheduled_generator(
 
     except Exception as e:
         # It's better to log the error here as well
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Fehler beim Verarbeiten der Datei: {str(e)}"
+        )
+
+
+@router.post("/devices/scheduled-consumer", status_code=status.HTTP_201_CREATED)
+async def create_scheduled_consumer(
+    name: str = Form(..., description="Name des Verbrauchers"),
+    file: UploadFile = File(...,
+                            description="CSV-Datei mit Zeitstempel und Verbrauchswerten"),
+    manager: IDeviceManager = Depends(get_device_manager)
+) -> dict[str, Any]:
+    """
+    Create a new scheduled consumer device based on an uploaded CSV file.
+
+    The CSV must contain 'timestamp' and 'value' columns.
+    - timestamp: Time of day (will be parsed and only time component used)
+    - value: Power consumption in Watts at that time
+    """
+    try:
+        content = await file.read()
+        df = pd.read_csv(io.BytesIO(content))
+
+        if "timestamp" not in df.columns or "value" not in df.columns:
+            raise ValueError(
+                "CSV muss 'timestamp' und 'value' Spalten enthalten")
+
+        schedule = {
+            pd.to_datetime(row["timestamp"]).time(): Watt(row["value"])
+            for _, row in df.iterrows()
+        }
+
+        model = ConsumerScheduled(name=name, schedule=schedule)
+        manager.add_consumer_scheduled(model)
+
+        return _device_to_frontend_dict(model)
+
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Fehler beim Verarbeiten der Datei: {str(e)}"

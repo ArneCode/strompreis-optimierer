@@ -8,11 +8,13 @@ from typing import TYPE_CHECKING
 
 from controllers.generator_random_controller import GeneratorRandomController
 from controllers.generator_scheduled_controller import GeneratorScheduledController
-from devices import GeneratorRandom, GeneratorScheduled
+from controllers.consumer_scheduled_controller import ConsumerScheduledController
+from devices import GeneratorRandom, GeneratorScheduled, ConsumerScheduled
 from interactors.mock import MockConstantActionInteractor, MockBatteryInteractor, MockGeneratorPVInteractor, MockVariableActionInteractor
 from controllers import ConstantActionController, VariableActionController, BatteryController, GeneratorPvController
 from interactors.mock.mock_generator_random import MockGeneratorRandomInteractor
 from interactors.mock.mock_generator_scheduled import MockGeneratorScheduledInteractor
+from interactors.mock.mock_consumer_scheduled import MockConsumerScheduledInteractor
 
 if TYPE_CHECKING:
     from devices import Battery, VariableActionDevice, GeneratorPV, ConstantActionDevice
@@ -41,6 +43,11 @@ class IDeviceManager(ABC):
     @abstractmethod
     def add_generator_scheduled(self, device: "GeneratorScheduled") -> "int":
         """Add a new scheduled generator device and return its ID."""
+        ...
+
+    @abstractmethod
+    def add_consumer_scheduled(self, device: "ConsumerScheduled") -> "int":
+        """Add a new scheduled consumer device and return its ID."""
         ...
 
     @abstractmethod
@@ -110,6 +117,14 @@ class DeviceManager(IDeviceManager):
             MockGeneratorScheduledInteractor(device.id))
         self._uow.controller_service.add_generator_controller(
             GeneratorScheduledController(device.id))
+        return id
+
+    def add_consumer_scheduled(self, device: "ConsumerScheduled") -> "int":
+        id = self._uow.device_service.add_device(device)
+        self._uow.interactor_service.add_consumer_scheduled_interactor(
+            MockConsumerScheduledInteractor(device.id))
+        self._uow.controller_service.add_consumer_scheduled_controller(
+            ConsumerScheduledController(device.id))
         return id
 
     def add_constant_action_device(self, device: "ConstantActionDevice") -> "int":
