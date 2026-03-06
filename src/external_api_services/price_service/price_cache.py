@@ -116,7 +116,6 @@ class PriceCache(Cache):
                 current_dt = next_dt
 
             self._blocks = {dt: block.price for dt, block in blocks_map.items()}
-            #self._blocks = blocks_map
             self._last_fetch_s = time.time()
             self._cached_until = cache_end
 
