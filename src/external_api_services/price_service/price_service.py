@@ -33,7 +33,7 @@ class PriceService(PriceServicePort):
         start_block_key = _floor_hour(start)
 
         if start_block_key == _floor_hour(end - timedelta(microseconds = 1)):
-            return blocks[start_block_key] / 1000
+            return blocks[start_block_key] / 1000000 #1000
 
         total_weighted = 0.0
         total_duration = 0
@@ -59,7 +59,7 @@ class PriceService(PriceServicePort):
         if total_duration == 0:
             raise RuntimeError("Duration of given interval is 0")
 
-        return (total_weighted / total_duration) / 1000
+        return (total_weighted / total_duration) / 1000000 #1000
 
     def get_hourly_prices_24h(self, start: datetime = datetime.now()) -> dict[datetime, float]:
         """
@@ -79,7 +79,7 @@ class PriceService(PriceServicePort):
             if price is None:
                 raise RuntimeError(f"No price for {current.isoformat()}.")
 
-            hourly_prices[current] = price / 1000
+            hourly_prices[current] = price / 1000000 #1000
             current += timedelta(hours = 1)
 
         return hourly_prices
