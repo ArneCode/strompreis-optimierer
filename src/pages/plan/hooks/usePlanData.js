@@ -24,7 +24,10 @@ export function usePlanData({
     variableActions: [],
     scheduledConsumers: [],
     generationByGeneratorKw: [],
+    generationKw: [],
+    pricesCtPerKwh: [],
     constantActions: [],
+    fixedConsumptionW: [],
     costEuro: null,
   });
 
@@ -161,8 +164,12 @@ export function usePlanData({
           timeline: [],
           batteries: [],
           variableActions: [],
+          scheduledConsumers: [],
           generationByGeneratorKw: [],
+          generationKw: [],
+          pricesCtPerKwh: [],
           constantActions: [],
+          fixedConsumptionW: [],
           costEuro: null,
         });
       }
