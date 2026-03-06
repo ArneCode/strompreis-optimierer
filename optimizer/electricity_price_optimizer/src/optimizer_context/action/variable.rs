@@ -107,10 +107,7 @@ impl AssignedVariableAction {
 
     pub fn get_consumption(&self, time: Time) -> i64 {
         if time < self.action.start || time >= self.action.end {
-            panic!(
-                "Time {:?} is out of bounds for action starting at {:?} and ending at {:?}",
-                time, self.action.start, self.action.end
-            );
+            return 0;
         }
         let index = (time.to_timestep() - self.action.start.to_timestep()) as usize;
         self.consumption[index]

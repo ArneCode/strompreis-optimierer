@@ -75,8 +75,6 @@ class GeneratorRandomController(GeneratorController):
                 generator, start_interval, end_interval)
             prognoses.append(generation)
 
-        print(
-            f"GeneratorRandomController {self._id} prognoses: {[g.get_value() for g in prognoses]} Wh")
         return prognoses
 
     # ------------------------------------------------------------------
