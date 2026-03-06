@@ -129,7 +129,7 @@ describe("DevicesLogic", () => {
     it("has correct structure for Battery", () => {
       expect(DEVICE_VALIDATION_SCHEME.Battery).toEqual({
         capacity: [RULES.required, RULES.number, RULES.positive],
-        currentCharge: [RULES.required, RULES.number, RULES.positive],
+        currentCharge: [RULES.required, RULES.number, RULES.nonNegative],
         maxChargeRate: [RULES.required, RULES.number, RULES.positive],
         maxDischarge: [RULES.required, RULES.number, RULES.positive],
         efficiency: [RULES.required, RULES.number, RULES.efficiencyRange],
@@ -211,7 +211,7 @@ describe("DevicesLogic", () => {
       };
       expect(validateDevice(form)).toEqual({
         capacity: "Gib eine Zahl an",
-        currentCharge: "Muss > 0 sein",
+        currentCharge: "Muss ≥ 0 sein",
         maxChargeRate: "Muss > 0 sein",
         maxDischarge: "Muss > 0 sein",
         efficiency: "1-100%!",

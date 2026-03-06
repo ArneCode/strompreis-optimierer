@@ -45,22 +45,22 @@ describe("ActionsPage", () => {
       name: "Device 1",
       type: "Consumer",
       flexibility: "constant",
-      actions: [
-        {
-          id: 1,
-          start: "2026-02-26T10:00:00Z",
-          end: "2026-02-26T11:00:00Z",
-          duration_minutes: 60,
-          consumption: 1000,
-        },
-      ],
+      actions: [],
     },
     {
       id: 2,
       name: "Device 2",
       type: "Consumer",
       flexibility: "variable",
-      actions: [],
+      actions: [
+        {
+          id: 1,
+          start: "2026-02-26T10:00:00Z",
+          end: "2026-02-26T11:00:00Z",
+          total_consumption: 2500,
+          maxConsumption: 1000,
+        },
+      ],
     },
   ];
 
@@ -77,7 +77,7 @@ describe("ActionsPage", () => {
       expect(screen.getByText("Neue Aktion")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Device 1")).toBeInTheDocument();
+    expect(screen.getByText("Device 2")).toBeInTheDocument();
     expect(screen.getByText("11:00 Uhr - 12:00 Uhr")).toBeInTheDocument();
   });
 
@@ -109,7 +109,7 @@ describe("ActionsPage", () => {
       expect(apiService.fetchDevices).toHaveBeenCalled();
     });
 
-    const actionCard = screen.getByText("Device 1").closest(".action-card-wrapper");
+    const actionCard = screen.getByText("Device 2").closest(".action-card-wrapper");
     fireEvent.click(actionCard);
 
     expect(screen.getByText("Aktion bearbeiten")).toBeInTheDocument();
@@ -126,13 +126,13 @@ describe("ActionsPage", () => {
 
     fireEvent.click(screen.getByText("Neue Aktion"));
 
-    fireEvent.change(screen.getByDisplayValue("Verbraucher wählen"), {
+    fireEvent.change(screen.getByTestId("action-device"), {
       target: { value: "1" },
     });
-    fireEvent.change(screen.getByPlaceholderText("z.B. 60"), {
+    fireEvent.change(screen.getByTestId("action-duration"), {
       target: { value: "30" },
     });
-    fireEvent.change(screen.getByPlaceholderText("z.B. 1000"), {
+    fireEvent.change(screen.getByTestId("action-consumption"), {
       target: { value: "500" },
     });
 
@@ -157,13 +157,13 @@ describe("ActionsPage", () => {
       expect(apiService.fetchDevices).toHaveBeenCalled();
     });
 
-    const actionCard = screen.getByText("Device 1").closest(".action-card-wrapper");
+    const actionCard = screen.getByText("Device 2").closest(".action-card-wrapper");
     fireEvent.click(actionCard);
 
     fireEvent.click(screen.getByText("Löschen"));
 
     await waitFor(() => {
-      expect(apiService.deleteAction).toHaveBeenCalledWith(1, 1);
+      expect(apiService.deleteAction).toHaveBeenCalledWith(2, 1);
     });
   });
 

@@ -136,7 +136,6 @@ function ActionForm({
                                 onChange={onChange}
                                 disabled={disabled}
                                 className={errors.totalConsumption ? "input-error" : ""}
-                                placeholder="z.B. 2500"
                                 data-testid="action-totalConsumption"
                             />
                         </FormField>
@@ -149,7 +148,6 @@ function ActionForm({
                                 onChange={onChange}
                                 disabled={disabled}
                                 className={errors.duration ? "input-error" : ""}
-                                placeholder="z.B. 60"
                                 step="5"
                                 data-testid="action-duration"
                             />
@@ -167,7 +165,6 @@ function ActionForm({
                             onChange={onChange}
                             disabled={disabled}
                             className={errors.consumption ? "input-error" : ""}
-                            placeholder="z.B. 1000"
                             data-testid="action-consumption"
                         />
                     </FormField>
