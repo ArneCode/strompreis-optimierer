@@ -32,6 +32,7 @@ export const RULES = {
     required: value => value ? null : "Pflichtfeld",
     number: value => isNaN(Number(value)) ? "Gib eine Zahl an" : null,
     positive: value => Number(value) > 0 ? null : "Muss > 0 sein",
+    nonNegative: value => Number(value) >= 0 ? null : "Muss ≥ 0 sein",
     efficiencyRange: value => (Number(value) < 1 || Number(value) > 100) ? "1-100%!" : null,
     angleRange: value => (Number(value) < 0 || Number(value) > 90) ? "0°-90°!" : null
 };
@@ -55,7 +56,7 @@ export const DEVICE_VALIDATION_SCHEME = {
         capacity: [RULES.required, RULES.number, RULES.positive],
         maxDischarge: [RULES.required, RULES.number, RULES.positive],
         maxChargeRate: [RULES.required, RULES.number, RULES.positive],
-        currentCharge: [RULES.required, RULES.number, RULES.positive],
+        currentCharge: [RULES.required, RULES.number, RULES.nonNegative],
         efficiency: [RULES.required, RULES.number, RULES.efficiencyRange],
     },
 };
