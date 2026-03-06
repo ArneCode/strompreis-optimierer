@@ -24,8 +24,6 @@ def _floor_hour(dt: datetime) -> datetime:
     return dt.replace(minute=0, second=0, microsecond=0)
 
 # Created with AI Assistance
-
-
 def _parse_ts(timestamp: str) -> datetime:
     """
     Parses a timestamp returned by forecast.solar.
@@ -36,12 +34,10 @@ def _parse_ts(timestamp: str) -> datetime:
         stamp = stamp[:-1] + "+00:00"
 
     try:
-        # Preferred: ISO 8601 format
         return datetime.fromisoformat(stamp)
 
     except ValueError:
         try:
-            # Fallback: naive timestamp (treated as local Berlin time)
             dt = datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S")
             return dt.replace(tzinfo=BERLIN)
 
