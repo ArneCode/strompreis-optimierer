@@ -34,12 +34,10 @@ def _parse_ts(timestamp: str) -> datetime:
         stamp = stamp[:-1] + "+00:00"
 
     try:
-        # Preferred: ISO 8601 format
         return datetime.fromisoformat(stamp)
 
     except ValueError:
         try:
-            # Fallback: naive timestamp (treated as local Berlin time)
             dt = datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S")
             return dt.replace(tzinfo=BERLIN)
 
