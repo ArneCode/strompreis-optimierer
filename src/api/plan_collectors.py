@@ -167,7 +167,7 @@ def collect_hourly_prices_ct_per_kwh(timeline: list[datetime]) -> list[float | N
     for t in timeline:
         hour = t.astimezone(BERLIN).replace(minute=0, second=0, microsecond=0)
         block = blocks.get(hour)
-        prices.append(None if block is None else float(block.price) / 10.0)
+        prices.append(None if block is None else float(block) / 10.0)
 
     return prices
 
