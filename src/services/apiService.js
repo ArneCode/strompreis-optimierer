@@ -6,7 +6,7 @@ import { mapDeviceData } from './deviceMapper';
  */
 class ApiService {
     constructor() {
-        this.baseURL = "http://127.0.0.1:5000/api";
+        this.baseURL = "/api";
     }
 
     /**
