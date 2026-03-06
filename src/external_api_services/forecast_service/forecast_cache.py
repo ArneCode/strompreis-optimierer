@@ -24,8 +24,6 @@ def _floor_hour(dt: datetime) -> datetime:
     return dt.replace(minute=0, second=0, microsecond=0)
 
 # Created with AI Assistance
-
-
 def _parse_ts(timestamp: str) -> datetime:
     """
     Parses a timestamp returned by forecast.solar.

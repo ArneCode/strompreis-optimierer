@@ -45,15 +45,12 @@ class GeneratorPvController(DeviceController):
         """Add generator prognoses to the optimizer context."""
         service = self._forecast_service(device_manager)
         prognoses = PrognosesProvider(
-            # Mock prognosis: constant 5W generation; replace with real data access
-            # lambda t1, t2: WattHour(5)
             lambda t1, t2: WattHour(service.get_total_production(t1, t2))
         )
         context.add_generated_electricity_prognoses(prognoses)
 
     def get_prognoses(self, device_manager: "IDeviceManager", timestamps: list[datetime], end: datetime) -> list[WattHour]:
         service = self._forecast_service(device_manager)
-        #return service.get_prognoses(datetime.now(), timestamps, end)
         return service.get_prognoses(timestamps, end)
 
     def update_device(self, current_time: "datetime", device_manager: "IDeviceManager") -> "None":
