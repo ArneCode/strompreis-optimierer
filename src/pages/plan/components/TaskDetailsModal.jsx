@@ -10,7 +10,7 @@ import {
 function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, selectedVA, selectedSC, planData }) {
   if (!open) return null;
 
-  const xAxisInterval = getXAxisInterval(planData.timeline, 60);
+  const xAxisInterval = getXAxisInterval(planData.timeline, 120);
 
   return (
     <div className="data-popup" data-testid="task-modal">
@@ -34,7 +34,7 @@ function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, select
                 dataKey="time"
                 tickFormatter={formatTimeTick}
                 interval={xAxisInterval}
-                minTickGap={24}
+                minTickGap={30}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               />
               <YAxis />
@@ -57,7 +57,7 @@ function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, select
                 dataKey="time"
                 tickFormatter={formatTimeTick}
                 interval={xAxisInterval}
-                minTickGap={24}
+                minTickGap={30}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               />
               <YAxis />
@@ -80,7 +80,7 @@ function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, select
                 dataKey="time"
                 tickFormatter={formatTimeTick}
                 interval={xAxisInterval}
-                minTickGap={24}
+                minTickGap={30}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               />
               <YAxis />
