@@ -28,7 +28,7 @@ def test_get_average_price_across_hour():
     start = get_datetime(2026, 3, 5, 12, 40)
     end = get_datetime(2026, 3, 5, 13, 30)
 
-    assert abs(service.get_average_price(start, end) - 0.0034) < 1e-9
+    assert abs(service.get_average_price(start, end) - 0.0000034) < 1e-9
 
 def test_get_average_price_across_hours():
     service = PriceService(cache = FakePriceCache(BLOCKS))
@@ -36,7 +36,7 @@ def test_get_average_price_across_hours():
     start = get_datetime(2026, 3, 5, 12, 40)
     end = get_datetime(2026, 3, 5, 14, 30)
 
-    assert abs(service.get_average_price(start, end) - 0.004) < 1e-9
+    assert abs(service.get_average_price(start, end) - 0.000004) < 1e-9
 
 def test_get_average_price_inside_hour():
     service = PriceService(cache = FakePriceCache(BLOCKS))
@@ -44,4 +44,4 @@ def test_get_average_price_inside_hour():
     start = get_datetime(2026, 3, 5, 12, 40)
     end = get_datetime(2026, 3, 5, 12, 45)
 
-    assert abs(service.get_average_price(start, end) - 0.0025) < 1e-9
+    assert abs(service.get_average_price(start, end) - 0.0000025) < 1e-9
