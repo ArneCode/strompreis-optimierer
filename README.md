@@ -19,20 +19,22 @@ Folgendes muss installiert sein:
 - Docker (inkl. Docker Compose (v2 oder neuer) )
 
 Überprüfen der Installation:
+```
 docker --version
-docker compose version
+docker compose Version
+```
 
 1. Klonen der Projekte
 Klonen Sie das Projekt für das Frontend und das Projekt für das Backend in den selben Ordner.
 Also zuerst:
-------------------------------------------------------------------------------------------------------------------------
+```
 git clone https://gitlab.kit.edu/kit/tva/pse/ws25/strompreis-optimierer/backend.git backend
-------------------------------------------------------------------------------------------------------------------------
+```
 
 Und danach:
-------------------------------------------------------------------------------------------------------------------------
+```
 git clone https://gitlab.kit.edu/kit/tva/pse/ws25/strompreis-optimierer/strompreis-optimierer.git frontend
-------------------------------------------------------------------------------------------------------------------------
+```
 
 Ordnerstruktur sollte danach so aussehen:
 
@@ -41,26 +43,26 @@ projektordner
 | - frontend
 
 Wählen Sie den backend Ordner aus mit:
-------------------------------------------------------------------------------------------------------------------------
+```
 cd backend
-------------------------------------------------------------------------------------------------------------------------
+```
 
 Danach starten Sie die Anwendung mit einer der beiden Möglichkeiten:
 (1) Start im Vordergrund
-------------------------------------------------------------------------------------------------------------------------
+```
 docker compose up --build
-------------------------------------------------------------------------------------------------------------------------
+```
 
 (2) Start im Hintergrund
-------------------------------------------------------------------------------------------------------------------------
+```
 docker compose up -d --build
-------------------------------------------------------------------------------------------------------------------------
+```
 
 Die Anwendung ist danach erreichbar unter:
 http://localhost
 
 Die Anwendung kann gestoppt werden in dem Sie (Falls 1) CTRL + C drücken oder (Falls 2) indem Sie:
-------------------------------------------------------------------------------------------------------------------------
+```
 docker compose down
-------------------------------------------------------------------------------------------------------------------------
+```
 eingeben.
