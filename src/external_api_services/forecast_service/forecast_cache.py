@@ -14,6 +14,7 @@ from external_api_services.forecast_service.pv_configuration import PVConfigurat
 BERLIN = ZoneInfo("Europe/Berlin")
 MINIMUM_FUTURE_HOURS = 24
 
+
 def _floor_hour(dt: datetime) -> datetime:
     """
     Returns a given datetime truncated to the beginning of its hour.
@@ -23,6 +24,8 @@ def _floor_hour(dt: datetime) -> datetime:
     return dt.replace(minute=0, second=0, microsecond=0)
 
 # Created with AI Assistance
+
+
 def _parse_ts(timestamp: str) -> datetime:
     """
     Parses a timestamp returned by forecast.solar.
@@ -40,7 +43,7 @@ def _parse_ts(timestamp: str) -> datetime:
         try:
             # Fallback: naive timestamp (treated as local Berlin time)
             dt = datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S")
-            return dt.replace(tzinfo = BERLIN)
+            return dt.replace(tzinfo=BERLIN)
 
         except ValueError as e:
             raise ValueError(
@@ -65,6 +68,7 @@ class ForecastCache(Cache):
     """
     In-memory cache for PV forecast data.
     """
+
     def __init__(
         self,
         *,
@@ -106,7 +110,7 @@ class ForecastCache(Cache):
         if (time.time() - self._last_fetch_s) > self._refresh_interval_s:
             return True
         now = _floor_hour(datetime.now(BERLIN))
-        needed_end = now + timedelta(hours = MINIMUM_FUTURE_HOURS)
+        needed_end = now + timedelta(hours=MINIMUM_FUTURE_HOURS)
         return self._cached_until is None or self._cached_until < needed_end
 
     def refresh(self) -> None:
@@ -122,29 +126,32 @@ class ForecastCache(Cache):
 
             try:
                 payload = self._client.fetch_estimate(
-                    latitude = self._pv_configuration.latitude,
-                    longitude = self._pv_configuration.longitude,
-                    declination = self._pv_configuration.declination,
-                    azimuth = self._pv_configuration.azimuth,
-                    kilowatt_peak = self._pv_configuration.peak_power,
-                    time_mode = "utc",
+                    latitude=self._pv_configuration.latitude,
+                    longitude=self._pv_configuration.longitude,
+                    declination=self._pv_configuration.declination,
+                    azimuth=self._pv_configuration.azimuth,
+                    kilowatt_peak=self._pv_configuration.peak_power / 1000.0,
+                    time_mode="utc",
                 )
             except Exception as exception:
                 if self._blocks:
                     return
-                raise RuntimeError(f"Forecast API call failed and cache is empty: {exception}") from exception
+                raise RuntimeError(
+                    f"Forecast API call failed and cache is empty: {exception}") from exception
 
             result = payload.get("result")
             if not isinstance(result, dict):
                 if self._blocks:
                     return
-                raise RuntimeError("Forecast payload has no 'result' dict and cache is empty.")
+                raise RuntimeError(
+                    "Forecast payload has no 'result' dict and cache is empty.")
 
             series = result.get(self._series_key)
             if not isinstance(series, dict):
                 if self._blocks:
                     return
-                raise RuntimeError(f"Forecast result has no series '{self._series_key}' and cache is empty.")
+                raise RuntimeError(
+                    f"Forecast result has no series '{self._series_key}' and cache is empty.")
 
             items = list(series.items())
             raw: Dict[datetime, float] = {}
@@ -156,16 +163,17 @@ class ForecastCache(Cache):
                 if date.minute != 0 or date.second != 0:
                     continue
 
-                date = date.replace(microsecond = 0)
+                date = date.replace(microsecond=0)
                 raw[date] = float(value)
 
-            start = datetime.now(BERLIN).replace(hour = 0, minute = 0, second = 0, microsecond = 0)
-            end = start + timedelta(hours = 48)
+            start = datetime.now(BERLIN).replace(
+                hour=0, minute=0, second=0, microsecond=0)
+            end = start + timedelta(hours=48)
             real: Dict[datetime, float] = {}
             current = start
 
             while current < end:
-                hour_end = current + timedelta(hours = 1)
+                hour_end = current + timedelta(hours=1)
                 value = raw.get(hour_end)
 
                 if value is None:
@@ -176,23 +184,26 @@ class ForecastCache(Cache):
 
             blocks: Dict[datetime, ForecastBlock] = {}
             cache_start = _floor_hour(datetime.now(BERLIN))
-            cache_end = cache_start + timedelta(hours = self._future_hours)
+            cache_end = cache_start + timedelta(hours=self._future_hours)
             current_dt = cache_start
 
             while current_dt < cache_end:
-                next_dt = current_dt + timedelta(hours = 1)
+                next_dt = current_dt + timedelta(hours=1)
 
                 production = real.get(current_dt)
                 if production is None:
-                    production = real.get(current_dt - timedelta(hours = 24))
+                    production = real.get(current_dt - timedelta(hours=24))
 
                 if production is None:
-                    raise RuntimeError(f"No production known for {current_dt.isoformat()}.")
+                    raise RuntimeError(
+                        f"No production known for {current_dt.isoformat()}.")
 
-                blocks[current_dt] = ForecastBlock(start = current_dt, end = next_dt, production = production)
+                blocks[current_dt] = ForecastBlock(
+                    start=current_dt, end=next_dt, production=production)
                 current_dt = next_dt
 
-            self._blocks = {dt: block.production for dt, block in blocks.items()}
+            self._blocks = {dt: block.production for dt,
+                            block in blocks.items()}
             self._last_fetch_s = time.time()
             self._cached_until = cache_end
 
