@@ -31,6 +31,18 @@ Produktions-Build erzeugen:
 npm run build
 ```
 
+## Tests ausführen
+
+Alle Tests:
+```powershell
+npm run test
+```
+
+Integration Tests:
+```powershell
+npm run test -- apiService.integration.test.js
+```
+
 Kurzer Projektüberblick (Auszug)
 
 - `index.html` — HTML-Einstieg
