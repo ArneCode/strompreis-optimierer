@@ -9,6 +9,9 @@ import {
   buildScheduledConsumerSeries,
 } from "../utils/planTransform.js";
 
+const getDeviceChartTitle = (device, fallbackLabel) =>
+  device?.name?.trim() || `${fallbackLabel} ${device?.id ?? ""}`.trim();
+
 function CompareView({
   tasks,
   planData,
@@ -24,16 +27,15 @@ function CompareView({
   priceDataFromBackend,
   generatorDataFromBackend,
 }) {
-
-    const LEFT_GUTTER = 120; 
-  const TIMELINE_WIDTH = 1000; 
+  const LEFT_GUTTER = 120;
+  const TIMELINE_WIDTH = 1000;
 
   const startMs = new Date(ganttStart).getTime();
   const endMs = new Date(ganttEnd).getTime();
   const hours = Math.max(1, Math.round((endMs - startMs) / (1000 * 60 * 60)));
 
-  const cellWidth = TIMELINE_WIDTH / hours; 
-  const chartWidth = LEFT_GUTTER + TIMELINE_WIDTH; 
+  const cellWidth = TIMELINE_WIDTH / hours;
+  const chartWidth = LEFT_GUTTER + TIMELINE_WIDTH;
 
   return (
     <div className="compare-view">
@@ -52,13 +54,18 @@ function CompareView({
               start={ganttStart}
               end={ganttEnd}
               cellHeight={65}
-              /*cellWidth={41}*/
               cellWidth={cellWidth}
               durationUnit="hour"
               readonly={true}
               init={initGantt}
-              /*columns={[{ id: "name", label: "", value: (task) => task.name, width: 120 }]}*/
-              columns={[{ id: "name", label: "", value: (task) => task.name, width: LEFT_GUTTER }]}
+              columns={[
+                {
+                  id: "name",
+                  label: "",
+                  value: (task) => task.name,
+                  width: LEFT_GUTTER,
+                },
+              ]}
             />
           </Willow>
         </div>
@@ -71,8 +78,12 @@ function CompareView({
         onToggle={toggleCollapsed}
       >
         <div className="compare-chart">
-          {/*<LineChart width={1000} height={320} data={priceDataFromBackend} margin={{ bottom: 30 }}>*/}
-          <LineChart width={chartWidth} height={320} data={priceDataFromBackend} margin={{ bottom: 30, left: 0, right: 0}}>
+          <LineChart
+            width={chartWidth}
+            height={320}
+            data={priceDataFromBackend}
+            margin={{ bottom: 30, left: 0, right: 0 }}
+          >
             <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
             <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} dot={false} />
             <XAxis
@@ -81,13 +92,9 @@ function CompareView({
               interval={1}
             />
             <YAxis
-              /*width="auto"*/
               width={LEFT_GUTTER}
               label={{ value: "Preis (ct/kWh)", position: "insideLeft", angle: -90 }}
-              domain={[
-                (min) => Math.floor(min * 0.95),
-                (max) => Math.ceil(max),
-              ]}
+              domain={[(min) => Math.floor(min * 0.95), (max) => Math.ceil(max)]}
             />
           </LineChart>
         </div>
@@ -120,9 +127,14 @@ function CompareView({
         }
       >
         <div className="compare-chart">
-          <LineChart width={chartWidth} height={320} data={generatorDataFromBackend} margin={{ bottom: 30, right: 0, left: 0}}>
+          <LineChart
+            width={chartWidth}
+            height={320}
+            data={generatorDataFromBackend}
+            margin={{ bottom: 30, right: 0, left: 0 }}
+          >
             <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-            <Line dataKey="generation" name="Stromerzeugung (kW)" strokeWidth={2} dot={false} />
+            <Line dataKey="generation" name="Stromerzeugung (W)" strokeWidth={2} dot={false} />
             <XAxis
               dataKey="hour"
               label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
@@ -130,7 +142,7 @@ function CompareView({
             />
             <YAxis
               width={LEFT_GUTTER}
-              label={{ value: "Erzeugung (kW)", position: "insideLeft", angle: -90 }}
+              label={{ value: "Erzeugung (W)", position: "insideLeft", angle: -90 }}
               domain={[0, (max) => Math.ceil(max * 1.1)]}
             />
           </LineChart>
@@ -145,27 +157,35 @@ function CompareView({
       >
         {(planData.batteries ?? []).length === 0 && <div>Keine Speicher vorhanden.</div>}
 
-        {(planData.batteries ?? []).map((b) => (
-          <div key={String(b.id)} className="compare-chart" style={{ marginTop: 12 }}>
-            <LineChart
-              width={chartWidth}
-              height={320}
-              data={buildBatterySeries(planData, b)}
-              margin={{ bottom: 20 , left: 0, right: 0}}
-            >
-              <CartesianGrid strokeDasharray="1 1" />
-              <XAxis
-                dataKey="time"
-                tickFormatter={(iso) => {
-                  const d = new Date(iso);
-                  return String(d.getHours()).padStart(2, "0") + ":00";
-                }}
-                interval={1}
-                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-              />
-              <YAxis label={{ value: "Ladezustand (kWh)", position: "insideLeft", angle: -90 }} width={LEFT_GUTTER} />
-              <Line dataKey="value" strokeWidth={2} dot={false} />
-            </LineChart>
+        {(planData.batteries ?? []).map((battery) => (
+          <div key={String(battery.id)} className="compare-chart" style={{ marginTop: 12 }}>
+            <div style={{ width: chartWidth }}>
+              <div className="compare-chart-device-title">
+                {getDeviceChartTitle(battery, "Speicher")}
+              </div>
+              <LineChart
+                width={chartWidth}
+                height={320}
+                data={buildBatterySeries(planData, battery)}
+                margin={{ bottom: 20, left: 0, right: 0 }}
+              >
+                <CartesianGrid strokeDasharray="1 1" />
+                <XAxis
+                  dataKey="time"
+                  tickFormatter={(iso) => {
+                    const d = new Date(iso);
+                    return `${String(d.getHours()).padStart(2, "0")}:00`;
+                  }}
+                  interval={1}
+                  label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+                />
+                <YAxis
+                  label={{ value: "Ladezustand (Wh)", position: "insideLeft", angle: -90 }}
+                  width={LEFT_GUTTER}
+                />
+                <Line dataKey="value" strokeWidth={2} dot={false} />
+              </LineChart>
+            </div>
           </div>
         ))}
       </CollapsibleSection>
@@ -180,27 +200,35 @@ function CompareView({
           <div>Keine variablen Aktionen vorhanden.</div>
         )}
 
-        {(planData.variableActions ?? []).map((va) => (
-          <div key={String(va.id)} className="compare-chart" style={{ marginTop: 12 }}>
-            <LineChart
-              width={chartWidth}
-              height={320}
-              data={buildVariableActionSeries(planData, va)}
-              margin={{ bottom: 20 , left: 0, right: 0}}
-            >
-              <CartesianGrid strokeDasharray="1 1" />
-              <XAxis
-                dataKey="time"
-                tickFormatter={(iso) => {
-                  const d = new Date(iso);
-                  return String(d.getHours()).padStart(2, "0") + ":00";
-                }}
-                interval={1}
-                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-              />
-              <YAxis label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }} width={LEFT_GUTTER}/>
-              <Line dataKey="value" strokeWidth={2} dot={false} />
-            </LineChart>
+        {(planData.variableActions ?? []).map((variableAction) => (
+          <div key={String(variableAction.id)} className="compare-chart" style={{ marginTop: 12 }}>
+            <div style={{ width: chartWidth }}>
+              <div className="compare-chart-device-title">
+                {getDeviceChartTitle(variableAction, "Variable Aktion")}
+              </div>
+              <LineChart
+                width={chartWidth}
+                height={320}
+                data={buildVariableActionSeries(planData, variableAction)}
+                margin={{ bottom: 20, left: 0, right: 0 }}
+              >
+                <CartesianGrid strokeDasharray="1 1" />
+                <XAxis
+                  dataKey="time"
+                  tickFormatter={(iso) => {
+                    const d = new Date(iso);
+                    return `${String(d.getHours()).padStart(2, "0")}:00`;
+                  }}
+                  interval={1}
+                  label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+                />
+                <YAxis
+                  label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
+                  width={LEFT_GUTTER}
+                />
+                <Line dataKey="value" strokeWidth={2} dot={false} />
+              </LineChart>
+            </div>
           </div>
         ))}
       </CollapsibleSection>
@@ -215,30 +243,39 @@ function CompareView({
           <div>Keine geplanten Verbraucher vorhanden.</div>
         )}
 
-        {(planData.scheduledConsumers ?? []).map((sc) => (
-          <div key={String(sc.id)} className="compare-chart" style={{ marginTop: 12 }}>
-            <LineChart
-              width={chartWidth}
-              height={320}
-              data={buildScheduledConsumerSeries(planData, sc)}
-              margin={{ bottom: 20, left: 0, right: 0 }}
-            >
-              <CartesianGrid strokeDasharray="1 1" />
-              <XAxis
-                dataKey="time"
-                tickFormatter={(iso) => {
-                  const d = new Date(iso);
-                  return String(d.getHours()).padStart(2, "0") + ":00";
-                }}
-                interval={1}
-                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-              />
-              <YAxis
-                label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
-                width={LEFT_GUTTER}
-              />
-              <Line dataKey="value" strokeWidth={2} dot={false} />
-            </LineChart>
+        {(planData.scheduledConsumers ?? []).map((scheduledConsumer) => (
+          <div
+            key={String(scheduledConsumer.id)}
+            className="compare-chart"
+            style={{ marginTop: 12 }}
+          >
+            <div style={{ width: chartWidth }}>
+              <div className="compare-chart-device-title">
+                {getDeviceChartTitle(scheduledConsumer, "Geplanter Verbraucher")}
+              </div>
+              <LineChart
+                width={chartWidth}
+                height={320}
+                data={buildScheduledConsumerSeries(planData, scheduledConsumer)}
+                margin={{ bottom: 20, left: 0, right: 0 }}
+              >
+                <CartesianGrid strokeDasharray="1 1" />
+                <XAxis
+                  dataKey="time"
+                  tickFormatter={(iso) => {
+                    const d = new Date(iso);
+                    return `${String(d.getHours()).padStart(2, "0")}:00`;
+                  }}
+                  interval={1}
+                  label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+                />
+                <YAxis
+                  label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
+                  width={LEFT_GUTTER}
+                />
+                <Line dataKey="value" strokeWidth={2} dot={false} />
+              </LineChart>
+            </div>
           </div>
         ))}
       </CollapsibleSection>
@@ -253,27 +290,35 @@ function CompareView({
           <div>Keine konstanten Aktionen vorhanden.</div>
         )}
 
-        {(planData.constantActions ?? []).map((ca) => (
-          <div key={String(ca.id)} className="compare-chart" style={{ marginTop: 12 }}>
-            <LineChart
-              width={chartWidth}
-              height={320}
-              data={buildConstantActionSeries(planData, ca)}
-              margin={{ bottom: 20, left: 0, right: 0 }}
-            >
-              <CartesianGrid strokeDasharray="1 1" />
-              <XAxis
-                dataKey="time"
-                tickFormatter={(iso) => {
-                  const d = new Date(iso);
-                  return String(d.getHours()).padStart(2, "0") + ":00";
-                }}
-                interval={1}
-                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-              />
-              <YAxis label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }} width={LEFT_GUTTER} />
-              <Line dataKey="value" strokeWidth={2} dot={false} />
-            </LineChart>
+        {(planData.constantActions ?? []).map((constantAction) => (
+          <div key={String(constantAction.id)} className="compare-chart" style={{ marginTop: 12 }}>
+            <div style={{ width: chartWidth }}>
+              <div className="compare-chart-device-title">
+                {getDeviceChartTitle(constantAction, "Konstante Aktion")}
+              </div>
+              <LineChart
+                width={chartWidth}
+                height={320}
+                data={buildConstantActionSeries(planData, constantAction)}
+                margin={{ bottom: 20, left: 0, right: 0 }}
+              >
+                <CartesianGrid strokeDasharray="1 1" />
+                <XAxis
+                  dataKey="time"
+                  tickFormatter={(iso) => {
+                    const d = new Date(iso);
+                    return `${String(d.getHours()).padStart(2, "0")}:00`;
+                  }}
+                  interval={1}
+                  label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+                />
+                <YAxis
+                  label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
+                  width={LEFT_GUTTER}
+                />
+                <Line dataKey="value" strokeWidth={2} dot={false} />
+              </LineChart>
+            </div>
           </div>
         ))}
       </CollapsibleSection>

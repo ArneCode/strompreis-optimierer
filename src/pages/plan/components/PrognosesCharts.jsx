@@ -75,7 +75,7 @@ function PrognosesCharts({
               margin={{ bottom: 30 }}
             >
               <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-              <Line dataKey="generation" name="Stromerzeugung (kW)" strokeWidth={2} />
+              <Line dataKey="generation" name="Stromerzeugung (W)" strokeWidth={2} />
               <XAxis
                 dataKey="hour"
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
@@ -83,7 +83,7 @@ function PrognosesCharts({
               />
               <YAxis
                 width="auto"
-                label={{ value: "Stromerzeugung (kW)", position: "insideLeft", angle: -90 }}
+                label={{ value: "Stromerzeugung (W)", position: "insideLeft", angle: -90 }}
                 domain={[0, (max) => Math.ceil(max * 1.1)]}
               />
             </LineChart>

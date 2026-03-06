@@ -281,6 +281,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-weight: bold;
 }
 
 .compare-section-right {
@@ -300,25 +301,6 @@
   font-size: 16px;
   line-height: 1;
 }
-
-/*
-.compare-chart {
-  width: 100%;
-  overflow-x: auto; 
-  display: flex;
-  justify-content: center;
-}
-
-.compare-chart-gantt {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  display: flex;
-  justify-content: center;
-  padding-left: 0;          
-  box-sizing: border-box;
-}
-*/
 
 .compare-chart,
 .compare-chart-gantt {
@@ -368,4 +350,11 @@
   box-shadow: 0px 0.3rem 0.3rem rgba(0, 0, 0, 0.12);
   font-weight: 600;
   color: rgb(81, 81, 81);
+}
+
+.compare-chart-device-title {
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  color: grey;
 }
