@@ -142,6 +142,8 @@ describe("apiService Integration Tests", () => {
 
             await apiService.deleteDevice(created.id);
 
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             const devicesAfter = await apiService.fetchDevices();
             const countAfter = devicesAfter.filter(d => d.name === uniqueName).length;
 
@@ -172,6 +174,8 @@ describe("apiService Integration Tests", () => {
             createdDeviceIds = [];
 
             expect(result).toBeDefined();
+
+            await new Promise(resolve => setTimeout(resolve, 100));
 
             const devices = await apiService.fetchDevices();
             expect(Array.isArray(devices)).toBe(true);

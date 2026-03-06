@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ActionsPage from "../ActionsPage.jsx";
 import apiService from "../../../services/apiService";
 
-// Mock apiService
 vi.mock("../../../services/apiService", () => ({
   default: {
     fetchDevices: vi.fn(),
