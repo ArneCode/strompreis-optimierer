@@ -21,7 +21,7 @@ Folgendes muss installiert sein:
 Überprüfen der Installation:
 ```
 docker --version
-docker compose Version
+docker compose version
 ```
 
 Klonen der Projekte
