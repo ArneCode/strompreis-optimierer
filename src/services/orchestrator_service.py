@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Tuple
 from electricity_price_optimizer_py import Schedule, OptimizerContext, PrognosesProvider
 from electricity_price_optimizer_py.units import Euro, EuroPerWh
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from concurrent.futures import Future, ThreadPoolExecutor
 from enum import Enum
 
@@ -24,11 +24,17 @@ class OrchestratorService(IOrchestratorService):
     _cost: "Euro | None"
     _currently_running: bool = False
     executor: "ThreadPoolExecutor"
+    _last_calculated_at: "datetime | None"
+    _last_optimization_duration: "timedelta | None"
+    _optimization_start_time: "datetime | None"
 
     def __init__(self):
         self._schedule = None
         self._cost = None
         self.executor = ThreadPoolExecutor(max_workers=1)
+        self._last_calculated_at = None
+        self._last_optimization_duration = None
+        self._optimization_start_time = None
 
     @property
     def has_schedule(self) -> bool:
@@ -39,6 +45,16 @@ class OrchestratorService(IOrchestratorService):
     def currently_running(self) -> bool:
         """Check if optimization is currently running."""
         return self._currently_running
+
+    @property
+    def last_calculated_at(self) -> "datetime | None":
+        """Get the time the last schedule was calculated."""
+        return self._last_calculated_at
+
+    @property
+    def last_optimization_duration(self) -> "timedelta | None":
+        """Get the duration of the last optimization."""
+        return self._last_optimization_duration
 
     def get_schedule(self) -> "Schedule":
         """Get the current schedule."""
@@ -67,6 +83,7 @@ class OrchestratorService(IOrchestratorService):
         # Recreate the executor for future optimizations
         self.executor = ThreadPoolExecutor(max_workers=1)
         self._currently_running = False
+        self._optimization_start_time = None
         print("Optimization stopped.")
 
     def _process_result(self, fut: "Future[Tuple[Euro, Schedule]]"):
@@ -77,10 +94,17 @@ class OrchestratorService(IOrchestratorService):
             with device_manager_scope() as dm:
                 self._schedule = schedule
                 self._cost = cost
+                self._last_calculated_at = datetime.now(timezone.utc)
+                if self._optimization_start_time:
+                    self._last_optimization_duration = self._last_calculated_at - \
+                        self._optimization_start_time
+                    print(
+                        f"Optimization duration: {self._last_optimization_duration.total_seconds():.3f}s")
                 for controller in dm.get_controller_service().get_all_controllers():
                     controller.use_schedule(schedule, dm)
         finally:
             self._currently_running = False
+            self._optimization_start_time = None
 
     def run_optimization(self, device_manager: "IDeviceManager", settings_service: ISettingsService, optimizer_service: IOptimizerService) -> "None":
         """Run the optimization algorithm."""
@@ -88,6 +112,7 @@ class OrchestratorService(IOrchestratorService):
             raise RuntimeError("Optimization is already running.")
 
         now = datetime.now(timezone.utc)
+        self._optimization_start_time = now
 
         # Create a simple context with mock price data for demonstration
         price_provider = PrognosesProvider(
