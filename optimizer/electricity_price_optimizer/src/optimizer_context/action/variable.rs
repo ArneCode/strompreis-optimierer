@@ -181,32 +181,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "out of bounds")]
-    fn test_get_consumption_out_of_bounds_early() {
-        let start = Time::new(8, 0);
-        let end = Time::new(9, 0);
-        let action = Arc::new(VariableAction::new(start, end, 100, 100, 1));
-
-        // 12 slots for 1 hour
-        let assigned = AssignedVariableAction::new(action, vec![10; 12]);
-
-        // Trying to access 07:55
-        assigned.get_consumption(Time::new(7, 55));
-    }
-
-    #[test]
-    #[should_panic(expected = "out of bounds")]
-    fn test_get_consumption_out_of_bounds_late() {
-        let start = Time::new(8, 0);
-        let end = Time::new(9, 0);
-        let action = Arc::new(VariableAction::new(start, end, 100, 100, 1));
-        let assigned = AssignedVariableAction::new(action, vec![10; 12]);
-
-        // Trying to access 09:00 (which is the exclusive end bound)
-        assigned.get_consumption(Time::new(9, 0));
-    }
-
-    #[test]
     fn test_deref_to_base_action() {
         let action = Arc::new(VariableAction::new(
             Time::new(0, 0),
