@@ -48,7 +48,8 @@ function DeviceModal({ isOpen, isEdit, onClose, onSave, onDelete, errorMessage, 
                         Abbrechen
                     </button>
 
-                    {!isEdit || (formProps.deviceForm.type !== "Consumer" && formProps.deviceForm.type !== "Generator" && formProps.deviceForm.type !== "ScheduledGenerator") ? (
+                    {!isEdit || (formProps.deviceForm.type !== "Consumer" && formProps.deviceForm.type !== "Generator"
+                        && formProps.deviceForm.type !== "ScheduledGenerator" && formProps.deviceForm.type !== "ScheduledConsumer") ? (
                         <button
                             className="devices-save-button"
                             onClick={() => onSave(isEdit)}

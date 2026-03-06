@@ -15,6 +15,7 @@ const deviceTranslations = {
     "Generator": "Erzeuger",
     "PVGenerator": "PV-Anlage",
     "RandomGenerator": "Zufallsgenerator",
+    "ScheduledConsumer": "Verbraucher (Zeitplan)",
 };
 
 /**
@@ -37,6 +38,9 @@ export const RULES = {
 
 export const DEVICE_VALIDATION_SCHEME = {
     Generator: { forecast: [RULES.required] },
+
+    ScheduledConsumer: { forecast: [RULES.required] },
+
     PVGenerator: {
         ratedPower: [RULES.required, RULES.number, RULES.positive],
         angleOfInclination: [RULES.required, RULES.number, RULES.angleRange],
