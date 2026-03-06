@@ -7,6 +7,7 @@ function OverviewPage() {
     batteries: [],
     actions: [],
     generators: [],
+    scheduledConsumers: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,6 +28,9 @@ function OverviewPage() {
           batteries: Array.isArray(data?.batteries) ? data.batteries : [],
           actions: Array.isArray(data?.actions) ? data.actions : [],
           generators: Array.isArray(data?.generators) ? data.generators : [],
+          scheduledConsumers: Array.isArray(data?.scheduledConsumers)
+            ? data.scheduledConsumers
+            : [],
         });
       } catch (e) {
         if (!alive) return;
@@ -45,6 +49,7 @@ function OverviewPage() {
   const batteries = useMemo(() => overview.batteries, [overview]);
   const actions = useMemo(() => overview.actions, [overview]);
   const generators = useMemo(() => overview.generators, [overview]);
+  const scheduledConsumers = useMemo(() => overview.scheduledConsumers, [overview]);
 
   const renderTile = (item) => {
     const normalizedStatus = String(item.status ?? "").toLowerCase();
@@ -119,6 +124,15 @@ function OverviewPage() {
             <div className="overview-grid">
               {generators.length ? generators.map(renderTile) : (
                 <div className="overview-empty">Keine Erzeuger vorhanden.</div>
+              )}
+            </div>
+          </section>
+
+          <section className="group-section">
+            <h2 className="group-title">Geplante Verbraucher</h2>
+            <div className="overview-grid">
+              {scheduledConsumers.length ? scheduledConsumers.map(renderTile) : (
+                <div className="overview-empty">Keine geplanten Verbraucher vorhanden.</div>
               )}
             </div>
           </section>
