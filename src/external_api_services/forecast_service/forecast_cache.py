@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict
 from zoneinfo import ZoneInfo
 
+from external_api_services.cache import Cache
 from external_api_services.forecast_service.forecast_client import ForecastClient
 from external_api_services.forecast_service.pv_configuration import PVConfiguration
 
@@ -60,7 +61,7 @@ class ForecastBlock:
     production: float
 
 
-class ForecastCache:
+class ForecastCache(Cache):
     """
     In-memory cache for PV forecast data.
     """

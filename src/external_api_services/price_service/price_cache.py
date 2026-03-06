@@ -8,6 +8,7 @@ from typing import Optional, Dict
 from awattar.client import AwattarClient
 from zoneinfo import ZoneInfo
 
+from external_api_services.cache import Cache
 BERLIN = ZoneInfo("Europe/Berlin")
 NEEDED_FUTURE_HOURS = 24
 API_UPDATE_HOUR = 14
@@ -30,7 +31,7 @@ def _floor_hour(dt: datetime) -> datetime:
     floor_time = dt.replace(minute = 0, second = 0, microsecond = 0)
     return floor_time
 
-class PriceCache:
+class PriceCache(Cache):
     """
     In-memory cache for hourly electricity prices.
     Uses fallback logic for missing data.
@@ -52,7 +53,7 @@ class PriceCache:
         self._client = client or AwattarClient('DE')
         self.refresh_interval_s = refresh_interval_s
         self.future_hours = future_hours
-        self._blocks: dict[datetime, PriceBlock] = {}
+        self._blocks: dict[datetime, float] = {}
         self._last_fetch_s: float = 0.0
         self._lock = threading.Lock()
         self._cached_until: Optional[datetime] = None
@@ -114,12 +115,12 @@ class PriceCache:
                 blocks_map[current_dt] = PriceBlock(start = current_dt, end = next_dt, price = price)
                 current_dt = next_dt
 
-
-            self._blocks = blocks_map
+            self._blocks = {dt: block.price for dt, block in blocks_map.items()}
+            #self._blocks = blocks_map
             self._last_fetch_s = time.time()
             self._cached_until = cache_end
 
-    def get_blocks(self) -> Dict[datetime, PriceBlock]:
+    def get_blocks(self) -> Dict[datetime, float]:
         """
         Returns the cached price blocks.
         :return: the cached price blocks.
