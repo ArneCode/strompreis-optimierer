@@ -8,13 +8,26 @@ from electricity_price_optimizer_py.units import WattHour, Watt
 
 BERLIN = ZoneInfo("Europe/Berlin")
 
+
 def _floor_hour(dt: datetime) -> datetime:
     """
     Returns a given datetime truncated to the beginning of its hour.
     :param dt: the given datetime
     :return: the truncated datetime
     """
-    return dt.replace(minute = 0, second = 0, microsecond = 0)
+    return dt.replace(minute=0, second=0, microsecond=0)
+
+
+def _ceil_hour(dt: datetime) -> datetime:
+    """
+    Returns a given datetime rounded up to the next full hour (or the same hour
+    if the datetime is already exactly on the hour).
+    :param dt: the given datetime
+    :return: the rounded up datetime
+    """
+    floored_hour = _floor_hour(dt)
+    return floored_hour + timedelta(hours=1)
+
 
 class ForecastService(ForecastServicePort):
     """
@@ -29,6 +42,7 @@ class ForecastService(ForecastServicePort):
     - Assumption: Within each hour, production is uniformly distributed (constant average power).
     - All computations are performed in the Berlin timezone.
     """
+
     def __init__(self, cache: Cache):
         """
         Initializes the ForecastService.
@@ -55,7 +69,7 @@ class ForecastService(ForecastServicePort):
 
         while current < end:
             hour_start = _floor_hour(current)
-            hour_end = hour_start + timedelta(hours = 1)
+            hour_end = _ceil_hour(current)
             segment_end = min(hour_end, end)
             segment_seconds = (segment_end - current).total_seconds()
 
@@ -65,7 +79,8 @@ class ForecastService(ForecastServicePort):
             hour_wh = blocks.get(hour_start)
 
             if hour_wh is None:
-                raise RuntimeError(f"No production available for {hour_start.isoformat()}")
+                raise RuntimeError(
+                    f"No production available for {hour_start.isoformat()}")
 
             total_wh += float(hour_wh) * (segment_seconds / 3600.0)
             current = segment_end
@@ -84,14 +99,15 @@ class ForecastService(ForecastServicePort):
 
         prognoses: list[WattHour] = []
 
-        for i in range (0, len(timestamps) - 1):
+        for i in range(0, len(timestamps) - 1):
             start_timestamp = timestamps[i]
             end_timestamp = timestamps[i + 1]
-            prognoses.append(WattHour(self.get_total_production(start_timestamp, end_timestamp)))
+            prognoses.append(
+                WattHour(self.get_total_production(start_timestamp, end_timestamp)))
 
-        prognoses.append(WattHour(self.get_total_production(timestamps[len(timestamps) - 1], end)))
+        prognoses.append(WattHour(self.get_total_production(
+            timestamps[len(timestamps) - 1], end)))
         return prognoses
-
 
     def get_current_power(self) -> Watt:
         """
@@ -106,4 +122,3 @@ class ForecastService(ForecastServicePort):
             produced_amount = 0.0
 
         return Watt(produced_amount)
-

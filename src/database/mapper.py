@@ -12,6 +12,7 @@ from electricity_price_optimizer_py.units import Watt, WattHour, Euro, EuroPerWh
 
 class WattMapper(TypeDecorator):
     impl = Float
+    cache_ok = True
 
     def process_bind_param(self, value: Watt | None, dialect):
         if value is not None:
@@ -26,6 +27,7 @@ class WattMapper(TypeDecorator):
 
 class WattHourMapper(TypeDecorator):
     impl = Float
+    cache_ok = True
 
     def process_bind_param(self, value: WattHour | None, dialect):
         if value is not None:
@@ -40,6 +42,7 @@ class WattHourMapper(TypeDecorator):
 
 class EuroMapper(TypeDecorator):
     impl = Float
+    cache_ok = True
 
     def process_bind_param(self, value: Euro | None, dialect):
         if value is not None:
@@ -54,6 +57,7 @@ class EuroMapper(TypeDecorator):
 
 class EuroPerWhMapper(TypeDecorator):
     impl = Float
+    cache_ok = True
 
     def process_bind_param(self, value: EuroPerWh | None, dialect):
         if value is not None:

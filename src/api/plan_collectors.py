@@ -24,17 +24,34 @@ class PlanContext:
     plan_end: datetime
 
 
-def create_timeline(hours: int) -> list[datetime]:
-    """Create the plan timeline."""
+PLAN_HOURS = 24
+TIMELINE_STEP = timedelta(minutes=1)
 
+
+def create_timeline(
+    hours: int = PLAN_HOURS,
+    step: timedelta = TIMELINE_STEP,
+) -> list[datetime]:
+    """Create the plan timeline in 1-minute resolution."""
     start_time = datetime.now(timezone.utc)
-    return [start_time + timedelta(hours=i) for i in range(hours)]
+    steps = int(timedelta(hours=hours) / step)
+    return [start_time + i * step for i in range(steps)]
 
 
-def build_plan_context(hours: int = 24) -> PlanContext:
-    timeline = create_timeline(hours)
+def _timeline_step(timeline: list[datetime]) -> timedelta:
+    if len(timeline) > 1:
+        return timeline[1] - timeline[0]
+    return TIMELINE_STEP
+
+
+def build_plan_context(
+    hours: int = PLAN_HOURS,
+    step: timedelta = TIMELINE_STEP,
+) -> PlanContext:
+    timeline = create_timeline(hours=hours, step=step)
+    actual_step = _timeline_step(timeline)
     plan_start = timeline[0]
-    plan_end = timeline[-1] + timedelta(hours=1)
+    plan_end = timeline[-1] + actual_step
     return PlanContext(timeline=timeline, plan_start=plan_start, plan_end=plan_end)
 
 
@@ -196,7 +213,18 @@ def _collect_power_values_timeline_aligned(
 
 
 def _collect_soc_values(battery, timeline: list[datetime]) -> list[float]:
-    return [WattHour.get_value(battery.get_charge_level(t)) for t in timeline]
+    values: list[float] = []
+    last_value: float | None = None
+
+    for t in timeline:
+        try:
+            value = WattHour.get_value(battery.get_charge_level(t))
+            last_value = value
+            values.append(value)
+        except ValueError:
+            values.append(last_value if last_value is not None else 0.0)
+
+    return values
 
 
 def collect_device_tasks_and_series(
@@ -332,11 +360,10 @@ def collect_device_tasks_and_series(
 def collect_plan_data(manager: IDeviceManager, schedule: Schedule) -> dict[str, Any]:
     """Transform schedule + devices into the frontend plan payload."""
 
-    ctx = build_plan_context(24)
+    ctx = build_plan_context(hours=PLAN_HOURS, step=TIMELINE_STEP)
 
     generation_kw = collect_total_generation_kw(manager, ctx.timeline)
-    generation_by_generator_kw = collect_generation_by_generator_kw(
-        manager, ctx.timeline)
+    generation_by_generator_kw = collect_generation_by_generator_kw(manager, ctx.timeline)
     consumption_w = collect_fixed_consumption_w(manager, ctx.timeline)
     prices_ct_per_kwh = collect_hourly_prices_ct_per_kwh(ctx.timeline)
 
