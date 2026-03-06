@@ -114,9 +114,9 @@ describe("OverviewPage", () => {
     expect(bat1StatusValue).toHaveClass("status-charging");
 
     expect(within(bat1).getByText("Aktuelle Leistung")).toBeInTheDocument();
-    expect(within(bat1).getByText("120 W")).toBeInTheDocument();
+    expect(within(bat1).getByText("120.00 W")).toBeInTheDocument();
     expect(within(bat1).getByText("Ladezustand")).toBeInTheDocument();
-    expect(within(bat1).getByText("1500 Wh")).toBeInTheDocument();
+    expect(within(bat1).getByText("1500.00 Wh")).toBeInTheDocument();
 
     // Battery status class should be case-insensitive and accept "discharging"
     const bat2 = screen.getByText("Batterie 2").closest("article");
