@@ -24,7 +24,7 @@ docker --version
 docker compose Version
 ```
 
-1. Klonen der Projekte
+Klonen der Projekte
 Klonen Sie das Projekt für das Frontend und das Projekt für das Backend in den selben Ordner.
 Also zuerst:
 ```
@@ -38,9 +38,11 @@ git clone https://gitlab.kit.edu/kit/tva/pse/ws25/strompreis-optimierer/strompre
 
 Ordnerstruktur sollte danach so aussehen:
 
+```
 projektordner
 | - backend
 | - frontend
+```
 
 Wählen Sie den backend Ordner aus mit:
 ```
