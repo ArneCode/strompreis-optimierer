@@ -9,7 +9,7 @@ function PrognosesCharts({
   priceDataFromBackend,
   generatorDataFromBackend,
 }) {
-  const xAxisInterval = getXAxisInterval(planData.timeline, 60);
+  const xAxisInterval = getXAxisInterval(planData.timeline, 120);
 
   return (
     <>
@@ -32,7 +32,7 @@ function PrognosesCharts({
                 tickFormatter={formatTimeTick}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 interval={xAxisInterval}
-                minTickGap={24}
+                minTickGap={30}
               />
               <YAxis
                 width="auto"
@@ -84,7 +84,7 @@ function PrognosesCharts({
                 tickFormatter={formatTimeTick}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 interval={xAxisInterval}
-                minTickGap={24}
+                minTickGap={30}
               />
               <YAxis
                 width="auto"

@@ -38,7 +38,7 @@ function CompareView({
 
   const cellWidth = TIMELINE_WIDTH / hours;
   const chartWidth = LEFT_GUTTER + TIMELINE_WIDTH;
-  const xAxisInterval = getXAxisInterval(planData.timeline, 60);
+  const xAxisInterval = getXAxisInterval(planData.timeline, 120);
 
   return (
     <div className="compare-view">
@@ -88,13 +88,13 @@ function CompareView({
             margin={{ bottom: 30, left: 0, right: 0 }}
           >
             <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-            <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} dot={false} />
+            <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} dot={false} isAnimationActive={false} />
             <XAxis
               dataKey="time"
               tickFormatter={formatTimeTick}
               label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               interval={xAxisInterval}
-              minTickGap={24}
+              minTickGap={30}
             />
             <YAxis
               width={LEFT_GUTTER}
@@ -151,7 +151,7 @@ function CompareView({
               tickFormatter={formatTimeTick}
               label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               interval={xAxisInterval}
-              minTickGap={24}
+              minTickGap={30}
             />
             <YAxis
               width={LEFT_GUTTER}
@@ -187,7 +187,7 @@ function CompareView({
                   dataKey="time"
                   tickFormatter={formatTimeTick}
                   interval={xAxisInterval}
-                  minTickGap={24}
+                  minTickGap={30}
                   label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 />
                 <YAxis
@@ -228,7 +228,7 @@ function CompareView({
                   dataKey="time"
                   tickFormatter={formatTimeTick}
                   interval={xAxisInterval}
-                  minTickGap={24}
+                  minTickGap={30}
                   label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 />
                 <YAxis
@@ -273,7 +273,7 @@ function CompareView({
                   dataKey="time"
                   tickFormatter={formatTimeTick}
                   interval={xAxisInterval}
-                  minTickGap={24}
+                  minTickGap={30}
                   label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 />
                 <YAxis
@@ -314,7 +314,7 @@ function CompareView({
                   dataKey="time"
                   tickFormatter={formatTimeTick}
                   interval={xAxisInterval}
-                  minTickGap={24}
+                  minTickGap={30}
                   label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 />
                 <YAxis
