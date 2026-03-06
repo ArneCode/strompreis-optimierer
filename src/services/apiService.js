@@ -6,7 +6,7 @@ import { mapDeviceData } from './deviceMapper';
  */
 class ApiService {
     constructor() {
-        this.baseURL = "/api";
+        this.baseURL = import.meta.env.VITE_API_BASE_URL || "/api";
     }
 
     /**
