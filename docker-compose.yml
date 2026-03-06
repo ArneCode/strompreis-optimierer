@@ -1,0 +1,24 @@
+# Docker Compose File
+
+#services:
+#  backend:
+#    build: .
+#    ports:
+#      - "8000:8000"
+
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: backend
+    expose:
+      - "8000"
+
+  frontend:
+    build: ../frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
