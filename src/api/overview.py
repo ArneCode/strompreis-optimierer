@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from api.dependencies import get_device_manager
 from device_manager import IDeviceManager
 
-from devices import Battery, ConstantActionDevice, VariableActionDevice
+from devices import Battery, ConstantActionDevice, VariableActionDevice, ConsumerScheduled
 from electricity_price_optimizer_py.units import Watt, WattHour
 
 
@@ -36,6 +36,7 @@ def get_overview(manager: IDeviceManager = Depends(get_device_manager)) -> dict[
     batteries: list[dict[str, Any]] = []
     actions: list[dict[str, Any]] = []
     generators: list[dict[str, Any]] = []
+    scheduledConsumers: list[dict[str, Any]] = []
 
     for device in device_service.get_all_devices():
         # batteries
@@ -101,8 +102,24 @@ def get_overview(manager: IDeviceManager = Depends(get_device_manager)) -> dict[
                 }
             )
 
+        # scheduled consumer
+        if isinstance(device, ConsumerScheduled):
+            ctrl = controller_service.get_consumer_scheduled_controller(device.id)
+            if ctrl is None:
+                continue
+            
+            scheduledConsumers.append(
+                {
+                    "id": device.id,
+                    "name": device.name,
+                    "currentPower": float(Watt.get_value(ctrl.get_current_power(now, manager))),
+                    "status": ctrl.get_status_str(now, manager),
+                }
+            )
+
     return {
         "batteries": batteries,
         "actions": actions,
         "generators": generators,
+        "scheduledConsumers": scheduledConsumers,
     }
