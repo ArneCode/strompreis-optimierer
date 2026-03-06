@@ -6,6 +6,7 @@ import {
   buildBatterySeries,
   buildVariableActionSeries,
   buildConstantActionSeries,
+  buildScheduledConsumerSeries,
 } from "../utils/planTransform.js";
 
 function CompareView({
@@ -198,6 +199,44 @@ function CompareView({
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               />
               <YAxis label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }} width={LEFT_GUTTER}/>
+              <Line dataKey="value" strokeWidth={2} dot={false} />
+            </LineChart>
+          </div>
+        ))}
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        id="scheduledConsumers"
+        title="Geplante Verbraucher (alle)"
+        collapsed={collapsed.scheduledConsumers}
+        onToggle={toggleCollapsed}
+      >
+        {(planData.scheduledConsumers ?? []).length === 0 && (
+          <div>Keine geplanten Verbraucher vorhanden.</div>
+        )}
+
+        {(planData.scheduledConsumers ?? []).map((sc) => (
+          <div key={String(sc.id)} className="compare-chart" style={{ marginTop: 12 }}>
+            <LineChart
+              width={chartWidth}
+              height={320}
+              data={buildScheduledConsumerSeries(planData, sc)}
+              margin={{ bottom: 20, left: 0, right: 0 }}
+            >
+              <CartesianGrid strokeDasharray="1 1" />
+              <XAxis
+                dataKey="time"
+                tickFormatter={(iso) => {
+                  const d = new Date(iso);
+                  return String(d.getHours()).padStart(2, "0") + ":00";
+                }}
+                interval={1}
+                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+              />
+              <YAxis
+                label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
+                width={LEFT_GUTTER}
+              />
               <Line dataKey="value" strokeWidth={2} dot={false} />
             </LineChart>
           </div>

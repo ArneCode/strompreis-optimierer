@@ -1,7 +1,7 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-import { buildBatterySeries, buildVariableActionSeries } from "../utils/planTransform.js";
+import { buildBatterySeries, buildVariableActionSeries, buildScheduledConsumerSeries } from "../utils/planTransform.js";
 
-function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, selectedVA, planData }) {
+function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, selectedVA, selectedSC, planData }) {
   if (!open) return null;
 
   return (
@@ -60,7 +60,31 @@ function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, select
           </>
         )}
 
-        {!selectedBattery && !selectedVA && (
+        {!selectedBattery && !selectedVA && selectedSC && (
+          <>
+            <p className="graph-y-axis">Leistung (W)</p>
+            <LineChart
+              width={600}
+              height={300}
+              data={buildScheduledConsumerSeries(planData, selectedSC)}
+              margin={{ bottom: 20 }}
+              >
+              <CartesianGrid strokeDasharray="1 1" />
+              <XAxis
+                dataKey="time"
+                tickFormatter={(iso) => {
+                  const d = new Date(iso);
+                  return String(d.getHours()).padStart(2, "0") + ":00";
+                }}
+                label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
+                />
+              <YAxis />
+              <Line dataKey="value" strokeWidth={2} dot={false} />
+            </LineChart>
+          </>
+        )}
+
+        {!selectedBattery && !selectedVA && !selectedSC && (
           <div>Für diese Aufgabe sind keine Detaildaten verfügbar.</div>
         )}
       </div>

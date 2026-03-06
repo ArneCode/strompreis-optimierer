@@ -29,6 +29,7 @@ function PlanPage() {
     batteries: false,
     variableActions: false,
     constantActions: false,
+    scheduledConsumers: false,
   });
 
   const toggleCollapsed = (key) =>
@@ -75,9 +76,15 @@ function PlanPage() {
     [planData.variableActions]
   );
 
+  const scheduledConsumerById = useMemo(
+    () => buildIdMap(planData.scheduledConsumers, "id"),
+    [planData.scheduledConsumers]
+  );
+
   const selectedId = selectedTask ? String(selectedTask.id) : null;
   const selectedBattery = selectedId ? batteryById.get(selectedId) : null;
   const selectedVA = selectedId ? variableActionById.get(selectedId) : null;
+  const selectedSC = selectedId ? scheduledConsumerById.get(selectedId) : null;
 
   return (
     <>
@@ -87,6 +94,7 @@ function PlanPage() {
         selectedTask={selectedTask}
         selectedBattery={selectedBattery}
         selectedVA={selectedVA}
+        selectedSC={selectedSC}
         planData={planData}
       />
 

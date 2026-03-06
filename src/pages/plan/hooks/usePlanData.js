@@ -22,6 +22,7 @@ export function usePlanData({
     timeline: [],
     batteries: [],
     variableActions: [],
+    scheduledConsumers: [],
     generationByGeneratorKw: [],
     constantActions: [],
     costEuro: null,

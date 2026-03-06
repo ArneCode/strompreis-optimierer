@@ -64,6 +64,18 @@ export function buildVariableActionSeries(planData, va) {
   return timeline.map((iso, i) => ({ time: iso, value: values[i] ?? 0 }));
 }
 
+export function buildScheduledConsumerSeries(planData, sc) {
+  if (!sc) return [];
+
+  const timeline = planData.timeline ?? [];
+  const values = sc.powerW ?? [];
+
+  return timeline.map((iso, i) => ({
+    time: iso,
+    value: values[i] ?? 0,
+  }));
+}
+
 export function buildConstantActionSeries(planData, ca) {
   if (!ca) return [];
   const timeline = planData.timeline ?? [];
