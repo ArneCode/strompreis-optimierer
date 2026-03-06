@@ -81,7 +81,7 @@ def collect_generation_by_generator_kw(
                     wh = WattHour.get_value(prognoses[i])
                 except Exception:
                     continue
-                series[i] += float(wh) / 1000.0
+                series[i] += float(wh)
 
         result.append(
             {"id": ctrl.device_id, "name": name, "generationKw": series})
@@ -116,7 +116,7 @@ def collect_total_generation_kw(
                 wh = WattHour.get_value(prognoses[i])
             except Exception:
                 continue
-            total_kw[i] += float(wh) / 1000.0
+            total_kw[i] += float(wh) 
 
     return total_kw
 
