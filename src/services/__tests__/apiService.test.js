@@ -7,6 +7,8 @@ const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);
 
 describe("apiService", () => {
+    let baseURL;
+
     beforeEach(() => {
         vi.clearAllMocks();
         fetchMock.mockResolvedValue({
@@ -14,13 +16,15 @@ describe("apiService", () => {
             json: vi.fn().mockResolvedValue({}),
             text: vi.fn().mockResolvedValue('{}'),
         });
+
+        baseURL = apiService.baseURL;
     });
 
     describe("request", () => {
         it("makes GET request with correct URL and headers", async () => {
             await apiService.request("test-endpoint");
 
-            expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/test-endpoint", {
+            expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/test-endpoint`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
             });
@@ -30,7 +34,7 @@ describe("apiService", () => {
             const data = {key: "value"};
             await apiService.request("test-endpoint", "POST", data);
 
-            expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/test-endpoint", {
+            expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/test-endpoint`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(data),
@@ -60,7 +64,7 @@ describe("apiService", () => {
         describe("fetchDevices", () => {
             it("calls request with correct endpoint", async () => {
                 await apiService.fetchDevices();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", expect.any(Object));
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices`, expect.any(Object));
             });
         });
 
@@ -70,7 +74,7 @@ describe("apiService", () => {
                 const expectedData = mapDeviceData(rawForm);
                 await apiService.saveDevice(rawForm);
 
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(expectedData),
@@ -91,7 +95,7 @@ describe("apiService", () => {
                 const expectedData = mapDeviceData(rawForm);
                 await apiService.saveDevice(rawForm);
 
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(expectedData),
@@ -108,7 +112,7 @@ describe("apiService", () => {
                 const expectedData = mapDeviceData(rawForm);
                 await apiService.saveDevice(rawForm);
 
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(expectedData),
@@ -130,7 +134,7 @@ describe("apiService", () => {
                 const expectedData = mapDeviceData(rawForm);
                 await apiService.saveDevice(rawForm);
 
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(expectedData),
@@ -146,7 +150,7 @@ describe("apiService", () => {
         describe("resetAllDevices", () => {
             it("calls request with DELETE", async () => {
                 await apiService.resetAllDevices();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices`, {
                     method: "DELETE",
                     headers: {"Content-Type": "application/json"},
                 });
@@ -156,7 +160,7 @@ describe("apiService", () => {
         describe("deleteDevice", () => {
             it("calls request with DELETE and device ID", async () => {
                 await apiService.deleteDevice(123);
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices/123", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices/123`, {
                     method: "DELETE",
                     headers: {"Content-Type": "application/json"},
                 });
@@ -168,7 +172,7 @@ describe("apiService", () => {
                 const actionData = {startTime: "10:00", endTime: "11:00"};
                 await apiService.createAction(1, actionData);
 
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices/1/actions", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices/1/actions`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(actionData),
@@ -179,7 +183,7 @@ describe("apiService", () => {
         describe("deleteAction", () => {
             it("calls request with DELETE for device action", async () => {
                 await apiService.deleteAction(1, 2);
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices/1/actions/2", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices/1/actions/2`, {
                     method: "DELETE",
                     headers: {"Content-Type": "application/json"},
                 });
@@ -189,28 +193,28 @@ describe("apiService", () => {
         describe("fetchPlan", () => {
             it("calls request for plan endpoint", async () => {
                 await apiService.fetchPlan();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/plan", expect.any(Object));
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/plan`, expect.any(Object));
             });
         });
 
         describe("fetchPlanData", () => {
             it("calls request for plan/data endpoint", async () => {
                 await apiService.fetchPlanData();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/plan/data", expect.any(Object));
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/plan/data`, expect.any(Object));
             });
         });
 
         describe("fetchPlanStatus", () => {
             it("calls request for plan/status endpoint", async () => {
                 await apiService.fetchPlanStatus();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/plan/status", expect.any(Object));
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/plan/status`, expect.any(Object));
             });
         });
 
         describe("generatePlan", () => {
             it("calls request with POST for plan/generate", async () => {
                 await apiService.generatePlan();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/plan/generate", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/plan/generate`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                 });
@@ -220,7 +224,7 @@ describe("apiService", () => {
         describe("fetchSimulatedAnnealingSettings", () => {
             it("calls request for settings/simulated-annealing", async () => {
                 await apiService.fetchSimulatedAnnealingSettings();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/settings/simulated-annealing", expect.any(Object));
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/settings/simulated-annealing`, expect.any(Object));
             });
         });
 
@@ -229,7 +233,7 @@ describe("apiService", () => {
                 const settings = {initial_temperature: 1000};
                 await apiService.updateSimulatedAnnealingSettings(settings);
 
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/settings/simulated-annealing", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/settings/simulated-annealing`, {
                     method: "PUT",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(settings),
@@ -240,7 +244,7 @@ describe("apiService", () => {
         describe("resetSimulatedAnnealingSettings", () => {
             it("calls request with POST for settings reset", async () => {
                 await apiService.resetSimulatedAnnealingSettings();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/settings/simulated-annealing/reset", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/settings/simulated-annealing/reset`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                 });
@@ -257,7 +261,7 @@ describe("apiService", () => {
 
                 const result = await apiService.createScheduledGenerator("Test Generator", mockFile);
 
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/devices/scheduled-generator", {
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/devices/scheduled-generator`, {
                     method: "POST",
                     body: expect.any(FormData),
                 });
@@ -279,7 +283,7 @@ describe("apiService", () => {
         describe("fetchOverview", () => {
             it("calls request for overview endpoint", async () => {
                 await apiService.fetchOverview();
-                expect(fetchMock).toHaveBeenCalledWith("http://127.0.0.1:5000/api/overview", expect.any(Object));
+                expect(fetchMock).toHaveBeenCalledWith(`${baseURL}/overview`, expect.any(Object));
             });
         });
     });
