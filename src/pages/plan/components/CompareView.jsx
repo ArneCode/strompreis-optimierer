@@ -7,6 +7,8 @@ import {
   buildVariableActionSeries,
   buildConstantActionSeries,
   buildScheduledConsumerSeries,
+  formatTimeTick,
+  getXAxisInterval,
 } from "../utils/planTransform.js";
 
 const getDeviceChartTitle = (device, fallbackLabel) =>
@@ -36,6 +38,7 @@ function CompareView({
 
   const cellWidth = TIMELINE_WIDTH / hours;
   const chartWidth = LEFT_GUTTER + TIMELINE_WIDTH;
+  const xAxisInterval = getXAxisInterval(planData.timeline, 120);
 
   return (
     <div className="compare-view">
@@ -85,11 +88,13 @@ function CompareView({
             margin={{ bottom: 30, left: 0, right: 0 }}
           >
             <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-            <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} dot={false} />
+            <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} dot={false} isAnimationActive={false} />
             <XAxis
-              dataKey="hour"
+              dataKey="time"
+              tickFormatter={formatTimeTick}
               label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-              interval={1}
+              interval={xAxisInterval}
+              minTickGap={30}
             />
             <YAxis
               width={LEFT_GUTTER}
@@ -134,15 +139,23 @@ function CompareView({
             margin={{ bottom: 30, right: 0, left: 0 }}
           >
             <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-            <Line dataKey="generation" name="Stromerzeugung (W)" strokeWidth={2} dot={false} />
+            <Line
+              dataKey="generation"
+              name="Stromerzeugung (Wh)"
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+            />
             <XAxis
-              dataKey="hour"
+              dataKey="time"
+              tickFormatter={formatTimeTick}
               label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-              interval={1}
+              interval={xAxisInterval}
+              minTickGap={30}
             />
             <YAxis
               width={LEFT_GUTTER}
-              label={{ value: "Erzeugung (W)", position: "insideLeft", angle: -90 }}
+              label={{ value: "Erzeugung (Wh)", position: "insideLeft", angle: -90 }}
               domain={[0, (max) => Math.ceil(max * 1.1)]}
             />
           </LineChart>
@@ -172,18 +185,16 @@ function CompareView({
                 <CartesianGrid strokeDasharray="1 1" />
                 <XAxis
                   dataKey="time"
-                  tickFormatter={(iso) => {
-                    const d = new Date(iso);
-                    return `${String(d.getHours()).padStart(2, "0")}:00`;
-                  }}
-                  interval={1}
+                  tickFormatter={formatTimeTick}
+                  interval={xAxisInterval}
+                  minTickGap={30}
                   label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 />
                 <YAxis
                   label={{ value: "Ladezustand (Wh)", position: "insideLeft", angle: -90 }}
                   width={LEFT_GUTTER}
                 />
-                <Line dataKey="value" strokeWidth={2} dot={false} />
+                <Line dataKey="value" strokeWidth={2} dot={false} isAnimationActive={false}/>
               </LineChart>
             </div>
           </div>
@@ -215,18 +226,16 @@ function CompareView({
                 <CartesianGrid strokeDasharray="1 1" />
                 <XAxis
                   dataKey="time"
-                  tickFormatter={(iso) => {
-                    const d = new Date(iso);
-                    return `${String(d.getHours()).padStart(2, "0")}:00`;
-                  }}
-                  interval={1}
+                  tickFormatter={formatTimeTick}
+                  interval={xAxisInterval}
+                  minTickGap={30}
                   label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 />
                 <YAxis
                   label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
                   width={LEFT_GUTTER}
                 />
-                <Line dataKey="value" strokeWidth={2} dot={false} />
+                <Line dataKey="value" strokeWidth={2} dot={false} isAnimationActive={false}/>
               </LineChart>
             </div>
           </div>
@@ -262,18 +271,16 @@ function CompareView({
                 <CartesianGrid strokeDasharray="1 1" />
                 <XAxis
                   dataKey="time"
-                  tickFormatter={(iso) => {
-                    const d = new Date(iso);
-                    return `${String(d.getHours()).padStart(2, "0")}:00`;
-                  }}
-                  interval={1}
+                  tickFormatter={formatTimeTick}
+                  interval={xAxisInterval}
+                  minTickGap={30}
                   label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 />
                 <YAxis
                   label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
                   width={LEFT_GUTTER}
                 />
-                <Line dataKey="value" strokeWidth={2} dot={false} />
+                <Line dataKey="value" strokeWidth={2} dot={false} isAnimationActive={false}/>
               </LineChart>
             </div>
           </div>
@@ -305,18 +312,16 @@ function CompareView({
                 <CartesianGrid strokeDasharray="1 1" />
                 <XAxis
                   dataKey="time"
-                  tickFormatter={(iso) => {
-                    const d = new Date(iso);
-                    return `${String(d.getHours()).padStart(2, "0")}:00`;
-                  }}
-                  interval={1}
+                  tickFormatter={formatTimeTick}
+                  interval={xAxisInterval}
+                  minTickGap={30}
                   label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
                 />
                 <YAxis
                   label={{ value: "Leistung (W)", position: "insideLeft", angle: -90 }}
                   width={LEFT_GUTTER}
                 />
-                <Line dataKey="value" strokeWidth={2} dot={false} />
+                <Line dataKey="value" strokeWidth={2} dot={false} isAnimationActive={false}/>
               </LineChart>
             </div>
           </div>

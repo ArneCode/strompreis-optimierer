@@ -1,8 +1,16 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-import { buildBatterySeries, buildVariableActionSeries, buildScheduledConsumerSeries } from "../utils/planTransform.js";
+import {
+  buildBatterySeries,
+  buildVariableActionSeries,
+  buildScheduledConsumerSeries,
+  formatTimeTick,
+  getXAxisInterval,
+} from "../utils/planTransform.js";
 
 function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, selectedVA, selectedSC, planData }) {
   if (!open) return null;
+
+  const xAxisInterval = getXAxisInterval(planData.timeline, 120);
 
   return (
     <div className="data-popup" data-testid="task-modal">
@@ -24,14 +32,13 @@ function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, select
               <CartesianGrid strokeDasharray="1 1" />
               <XAxis
                 dataKey="time"
-                tickFormatter={(iso) => {
-                  const d = new Date(iso);
-                  return String(d.getHours()).padStart(2, "0") + ":00";
-                }}
+                tickFormatter={formatTimeTick}
+                interval={xAxisInterval}
+                minTickGap={30}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               />
               <YAxis />
-              <Line dataKey="value" strokeWidth={2} dot={false} />
+              <Line dataKey="value" strokeWidth={2} dot={false} isAnimationActive={false} />
             </LineChart>
           </>
         )}
@@ -48,14 +55,13 @@ function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, select
               <CartesianGrid strokeDasharray="1 1" />
               <XAxis
                 dataKey="time"
-                tickFormatter={(iso) => {
-                  const d = new Date(iso);
-                  return String(d.getHours()).padStart(2, "0") + ":00";
-                }}
+                tickFormatter={formatTimeTick}
+                interval={xAxisInterval}
+                minTickGap={30}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
               />
               <YAxis />
-              <Line dataKey="value" strokeWidth={2} dot={false} />
+              <Line dataKey="value" strokeWidth={2} dot={false} isAnimationActive={false} />
             </LineChart>
           </>
         )}
@@ -68,18 +74,17 @@ function TaskDetailsModal({ open, onClose, selectedTask, selectedBattery, select
               height={300}
               data={buildScheduledConsumerSeries(planData, selectedSC)}
               margin={{ bottom: 20 }}
-              >
+            >
               <CartesianGrid strokeDasharray="1 1" />
               <XAxis
                 dataKey="time"
-                tickFormatter={(iso) => {
-                  const d = new Date(iso);
-                  return String(d.getHours()).padStart(2, "0") + ":00";
-                }}
+                tickFormatter={formatTimeTick}
+                interval={xAxisInterval}
+                minTickGap={30}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-                />
+              />
               <YAxis />
-              <Line dataKey="value" strokeWidth={2} dot={false} />
+              <Line dataKey="value" strokeWidth={2} dot={false} isAnimationActive={false} />
             </LineChart>
           </>
         )}

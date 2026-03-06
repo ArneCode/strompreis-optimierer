@@ -1,7 +1,7 @@
 /** Gantt scale configuration (day + hour) */
 export const SCALES = [
-  { unit: "day", step: 1, format: "%j" }, 
-  { unit: "hour", step: 1, format: "%H" }, 
+  { unit: "day", step: 1, format: "%j" },
+  { unit: "hour", step: 1, format: "%H" },
 ];
 
 export const toGanttTasks = (apiTasks) =>
@@ -13,42 +13,85 @@ export const toGanttTasks = (apiTasks) =>
     lazy: false,
   }));
 
+const floorToHour = (date) => {
+  const d = new Date(date);
+  d.setMinutes(0, 0, 0);
+  return d;
+};
+
+const ceilToHour = (date) => {
+  const d = new Date(date);
+  if (
+    d.getMinutes() === 0 &&
+    d.getSeconds() === 0 &&
+    d.getMilliseconds() === 0
+  ) {
+    return d;
+  }
+  d.setHours(d.getHours() + 1, 0, 0, 0);
+  return d;
+};
+
+export function getTimelineStepMs(timeline = []) {
+  if ((timeline?.length ?? 0) < 2) return 60 * 60 * 1000;
+  return new Date(timeline[1]).getTime() - new Date(timeline[0]).getTime();
+}
+
+export function getXAxisInterval(timeline = [], labelEveryMinutes = 60) {
+  const stepMs = getTimelineStepMs(timeline);
+  const stepMinutes = Math.max(1, Math.round(stepMs / (60 * 1000)));
+  const pointsPerTick = Math.max(1, Math.round(labelEveryMinutes / stepMinutes));
+  return Math.max(0, pointsPerTick - 1);
+}
+
+export function formatTimeTick(iso) {
+  const d = new Date(iso);
+  return [
+    String(d.getHours()).padStart(2, "0"),
+    String(d.getMinutes()).padStart(2, "0"),
+  ].join(":");
+}
+
 export function computeGanttWindow(planData, tasks) {
-  const ganttStart =
-    planData.timeline?.length > 0
-      ? new Date(planData.timeline[0])
-      : tasks.length > 0
-        ? new Date(Math.min(...tasks.map((t) => t.start.getTime())))
-        : new Date();
+  if ((planData.timeline?.length ?? 0) > 0) {
+    const stepMs = getTimelineStepMs(planData.timeline);
+    const rawStart = new Date(planData.timeline[0]);
+    const rawEnd = new Date(
+      new Date(planData.timeline[planData.timeline.length - 1]).getTime() + stepMs
+    );
 
-  const ganttEnd =
-    planData.timeline?.length > 0
-      ? new Date(planData.timeline[planData.timeline.length - 1])
-      : tasks.length > 0
-        ? new Date(Math.max(...tasks.map((t) => t.end.getTime())))
-        : new Date(Date.now() + 6 * 60 * 60 * 1000);
+    return {
+      ganttStart: floorToHour(rawStart),
+      ganttEnd: ceilToHour(rawEnd),
+    };
+  }
 
-  return { ganttStart, ganttEnd };
+  if ((tasks?.length ?? 0) > 0) {
+    return {
+      ganttStart: floorToHour(new Date(Math.min(...tasks.map((t) => t.start.getTime())))),
+      ganttEnd: ceilToHour(new Date(Math.max(...tasks.map((t) => t.end.getTime())))),
+    };
+  }
+
+  const now = new Date();
+  return {
+    ganttStart: floorToHour(now),
+    ganttEnd: ceilToHour(new Date(now.getTime() + 6 * 60 * 60 * 1000)),
+  };
 }
 
 export function makePriceChartData(planData) {
-  return (planData.timeline ?? []).map((iso, i) => {
-    const d = new Date(iso);
-    return {
-      hour: String(d.getHours()).padStart(2, "0") + ":00",
-      price: planData.pricesCtPerKwh?.[i] ?? null,
-    };
-  });
+  return (planData.timeline ?? []).map((iso, i) => ({
+    time: iso,
+    price: planData.pricesCtPerKwh?.[i] ?? null,
+  }));
 }
 
 export function makeGeneratorChartData(timeline, generationSeries) {
-  return (timeline ?? []).map((iso, i) => {
-    const d = new Date(iso);
-    return {
-      hour: String(d.getHours()).padStart(2, "0") + ":00",
-      generation: generationSeries?.[i] ?? 0,
-    };
-  });
+  return (timeline ?? []).map((iso, i) => ({
+    time: iso,
+    generation: generationSeries?.[i] ?? 0,
+  }));
 }
 
 export function buildBatterySeries(planData, battery) {
@@ -66,10 +109,8 @@ export function buildVariableActionSeries(planData, va) {
 
 export function buildScheduledConsumerSeries(planData, sc) {
   if (!sc) return [];
-
   const timeline = planData.timeline ?? [];
   const values = sc.powerW ?? [];
-
   return timeline.map((iso, i) => ({
     time: iso,
     value: values[i] ?? 0,

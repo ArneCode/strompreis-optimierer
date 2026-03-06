@@ -1,4 +1,5 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { formatTimeTick, getXAxisInterval } from "../utils/planTransform.js";
 
 function PrognosesCharts({
   planData,
@@ -8,12 +9,13 @@ function PrognosesCharts({
   priceDataFromBackend,
   generatorDataFromBackend,
 }) {
+  const xAxisInterval = getXAxisInterval(planData.timeline, 120);
+
   return (
     <>
       <p className="charts-header">Prognosen</p>
 
       <div className="charts">
-        {/* Strompreis */}
         <div className="chart">
           <p>Strompreis</p>
           <div className="diagram">
@@ -24,11 +26,13 @@ function PrognosesCharts({
               margin={{ bottom: 30 }}
             >
               <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-              <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} />
+              <Line dataKey="price" name="Preis (ct/kWh)" strokeWidth={2} dot={false} isAnimationActive={false} />
               <XAxis
-                dataKey="hour"
+                dataKey="time"
+                tickFormatter={formatTimeTick}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-                interval={3}
+                interval={xAxisInterval}
+                minTickGap={30}
               />
               <YAxis
                 width="auto"
@@ -42,7 +46,6 @@ function PrognosesCharts({
           </div>
         </div>
 
-        {/* Stromerzeugung */}
         <div className="chart">
           <div>
             <p>
@@ -75,15 +78,17 @@ function PrognosesCharts({
               margin={{ bottom: 30 }}
             >
               <CartesianGrid stroke="#aaa" strokeDasharray="1 1" />
-              <Line dataKey="generation" name="Stromerzeugung (W)" strokeWidth={2} />
+              <Line dataKey="generation" name="Stromerzeugung (Wh)" strokeWidth={2} dot={false} isAnimationActive={false} />
               <XAxis
-                dataKey="hour"
+                dataKey="time"
+                tickFormatter={formatTimeTick}
                 label={{ value: "Uhrzeit", position: "insideBottom", offset: -15 }}
-                interval={3}
+                interval={xAxisInterval}
+                minTickGap={30}
               />
               <YAxis
                 width="auto"
-                label={{ value: "Stromerzeugung (W)", position: "insideLeft", angle: -90 }}
+                label={{ value: "Stromerzeugung (Wh)", position: "insideLeft", angle: -90 }}
                 domain={[0, (max) => Math.ceil(max * 1.1)]}
               />
             </LineChart>
