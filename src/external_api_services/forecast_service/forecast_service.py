@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
-from typing import Dict
+
 from zoneinfo import ZoneInfo
 
-from external_api_services.forecast_service.forecast_cache import ForecastCache
+from external_api_services.cache import Cache
 from external_api_services.forecast_service.forecast_service_port import ForecastServicePort
 from electricity_price_optimizer_py.units import WattHour, Watt
 
@@ -15,19 +15,6 @@ def _floor_hour(dt: datetime) -> datetime:
     :return: the truncated datetime
     """
     return dt.replace(minute = 0, second = 0, microsecond = 0)
-
-def _ceil_hour(dt: datetime) -> datetime:
-    """
-    Returns a given datetime rounded up to the next full hour (or the same hour
-    if the datetime is already exactly on the hour).
-    :param dt: the given datetime
-    :return: the rounded up datetime
-    """
-    floored_hour = _floor_hour(dt)
-    if dt == floored_hour:
-        return floored_hour
-    else:
-        return floored_hour + timedelta(hours = 1)
 
 class ForecastService(ForecastServicePort):
     """
@@ -42,7 +29,7 @@ class ForecastService(ForecastServicePort):
     - Assumption: Within each hour, production is uniformly distributed (constant average power).
     - All computations are performed in the Berlin timezone.
     """
-    def __init__(self, cache: ForecastCache):
+    def __init__(self, cache: Cache):
         """
         Initializes the ForecastService.
         :param cache: ForecastCache instance for one specific PV configuration.
@@ -68,7 +55,7 @@ class ForecastService(ForecastServicePort):
 
         while current < end:
             hour_start = _floor_hour(current)
-            hour_end = _ceil_hour(current)
+            hour_end = hour_start + timedelta(hours = 1)
             segment_end = min(hour_end, end)
             segment_seconds = (segment_end - current).total_seconds()
 
