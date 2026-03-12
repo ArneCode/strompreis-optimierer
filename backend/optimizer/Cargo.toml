@@ -1,0 +1,19 @@
+[package]
+name = "electricity_price_optimizer_py"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+# This makes it a cdylib for Python, rlib for when this is compiled for testing
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.27.2", features = ["chrono"] }
+electricity_price_optimizer = { path = "electricity_price_optimizer" }
+chrono = "0.4.43"
+proptest = "1.10.0"
+approx = "0.5.1"
+[features]
+# Define a feature that enables the extension-module
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]

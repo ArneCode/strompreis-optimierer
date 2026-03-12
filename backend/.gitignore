@@ -1,0 +1,16 @@
+*.db
+*.db-journal
+__pycache__
+.venv
+.venv312/
+
+docs_export/
+docs_export.zip
+
+.idea/
+
+*.pyd
+*.pyc
+
+.coverage
+tarpaulin-report.html

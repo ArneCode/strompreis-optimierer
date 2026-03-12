@@ -1,0 +1,15 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "electricity_price_optimizer_py"
+version = "0.1.0"
+requires-python = ">=3.8"
+description = "Electricity price optimizer"
+
+[tool.maturin]
+# This tells maturin to look for Python files in the python/ directory
+python-source = "python"
+# The module name (must match the directory name in python/)
+module-name = "electricity_price_optimizer_py"
