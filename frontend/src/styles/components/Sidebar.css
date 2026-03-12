@@ -1,0 +1,91 @@
+.sidebar {
+  width: 250px;
+  background-color: lightgray;
+  border-radius: 10px;
+  margin: 10px;
+  margin-right: 5px;
+  padding-top: 20px;
+  transition: width 0.2s ease;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar-toggle {
+  border: none;
+  background-color: lightgray;
+  cursor: pointer;
+  border-radius: 7px;
+}
+
+.sidebar-toggle:hover {
+  background-color: rgb(232, 232, 232);
+}
+
+.sidebar-toggle img {
+  width: 30px;
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  padding-right: 10px;
+  padding-bottom: 20px;
+}
+
+.sidebar-head.collapsed {
+  justify-content: center;
+  padding-right: 0px;
+}
+
+.sidebar-data-icon {
+  width: 25px;
+  margin-right: 10px;
+}
+
+.sidebar-list {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-normal {
+  flex-grow: 1;
+}
+
+.sidebar-row {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-left: 10px;
+  margin-right: 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sidebar-row:hover {
+  background-color: rgb(232, 232, 232);
+}
+
+.sidebar-list #active {
+  background-color: rgb(108, 182, 255);
+}
+
+.sidebar-row:visited,
+.sidebar-row:hover,
+.sidebar-row:active {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sidebar-row.active {
+  background-color: rgb(108, 182, 255);
+}

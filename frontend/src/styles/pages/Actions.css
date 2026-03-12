@@ -1,0 +1,226 @@
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 200px));
+  padding: 2rem 3rem;
+  gap: 1.25rem;
+}
+
+.action-card {
+    background-color: rgb(52, 180, 120);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-width: 200px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+}
+
+.actions-edit-delete-button {
+  background-color: rgb(216, 52, 52);
+  color: white;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+  margin-left: 2rem;
+}
+
+
+.action-name {
+    color: white;
+    font-weight: bold;
+    font-size: 22px;
+    margin: 0;
+}
+
+.action-time-card {
+    color: rgb(236, 236, 236);
+    font-weight: bold;
+    font-size: 15px;
+    margin: 10px;
+
+}
+
+
+.action-head {
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+.action-head h1 {
+    font-size: 40px;
+    font-family: inherit;
+    font-weight: normal;
+    margin-bottom: 20px;
+    margin-top: 15px;
+}
+
+
+.new-action-plus-image {
+    width: 17px;
+    margin-right: 10px;
+}
+
+.new-action-button {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    background-color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+
+.create-action-popup,
+.edit-action-popup {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.242);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-slider {
+  margin-bottom: 20px;
+}
+
+.action-popup-window,
+.edit-action-popup-window {
+    min-height: 400px;
+    width: min(90%, 400px);
+    box-sizing: border-box;
+    background-color: white;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 0px;
+}
+
+.create-action-head {
+    font-size: 30px;
+    margin: 0;
+    margin-top: 10px;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.edit-action-head {
+    font-size: 30px;
+    margin: 0;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.action-popup-header {
+    text-align: center;
+    font-size: 25px;
+    margin: 10px 0 20px 0;
+}
+
+.action-edit-name {
+    text-align: center;
+    margin: 0;
+    margin-bottom: 70px;
+    font-size: 20px;
+}
+
+.action-popup-buttons {
+    display: flex;
+    justify-content: end;
+}
+
+.action-popup-buttons button {
+    margin-right: 15px;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    font-size: 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+.actions-save-button {
+    background-color: rgb(52, 123, 255);
+    color: white;
+}
+
+.actions-delete-button {
+    background-color: rgb(216, 52, 52);
+    color: white;
+}
+
+
+.action-popup-inputs {
+    flex-grow: 1;
+}
+
+.action-popup-inputs input, 
+.action-device-select {
+    width: 90%;
+    max-width: 230px;
+    box-sizing: border-box;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+}
+
+.action-device-select {
+    margin-bottom: 50px;
+}
+
+.action-popup-inputs p {
+    text-align: center;
+    margin: 0;
+    margin-bottom: 7px;
+}
+
+.actions-create-cancel-button {
+    background-color: #ccc;
+    color: black;
+}
+
+
+
+.action-type-select {
+    position: relative;
+
+    cursor: pointer;
+}
+
+
+.action-time {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 5px;
+    text-transform: capitalize;
+}
+
+.action-head {
+  margin: 0 auto;
+  padding: 0 3rem;
+}
+
+.actions-delete-button-container {
+    width: 100%;
+}
